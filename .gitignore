@@ -8,4 +8,7 @@ dist/
 # Environments
 .env
 .autoenv
+
+# Emacs
 .dir-locals.el
+*.org
