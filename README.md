@@ -125,3 +125,21 @@ If you want to work on a PR, please consider making a PR to `openapi-python-clie
     print(response)
     # Response(status_code=<HTTPStatus.OK: 200>, ...)
     ```
+
+### Modifying `openapi-python-client`
+
+1. Clone and modify `openapi-python-client`
+    ```shell
+    git clone https://github.com/openapi-generators/openapi-python-client.git
+    nvim openapi-python-client/openapi_python_client/parser/openapi.py
+    # make your changes
+    ```
+2. Create and activate new env
+3. Install modified local package
+    ```shell
+    pip install ./openapi-python-client
+    ```
+4. Generate a new client the regular way
+    ```shell
+    openapi-python-client generate --path /path/to/forgejo_openapi.json --config /path/to/config.yaml
+    ```
