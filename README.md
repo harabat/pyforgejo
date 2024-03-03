@@ -74,6 +74,8 @@ Every path/operation combo becomes a Python module with four functions:
 - `asyncio`: Like `sync` but async instead of blocking
 - `asyncio_detailed`: Like `sync_detailed` but async instead of blocking
 
+Currently, Forgejo's API spec does not provide the response schemas for every endpoints, so most endpoints will not return parsed data and only have a detailed method.
+
 All path/query parameters and bodies become method arguments.
 
 
