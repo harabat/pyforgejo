@@ -135,9 +135,10 @@ If you want to work on a PR, please consider making a PR to `openapi-python-clie
     # make your changes
     ```
 2. Create and activate new env
-3. Install modified local package
+3. Install (or upgrade) modified local package
     ```shell
     pip install ./openapi-python-client
+    # pip install ./openapi-python-client --upgrade  # after making further changes
     ```
 4. Generate a new client the regular way
     ```shell
