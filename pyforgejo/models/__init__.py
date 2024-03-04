@@ -1,4 +1,4 @@
-""" Contains all the data models used in inputs/outputs """
+"""Contains all the data models used in inputs/outputs"""
 
 from .access_token_represents_an_api_access_token import AccessTokenRepresentsAnAPIAccessToken
 from .activity import Activity

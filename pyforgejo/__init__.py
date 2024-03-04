@@ -1,4 +1,5 @@
-""" A client library for accessing Forgejo API """
+"""A client library for accessing Forgejo API"""
+
 from .client import AuthenticatedClient, Client
 
 __all__ = (
