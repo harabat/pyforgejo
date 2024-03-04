@@ -4,7 +4,7 @@ A client library for accessing the Forgejo API.
 
 ## Usage
 
-Create a client: 
+Create a client:
 
 ```python
 from pyforgejo import AuthenticatedClient
@@ -49,7 +49,7 @@ The structure of the import statement for interacting with a specific endpoint f
 from pyforgejo.api.<root_path> import <operation_id>
 ```
 
-Here, `<tag>` is the root path or tag for the endpoint in the Swagger spec, and `<operation_id>` is the `operationId` for the specific function you want to call, converted to snake case. 
+Here, `<tag>` is the root path or tag for the endpoint in the Swagger spec, and `<operation_id>` is the `operationId` for the specific function you want to call, converted to snake case.
 
 For example, for the endpoint `/repos/search`, the Swagger spec is:
 
@@ -84,7 +84,7 @@ All path/query parameters and bodies become method arguments.
 ### `openapi-python-client`
 `pyforgejo` is generated with [openapi-python-client](https://github.com/openapi-generators/openapi-python-client/), with as of now very little modification.
 
-If you run into any issues, please create an issue in this repo. 
+If you run into any issues, please create an issue in this repo.
 
 If you want to work on a PR, please consider making a PR to `openapi-python-client` rather than to this repo.
 
