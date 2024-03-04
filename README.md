@@ -128,6 +128,13 @@ If you want to work on a PR, please consider making a PR to `openapi-python-clie
     # Response(status_code=<HTTPStatus.OK: 200>, ...)
     ```
 
+Because merging of PRs on `openapi-python-client` can be slow, the fork at https://github.com/harabat/openapi-python-client, which is where I work on `pyforgejo`-related PRs to `openapi-python-client`, might be more up-to-date. In this case, replace step 1 above with the following:
+
+``` shell
+git clone https://github.com/harabat/openapi-python-client.git
+pip install ./openapi-python-client --upgrade
+```
+
 ### Modifying `openapi-python-client`
 
 1. Clone and modify `openapi-python-client`
