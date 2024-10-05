@@ -1,17 +1,17 @@
 import os
+import sys
+from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
 
-# Add the parent directory to the Python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+project_root = str(Path(__file__).parent.parent)
+sys.path.insert(0, project_root)
 
 from pyforgejo.client import AuthenticatedClient
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Configuration for tests
 BASE_URL = os.getenv("FORGEJO_API_BASE_URL")
 API_TOKEN = os.getenv("FORGEJO_API_TOKEN")
 
