@@ -2,6 +2,16 @@
 
 A client library for accessing the Forgejo API.
 
+**:warning: Package refactoring**
+
+**This package is being rewritten from scratch to improve code quality, development velocity, and user experience.** 
+
+**The current package is production-ready. To ensure a smooth transition, we recommend pinning the package to `1.0`.**
+
+**The upcoming 2.0 release (expected in a few months) will introduce significant changes, including updated API calls (for example, `client.repo_get(repo, owner)` will replace `repo_get.sync_detailed(repo=repo, owner=owner, client=client)`).**
+
+**We'll provide upgrade instructions and documentation for the 2.0 release.**
+
 ## Usage
 
 Create a client:
