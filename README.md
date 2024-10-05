@@ -153,3 +153,13 @@ pip install ./openapi-python-client --upgrade
     ```shell
     openapi-python-client generate --path /path/to/forgejo_openapi.json --config /path/to/config.yaml
     ```
+
+### Testing
+
+We use `pytest` for testing.
+
+The tests are in the `tests` dir. Run them with:
+
+``` shell
+pytest ./tests/endpoints.py
+```
