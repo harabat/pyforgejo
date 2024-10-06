@@ -8,7 +8,6 @@ readme = "README.md"
 packages = [
     {include = "pyforgejo"},
 ]
-include = ["CHANGELOG.md", "pyforgejo/py.typed"]
 license = "MIT"
 repository = "https://codeberg.org/harabat/pyforgejo"
 
