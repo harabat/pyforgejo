@@ -1,10 +1,10 @@
 import json
 
 from pyforgejo.api.issue import issue_list_issues
+from pyforgejo.api.miscellaneous import get_version
+from pyforgejo.api.organization import org_get
 from pyforgejo.api.repository import repo_get, repo_search
 from pyforgejo.api.user import user_get_current
-from pyforgejo.api.organization import org_get
-from pyforgejo.api.miscellaneous import get_version
 
 
 def test_user_get_current(client):
