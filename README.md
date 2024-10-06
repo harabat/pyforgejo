@@ -4,11 +4,11 @@ A client library for accessing the Forgejo API.
 
 **:warning: Package refactoring**
 
-**This package is being rewritten from scratch to improve code quality, development velocity, and user experience.** 
+**This package is being rewritten to improve code quality, development velocity, and user experience.** 
 
 **The current package is production-ready. To ensure a smooth transition, we recommend pinning the package to `1.0`.**
 
-**The upcoming 2.0 release (expected in a few months) will introduce significant changes, including updated API calls (for example, `client.repo_get(repo, owner)` will replace `repo_get.sync_detailed(repo=repo, owner=owner, client=client)`).**
+**The [upcoming 2.0 release](https://codeberg.org/harabat/pyforgejo/src/branch/2.0) (expected in a few months) will introduce significant changes, including updated API calls (for example, `client.repository.repo_get(repo, owner)` will replace `repo_get.sync_detailed(repo=repo, owner=owner, client=client)`). You can try it in the `2.0` branch**
 
 **We'll provide upgrade instructions and documentation for the 2.0 release.**
 
