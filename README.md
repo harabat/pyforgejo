@@ -1,175 +1,210 @@
 # pyforgejo
 
-A client library for accessing the Forgejo API.
+A Python client library for accessing the [Forgejo](https://forgejo.org/) API.
 
-**:warning: Package refactoring**
-
-**This package is being rewritten to improve code quality, development velocity, and user experience.** 
-
-**The current package is production-ready. To ensure a smooth transition, we recommend pinning the package to `1.0`.**
-
-**The [upcoming 2.0 release](https://codeberg.org/harabat/pyforgejo/src/branch/2.0) (expected in a few months) will introduce significant changes, including updated API calls (for example, `client.repository.repo_get(repo, owner)` will replace `repo_get.sync_detailed(repo=repo, owner=owner, client=client)`). You can try it in the `2.0` branch**
-
-**We'll provide upgrade instructions and documentation for the 2.0 release.**
+**:warning: pyforgejo 2.0 introduces significant changes**
 
 ## Usage
 
-Create a client:
+1. Create an `.env` file in your project directory with the `BASE_URL` and your `API_KEY`:
 
-```python
-from pyforgejo import AuthenticatedClient
-
-client = AuthenticatedClient(base_url='https://codeberg.org/api/v1', token='API_TOKEN')
+``` dotenv
+BASE_URL=https://codeberg.org/api/v1
+API_KEY=your_api_key
 ```
 
-Call an endpoint:
+2. Create a client and call an endpoint:
 
 ```python
-from pyforgejo.api.user import user_get_current
+from pyforgejo import PyforgejoApi
 
-response = user_get_current.sync_detailed(client=client)
+client = PyforgejoApi()
 
-# async version
-response_async = user_get_current.asyncio_detailed(client=client)
-response = await response_async
+# get a specific repo
+repo = client.repository.repo_get(owner='harabat', repo='pyforgejo')
 
-print(response)
+repo
+# Repository(allow_fast_forward_only_merge=False, allow_merge_commits=True, allow_rebase=True, ...)
+
+repo.dict()
+# {'allow_fast_forward_only_merge': False,
+#  'allow_merge_commits': True,
+#  'allow_rebase': True,
+#  ...
+# }
+
+# list issues for the repo
+issues = client.issue.list_issues(owner=repo.owner.login, repo=repo.name)
+
+[issue.title for issue in issues]
+# ['Normalize option model names',
+#  'Calling methods from client',
+#  '`parsed` is None for most methods',
+#  '`openapi-python-client` does not support `text/plain` requests']
 ```
+
+The client follows this pattern for calling endpoints:
+
+``` python
+client.<resource>.<operation_id>(args)
+```
+where:
+
+- `<resource>`: the API resource (e.g., `repository`, `issue`, `user`)
+- `<operation_id>`: the specific operation, derived from the OpenAPI spec's `operationId` (converted to snake_case)
+
+You can find the `resource` and `operation_id` either in the [Swagger spec](https://codeberg.org/swagger.v1.json) or in the [API reference](https://codeberg.org/api/swagger). 
 
 ## Installation
 
+1. Clone the repository and navigate to the project directory:
+
 ``` shell
-pip install pyforgejo
+git clone https://codeberg.org/harabat/pyforgejo.git
+git checkout 2.0
 ```
 
-## Forgejo API
+2. Create a virtual environment:
 
-Resources:
+``` shell
+# using venv (built-in)
+python -m venv venv
+source venv/bin/activate
 
-- [API Usage | Forgejo – Beyond coding. We forge.](https://forgejo.org/docs/latest/user/api-usage/): user guide for the Forgejo API
+# or using conda
+conda create --name pyforgejo_2.0 python=3.10 --yes
+conda activate pyforgejo_2.0
+```
+
+3. Install the package:
+
+``` shell
+pip install ./pyforgejo
+```
+
+## Forgejo API Resources
+
+- [API Usage | Forgejo](https://forgejo.org/docs/latest/user/api-usage/): user guide for the Forgejo API
 - [Forgejo API | Codeberg](https://codeberg.org/api/swagger): API reference for Codeberg
 - [Forgejo API Swagger spec | Codeberg](https://codeberg.org/swagger.v1.json): Codeberg's Forgejo API Swagger spec
-- [openapi-generators/openapi-python-client](https://github.com/openapi-generators/openapi-python-client/): repo for the generator library that was used to generate `pyforgejo`
 - [About Swagger Specification | Documentation | Swagger](https://swagger.io/docs/specification/about/): docs for Swagger spec
 - [The OpenAPI Specification Explained | OpenAPI Documentation](https://learn.openapis.org/specification/): docs for OpenAPI spec
 
-The structure of the import statement for interacting with a specific endpoint follows this pattern:
+## Development
 
-``` python
-from pyforgejo.api.<root_path> import <operation_id>
+### Using `fern`
+
+`pyforgejo` 2.0 is generated with [fern](https://github.com/fern-api/fern), based on a slightly edited Forgejo OpenAPI spec.
+
+The user experience and code architecture provided by `fern` correspond to what I was expecting to get while rewriting `pyforgejo` from scratch with `httpx`, so this is a suitable proof of concept.
+
+During the testing phase, we want to identify any issues inherent to `fern` that prove limiting to `pyforgejo`: if we find such issues and cannot patch them upstream, I'll continue the `httpx`-based rewrite. Otherwise we'll adopt `fern` as the generator for `pyforgejo`.
+
+As mentioned, the user experience of the current `fern`-generated client is what I was going for, so even in the case of a rewrite the vast majority of usecases should be preserved.
+
+### Generating the client with `fern`
+
+1. Install fern and init a new workspace:
+
+``` shell
+npm install -g fern-api
+
+fern init --openapi https://code.forgejo.org/swagger.v1.json
+# login with github
 ```
 
-Here, `<tag>` is the root path or tag for the endpoint in the Swagger spec, and `<operation_id>` is the `operationId` for the specific function you want to call, converted to snake case.
+2. Edit the `fern/openapi/openapi.yml` file to keep only `AuthorizationHeaderToken` in `securityDefinitions` and `security`.
 
-For example, for the endpoint `/repos/search`, the Swagger spec is:
+``` yml
+securityDefinitions:
+  AuthorizationHeaderToken:
+    description: API tokens must be prepended with "token" followed by a space.
+    type: apiKey
+    name: Authorization
+    in: header
+security:
+  - AuthorizationHeaderToken: []
+```
+
+3. Edit the `fern/generators.yml` file to use the Python generator.
+
+``` yml
+default-group: local
+groups:
+  local:
+    generators:
+      - name: fernapi/fern-python-sdk
+        version: 4.2.7
+        output:
+          location: local-file-system
+          path: ../sdks/pyforgejo
+api:
+  path: openapi/openapi.yml
+```
+
+4. Edit the `fern/fern.config.json` to specify `pyforgejo` as the organisation.
 
 ``` json
-"/repos/search": {
-    "tags": ["repository"],
-    "operationId": "repoSearch",
-    ...
+{
+    "organization": "pyforgejo",
+    "version": "0.44.1"
 }
 ```
 
-So to hit that endpoint, the import statement will be:
+5. Generate the client (output will be in `sdks/pyforgejo`).
+
+6. Create a `.env` file in `sdks/pyforgejo` with your `BASE_URL` and `API_KEY`.
+
+``` yml
+BASE_URL=https://codeberg.org/api/v1
+API_KEY=your_api_key
+```
+
+7. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
+
+``` diff
++import os
++from dotenv import load_dotenv
+# ...
++load_dotenv()
+
++BASE_URL = os.getenv('BASE_URL')
++API_KEY = os.getenv('API_KEY')
++
+# ...
+ class PyforgejoApi:
+# ...
+     base_url : typing.Optional[str]
+-        The base url to use for requests from the client.
++        The base url to use for requests from the client. Defaults to the BASE_URL from .env file.
+# ...
+-    api_key : str
++    api_key : typing.Optional[str]
++        The API key to use for authentication. Defaults to the API_KEY from .env file.
+# ...
+    def __init__(
+# ...
+-        api_key: str,
++        api_key: typing.Optional[str] = None,
+# ...
+     ):
++        base_url = base_url or BASE_URL
++        api_key = api_key or API_KEY
++
++        if not base_url:
++            raise ValueError("base_url must be provided either in .env or as an argument")
++        if not api_key:
++            raise ValueError("api_key must be provided either in .env or as an argument")
+# same for AsyncPyforgejoApi
+```
+
+8. Use the client as shown in the [Usage](#usage) section.
 
 ``` python
-from pyforgejo.api.repository import repo_search
+from pyforgejo import PyforgejoApi
+
+client = PyforgejoApi()
+
+repos = client.repository.repo_search(q='pyforgejo', mode='source')
 ```
 
-Every path/operation combo becomes a Python module with four functions:
-
-- `sync`: Blocking request that returns parsed data (if successful) or `None`
-- `sync_detailed`: Blocking request that always returns a `Request`, optionally with `parsed` set if the request was successful
-- `asyncio`: Like `sync` but async instead of blocking
-- `asyncio_detailed`: Like `sync_detailed` but async instead of blocking
-
-Currently, Forgejo's API spec does not provide the response schemas for every endpoints, so most endpoints will not return parsed data and only have a detailed method.
-
-All path/query parameters and bodies become method arguments.
-
-
-## Development
-
-### `openapi-python-client`
-`pyforgejo` is generated with [openapi-python-client](https://github.com/openapi-generators/openapi-python-client/), with as of now very little modification.
-
-If you run into any issues, please create an issue in this repo.
-
-If you want to work on a PR, please consider making a PR to `openapi-python-client` rather than to this repo.
-
-`openapi-python-client` was chosen to generate this client over [openapi-generator](https://github.com/OpenAPITools/openapi-generator) and [fern](https://github.com/fern-api/fern) because of the following reasons:
-
-- `openapi-python-client` is Python-specific, which allows it to leverage specific language features, have a clearer code, and offer a better developer experience, compared to `openapi-generator`'s one-size-fits-all approach
-- `openapi-python-client` is written in Python, so users of `pyforgejo` will be more likely to be able to make contributions and fix bugs in the generator's code itself, while `openapi-generator` is written in Java, which represents a higher barrier to contributions
-- `openapi-python-client` supports more authentication options, including access tokens, than `fern`
-- the documentation is limited, but clearer than for `openapi-generator`
-
-### Generating the client with `openapi-python-client`
-
-1. Convert Forgejo's [Swagger spec](https://code.forgejo.org/swagger.v1.json) to OpenAPI with [swagger-converter](https://github.com/swagger-api/swagger-converter), as Swagger is not supported by `openapi-python-client`.
-2. Install [openapi-python-client](https://github.com/openapi-generators/openapi-python-client/):
-    ```shell
-    pip install openapi-python-client
-    ```
-3. Create a `config.yaml` file with the following content:
-    ```yaml
-    project_name_override: "pyforgejo"
-    ```
-4. Generate the client (this will create a `pyforgejo/` dir):
-    ```shell
-    openapi-python-client generate --path /path/to/forgejo_openapi.json --config /path/to/config.yaml
-    ```
-5. Alternatively, update the client:
-    ```shell
-    git clone https://codeberg.org/harabat/pyforgejo
-    
-    openapi-python-client update --path /path/to/forgejo_openapi.json --config ./pyforgejo/config.yaml
-    ```
-6. Navigate to the `pyforgejo/` dir and call the API:
-    ```python
-    from pyforgejo.client import AuthenticatedClient
-    from pyforgejo.api.user import user_get_current
-    
-    client = AuthenticatedClient(base_url='FORGEJO_URL' + '/api/v1', token='ACCESS_TOKEN')
-    response = user_get_current.sync_detailed(client=client)
-    
-    print(response)
-    # Response(status_code=<HTTPStatus.OK: 200>, ...)
-    ```
-
-Because merging of PRs on `openapi-python-client` can be slow, the fork at https://github.com/harabat/openapi-python-client, which is where I work on `pyforgejo`-related PRs to `openapi-python-client`, might be more up-to-date. In this case, replace step 1 above with the following:
-
-``` shell
-git clone https://github.com/harabat/openapi-python-client.git
-pip install ./openapi-python-client --upgrade
-```
-
-### Modifying `openapi-python-client`
-
-1. Clone and modify `openapi-python-client`
-    ```shell
-    git clone https://github.com/openapi-generators/openapi-python-client.git
-    nvim openapi-python-client/openapi_python_client/parser/openapi.py
-    # make your changes
-    ```
-2. Create and activate new env
-3. Install (or upgrade) modified local package
-    ```shell
-    pip install ./openapi-python-client
-    # pip install ./openapi-python-client --upgrade  # after making further changes
-    ```
-4. Generate a new client the regular way
-    ```shell
-    openapi-python-client generate --path /path/to/forgejo_openapi.json --config /path/to/config.yaml
-    ```
-
-### Testing
-
-We use `pytest` for testing.
-
-The tests are in the `tests` dir. Run them with:
-
-``` shell
-pytest ./tests/endpoints.py
-```
