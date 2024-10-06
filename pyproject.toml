@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyforgejo"
-version = "1.0.4"
+version = "2.0.0"
 description = "A client library for accessing the Forgejo API"
 authors = ["harabat"]
 maintainers = []
@@ -12,10 +12,10 @@ license = "MIT"
 repository = "https://codeberg.org/harabat/pyforgejo"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-httpx = ">=0.20.0,<0.27.0"
-attrs = ">=21.3.0"
-python-dateutil = "^2.8.0"
+python = "^3.10"
+httpx = ">=0.20.0"
+pydantic=">=2.9.2"
+python-dotenv=">=1.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
