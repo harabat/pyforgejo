@@ -10,7 +10,7 @@ A Python client library for accessing the [Forgejo](https://forgejo.org/) API.
 
 ``` dotenv
 BASE_URL=https://codeberg.org/api/v1
-API_KEY=your_api_key
+API_KEY='token your_api_key' # your API token prepended with "token" followed by a space
 ```
 
 2. Create a client and call an endpoint:
