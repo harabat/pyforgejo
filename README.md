@@ -8,9 +8,9 @@ A Python client library for accessing the [Forgejo](https://forgejo.org/) API.
 
 1. Create an `.env` file in your project directory with the `BASE_URL` and your `API_KEY`:
 
-``` dotenv
+``` yaml
 BASE_URL=https://codeberg.org/api/v1
-API_KEY='token your_api_key' # your API token prepended with "token" followed by a space
+API_KEY='token your_api_key'  # your API token prepended with "token" followed by a space
 ```
 
 2. Create a client and call an endpoint:
