@@ -96,91 +96,79 @@ pip install ./pyforgejo
 
 `pyforgejo` 2.0 is generated with [fern](https://github.com/fern-api/fern), based on a slightly edited Forgejo OpenAPI spec.
 
-The user experience and code architecture provided by `fern` correspond to what I was expecting to get while rewriting `pyforgejo` from scratch with `httpx`, so this is a suitable proof of concept.
-
-During the testing phase, we want to identify any issues inherent to `fern` that prove limiting to `pyforgejo`: if we find such issues and cannot patch them upstream, I'll continue the `httpx`-based rewrite. Otherwise we'll adopt `fern` as the generator for `pyforgejo`.
-
-As mentioned, the user experience of the current `fern`-generated client is what I was going for, so even in the case of a rewrite the vast majority of usecases should be preserved.
+The user experience and code architecture of the `fern`-generated client follow best practice. As the library is tested by users, we will identify any issues inherent to `fern` that prove limiting to `pyforgejo`: if we find such issues and cannot patch them upstream, the current codebase provides a good foundation for further development and any divergence from `fern` would not affect the vast majority of usecases.
 
 ### Generating the client with `fern`
 
-1. Install fern and init a new workspace:
+1. Install fern, initialise a new workspace, and specify `pyforgejo` as the name of your organisation (= client).
 
 ``` shell
 npm install -g fern-api
 
 fern init --openapi https://code.forgejo.org/swagger.v1.json
-# login with github
+# Please enter your organization pyforgejo
 ```
 
-2. Edit the `fern/openapi/openapi.yml` file to keep only `AuthorizationHeaderToken` in `securityDefinitions` and `security`.
-
-``` yml
-securityDefinitions:
-  AuthorizationHeaderToken:
-    description: API tokens must be prepended with "token" followed by a space.
-    type: apiKey
-    name: Authorization
-    in: header
-security:
-  - AuthorizationHeaderToken: []
-```
-
-3. Edit the `fern/generators.yml` file to use the Python generator.
-
-``` yml
-default-group: local
-groups:
-  local:
-    generators:
-      - name: fernapi/fern-python-sdk
-        version: 4.2.7
-        output:
-          location: local-file-system
-          path: ../sdks/pyforgejo
-api:
-  path: openapi/openapi.yml
-```
-
-4. Edit the `fern/fern.config.json` to specify `pyforgejo` as the organisation.
+2. Edit the `fern/openapi/openapi.json` file to keep only `AuthorizationHeaderToken` in `securityDefinitions` and `security`.
 
 ``` json
-{
-    "organization": "pyforgejo",
-    "version": "0.44.1"
-}
+"securityDefinitions": {
+  "AuthorizationHeaderToken": {
+    "description": "API tokens must be prepended with \"token\" followed by a space.",
+    "type": "apiKey",
+    "name": "Authorization",
+    "in": "header"
+  }
+},
+"security": [
+  {
+    "AuthorizationHeaderToken": []
+  }
+]
 ```
 
-5. Generate the client (output will be in `sdks/pyforgejo`).
+3. Add the Python SDK generator to `fern`.
 
-6. Create a `.env` file in `sdks/pyforgejo` with your `BASE_URL` and `API_KEY`.
+``` shell
+fern add fernapi/fern-python-sdk
+```
+
+4. Generate the client (output will be in `sdks/pyforgejo`).
+
+``` shell
+fern generate
+# you'll have to login to GitHub
+```
+
+5. Create a `.env` file in `sdks/pyforgejo` with your `BASE_URL` and `API_KEY`.
 
 ``` yml
 BASE_URL=https://codeberg.org/api/v1
-API_KEY=your_api_key
+API_KEY="token your_api_key"
 ```
 
-7. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
+6. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
 
 ``` diff
+# ...
+from .user.client import AsyncUserClient
 +import os
 +from dotenv import load_dotenv
-# ...
++
 +load_dotenv()
-
++
 +BASE_URL = os.getenv('BASE_URL')
 +API_KEY = os.getenv('API_KEY')
-+
-# ...
+
  class PyforgejoApi:
 # ...
      base_url : typing.Optional[str]
 -        The base url to use for requests from the client.
-+        The base url to use for requests from the client. Defaults to the BASE_URL from .env file.
++        The base url to use for requests from the client. Defaults to BASE_URL from .env file.
 # ...
 -    api_key : str
 +    api_key : typing.Optional[str]
-+        The API key to use for authentication. Defaults to the API_KEY from .env file.
++        The API key to use for authentication. Defaults to API_KEY from .env file.
 # ...
     def __init__(
 # ...
@@ -191,20 +179,35 @@ API_KEY=your_api_key
 +        base_url = base_url or BASE_URL
 +        api_key = api_key or API_KEY
 +
++        print(f"Using BASE_URL: {base_url if base_url else 'Not set'}")
++        print(f"Using API_KEY: {'*' * 40 if api_key else 'Not set'}")
++
 +        if not base_url:
-+            raise ValueError("base_url must be provided either in .env or as an argument")
++            raise ValueError("base_url must be provided either as an .env variable or as an argument")
 +        if not api_key:
-+            raise ValueError("api_key must be provided either in .env or as an argument")
++            raise ValueError("api_key must be provided either as an .env variable or as an argument")
 # same for AsyncPyforgejoApi
 ```
 
+7. Create a virtual environment and install the lib.
+
+``` shell
+conda create --name pyforgejo_dev
+conda activate pyforgejo_dev
+pip install /path/to/pyforgejo
+```
+
 8. Use the client as shown in the [Usage](#usage) section.
+
+``` shell
+conda install ipython
+ipython
+```
 
 ``` python
 from pyforgejo import PyforgejoApi
 
 client = PyforgejoApi()
 
-repos = client.repository.repo_search(q='pyforgejo', mode='source')
+user = client.user.get_current()
 ```
-
