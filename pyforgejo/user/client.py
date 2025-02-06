@@ -5,16 +5,19 @@ from ..core.client_wrapper import SyncClientWrapper
 from ..core.request_options import RequestOptions
 from ..types.user import User
 from ..core.pydantic_utilities import parse_obj_as
+from ..errors.unauthorized_error import UnauthorizedError
+from ..types.api_unauthorized_error import ApiUnauthorizedError
+from ..errors.forbidden_error import ForbiddenError
 from json.decoder import JSONDecodeError
-from ..core.api_error import ApiError
+from ..core.api_error import ApiError as core_api_error_ApiError
 from ..core.jsonable_encoder import jsonable_encoder
 from ..errors.bad_request_error import BadRequestError
+from ..types.api_error import ApiError as types_api_error_ApiError
 from ..errors.not_found_error import NotFoundError
 from ..types.action_variable import ActionVariable
 from ..types.o_auth_2_application import OAuth2Application
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
 from ..types.email import Email
-from ..errors.forbidden_error import ForbiddenError
 from ..types.gpg_key import GpgKey
 from ..types.hook import Hook
 from ..types.create_hook_option_config import CreateHookOptionConfig
@@ -83,10 +86,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -118,10 +145,34 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_user_secret(
         self,
@@ -173,6 +224,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -192,8 +263,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_user_secret(
         self,
@@ -236,6 +311,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -255,8 +350,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_user_variables_list(
         self,
@@ -312,6 +411,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -331,8 +450,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_user_variable(
         self,
@@ -382,6 +505,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -401,8 +544,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_user_variable(
         self,
@@ -454,6 +601,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -473,8 +640,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_user_variable(
         self,
@@ -531,6 +702,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -550,8 +741,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_user_variable(
         self,
@@ -594,6 +789,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -613,8 +828,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_get_o_auth_2_applications(
         self,
@@ -667,10 +886,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_create_o_auth_2_application(
         self,
@@ -729,6 +972,26 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -738,8 +1001,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_get_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -783,6 +1050,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -795,8 +1082,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_delete_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -833,6 +1124,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -845,8 +1156,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_update_o_auth_2_application(
         self,
@@ -908,6 +1223,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -920,8 +1255,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_avatar(
         self,
@@ -963,10 +1302,34 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_avatar(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -998,10 +1361,34 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def block_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1038,6 +1425,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -1060,8 +1467,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_emails(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -1100,10 +1511,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def add_email(
         self,
@@ -1140,6 +1575,9 @@ class UserClient:
             json={
                 "emails": emails,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1151,6 +1589,26 @@ class UserClient:
                         type_=typing.List[Email],  # type: ignore
                         object_=_response.json(),
                     ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
@@ -1164,8 +1622,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_email(
         self,
@@ -1201,12 +1663,35 @@ class UserClient:
             json={
                 "emails": emails,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -1219,8 +1704,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_list_followers(
         self,
@@ -1273,10 +1762,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_list_following(
         self,
@@ -1329,10 +1842,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_check_following(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1369,6 +1906,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -1381,8 +1938,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_put_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1419,6 +1980,16 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -1441,8 +2012,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_delete_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1479,6 +2054,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -1491,8 +2086,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_verification_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -1531,6 +2130,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -1543,8 +2162,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_verify_gpg_key(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -1583,6 +2206,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -1605,8 +2248,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_current_list_gpg_keys(
         self,
@@ -1659,10 +2306,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_current_post_gpg_key(
         self,
@@ -1705,6 +2376,9 @@ class UserClient:
                 "armored_public_key": armored_public_key,
                 "armored_signature": armored_signature,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1716,6 +2390,26 @@ class UserClient:
                         type_=GpgKey,  # type: ignore
                         object_=_response.json(),
                     ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
@@ -1739,8 +2433,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_current_get_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1784,6 +2482,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -1796,8 +2514,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_current_delete_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1834,6 +2556,16 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -1856,8 +2588,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_hooks(
         self,
@@ -1910,10 +2646,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_hook(
         self,
@@ -1984,10 +2744,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -2031,10 +2815,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -2071,10 +2879,34 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_hook(
         self,
@@ -2144,10 +2976,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_list_keys(
         self,
@@ -2205,10 +3061,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_post_key(
         self,
@@ -2270,6 +3150,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
                     typing.cast(
@@ -2282,8 +3182,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_get_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -2327,6 +3231,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -2339,8 +3263,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_delete_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -2377,6 +3305,16 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -2399,8 +3337,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_blocked_users(
         self,
@@ -2453,10 +3395,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_quota(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -2495,6 +3461,16 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -2507,8 +3483,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_quota_artifacts(
         self,
@@ -2561,6 +3541,16 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -2573,8 +3563,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_quota_attachments(
         self,
@@ -2627,6 +3621,16 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -2639,8 +3643,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def check_quota(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -2672,6 +3680,16 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -2694,8 +3712,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_quota_packages(
         self,
@@ -2748,6 +3770,16 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -2760,8 +3792,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_list_repos(
         self,
@@ -2819,6 +3855,26 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
                     typing.cast(
@@ -2831,8 +3887,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_user_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -2871,10 +3931,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_user_settings(
         self,
@@ -2951,6 +4035,9 @@ class UserClient:
                 "theme": theme,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2963,10 +4050,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_list_starred(
         self,
@@ -3019,10 +4130,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_check_starring(
         self,
@@ -3067,6 +4202,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -3079,8 +4234,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_put_star(
         self,
@@ -3125,6 +4284,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -3137,8 +4316,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_delete_star(
         self,
@@ -3183,6 +4366,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -3195,8 +4398,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_stop_watches(
         self,
@@ -3249,10 +4456,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_list_subscriptions(
         self,
@@ -3305,10 +4536,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_teams(
         self,
@@ -3361,10 +4616,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def current_tracked_times(
         self,
@@ -3427,10 +4706,34 @@ class UserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def unblock_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3467,6 +4770,26 @@ class UserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -3489,8 +4812,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def search(
         self,
@@ -3555,8 +4882,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3612,8 +4943,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_activity_feeds(
         self,
@@ -3694,8 +5029,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_followers(
         self,
@@ -3766,8 +5105,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_following(
         self,
@@ -3838,8 +5181,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def check_following(
         self,
@@ -3896,8 +5243,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_list_gpg_keys(
         self,
@@ -3968,8 +5319,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_heatmap_data(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -4025,8 +5380,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_keys(
         self,
@@ -4102,8 +5461,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_repos(
         self,
@@ -4174,8 +5537,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_starred(
         self,
@@ -4246,8 +5613,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_subscriptions(
         self,
@@ -4318,8 +5689,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_tokens(
         self,
@@ -4388,10 +5763,24 @@ class UserClient:
                         ),
                     )
                 )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_token(
         self,
@@ -4438,6 +5827,9 @@ class UserClient:
                 "name": name,
                 "scopes": scopes,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4453,9 +5845,9 @@ class UserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4470,10 +5862,24 @@ class UserClient:
                         ),
                     )
                 )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_access_token(
         self,
@@ -4550,8 +5956,12 @@ class UserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
 
 class AsyncUserClient:
@@ -4603,10 +6013,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -4646,10 +6080,34 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_user_secret(
         self,
@@ -4709,6 +6167,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -4728,8 +6206,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_user_secret(
         self,
@@ -4780,6 +6262,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -4799,8 +6301,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_user_variables_list(
         self,
@@ -4864,6 +6370,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -4883,8 +6409,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_user_variable(
         self,
@@ -4942,6 +6472,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -4961,8 +6511,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_user_variable(
         self,
@@ -5022,6 +6576,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -5041,8 +6615,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_user_variable(
         self,
@@ -5107,6 +6685,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -5126,8 +6724,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_user_variable(
         self,
@@ -5178,6 +6780,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -5197,8 +6819,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_get_o_auth_2_applications(
         self,
@@ -5259,10 +6885,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_create_o_auth_2_application(
         self,
@@ -5329,6 +6979,26 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -5338,8 +7008,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_get_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -5391,6 +7065,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -5403,8 +7097,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_delete_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -5449,6 +7147,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -5461,8 +7179,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_update_o_auth_2_application(
         self,
@@ -5532,6 +7254,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -5544,8 +7286,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_avatar(
         self,
@@ -5595,10 +7341,34 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_avatar(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -5638,10 +7408,34 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def block_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5686,6 +7480,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -5708,8 +7522,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_emails(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -5756,10 +7574,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def add_email(
         self,
@@ -5804,6 +7646,9 @@ class AsyncUserClient:
             json={
                 "emails": emails,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5815,6 +7660,26 @@ class AsyncUserClient:
                         type_=typing.List[Email],  # type: ignore
                         object_=_response.json(),
                     ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
@@ -5828,8 +7693,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_email(
         self,
@@ -5873,12 +7742,35 @@ class AsyncUserClient:
             json={
                 "emails": emails,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -5891,8 +7783,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_list_followers(
         self,
@@ -5953,10 +7849,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_list_following(
         self,
@@ -6017,10 +7937,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_check_following(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -6065,6 +8009,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -6077,8 +8041,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_put_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -6123,6 +8091,16 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -6145,8 +8123,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_delete_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -6191,6 +8173,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -6203,8 +8205,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_verification_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -6251,6 +8257,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -6263,8 +8289,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_verify_gpg_key(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -6311,6 +8341,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -6333,8 +8383,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_current_list_gpg_keys(
         self,
@@ -6395,10 +8449,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_current_post_gpg_key(
         self,
@@ -6449,6 +8527,9 @@ class AsyncUserClient:
                 "armored_public_key": armored_public_key,
                 "armored_signature": armored_signature,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6460,6 +8541,26 @@ class AsyncUserClient:
                         type_=GpgKey,  # type: ignore
                         object_=_response.json(),
                     ),
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
@@ -6483,8 +8584,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_current_get_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -6536,6 +8641,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -6548,8 +8673,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_current_delete_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -6594,6 +8723,16 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -6616,8 +8755,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_hooks(
         self,
@@ -6678,10 +8821,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_hook(
         self,
@@ -6760,10 +8927,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -6815,10 +9006,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -6863,10 +9078,34 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_hook(
         self,
@@ -6944,10 +9183,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_list_keys(
         self,
@@ -7013,10 +9276,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_post_key(
         self,
@@ -7086,6 +9373,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
                     typing.cast(
@@ -7098,8 +9405,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_get_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -7151,6 +9462,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -7163,8 +9494,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_delete_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -7209,6 +9544,16 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -7231,8 +9576,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_blocked_users(
         self,
@@ -7293,10 +9642,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_quota(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -7343,6 +9716,16 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -7355,8 +9738,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_quota_artifacts(
         self,
@@ -7417,6 +9804,16 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -7429,8 +9826,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_quota_attachments(
         self,
@@ -7491,6 +9892,16 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -7503,8 +9914,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def check_quota(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -7544,6 +9959,16 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -7566,8 +9991,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_quota_packages(
         self,
@@ -7628,6 +10057,16 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 403:
                 raise ForbiddenError(
                     typing.cast(
@@ -7640,8 +10079,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_list_repos(
         self,
@@ -7707,6 +10150,26 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
                     typing.cast(
@@ -7719,8 +10182,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_user_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -7767,10 +10234,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_user_settings(
         self,
@@ -7855,6 +10346,9 @@ class AsyncUserClient:
                 "theme": theme,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -7867,10 +10361,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_list_starred(
         self,
@@ -7931,10 +10449,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_check_starring(
         self,
@@ -7987,6 +10529,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -7999,8 +10561,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_put_star(
         self,
@@ -8053,6 +10619,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -8065,8 +10651,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_delete_star(
         self,
@@ -8119,6 +10709,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -8131,8 +10741,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_stop_watches(
         self,
@@ -8193,10 +10807,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_list_subscriptions(
         self,
@@ -8257,10 +10895,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_teams(
         self,
@@ -8321,10 +10983,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def current_tracked_times(
         self,
@@ -8395,10 +11081,34 @@ class AsyncUserClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def unblock_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -8443,6 +11153,26 @@ class AsyncUserClient:
         try:
             if 200 <= _response.status_code < 300:
                 return
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -8465,8 +11195,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def search(
         self,
@@ -8539,8 +11273,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -8604,8 +11342,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_activity_feeds(
         self,
@@ -8694,8 +11436,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_followers(
         self,
@@ -8774,8 +11520,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_following(
         self,
@@ -8854,8 +11604,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def check_following(
         self,
@@ -8920,8 +11674,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_list_gpg_keys(
         self,
@@ -9000,8 +11758,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_heatmap_data(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -9065,8 +11827,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_keys(
         self,
@@ -9150,8 +11916,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_repos(
         self,
@@ -9230,8 +12000,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_starred(
         self,
@@ -9310,8 +12084,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_subscriptions(
         self,
@@ -9390,8 +12168,12 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_tokens(
         self,
@@ -9468,10 +12250,24 @@ class AsyncUserClient:
                         ),
                     )
                 )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_token(
         self,
@@ -9526,6 +12322,9 @@ class AsyncUserClient:
                 "name": name,
                 "scopes": scopes,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -9541,9 +12340,9 @@ class AsyncUserClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -9558,10 +12357,24 @@ class AsyncUserClient:
                         ),
                     )
                 )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_access_token(
         self,
@@ -9646,5 +12459,9 @@ class AsyncUserClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )

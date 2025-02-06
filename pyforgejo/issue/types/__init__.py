@@ -3,9 +3,13 @@
 from .create_milestone_option_state import CreateMilestoneOptionState
 from .issue_list_issues_request_state import IssueListIssuesRequestState
 from .issue_list_issues_request_type import IssueListIssuesRequestType
+from .issue_search_issues_request_state import IssueSearchIssuesRequestState
+from .issue_search_issues_request_type import IssueSearchIssuesRequestType
 
 __all__ = [
     "CreateMilestoneOptionState",
     "IssueListIssuesRequestState",
     "IssueListIssuesRequestType",
+    "IssueSearchIssuesRequestState",
+    "IssueSearchIssuesRequestType",
 ]

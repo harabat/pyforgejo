@@ -4,10 +4,12 @@ from .bad_request_error import BadRequestError
 from .conflict_error import ConflictError
 from .content_too_large_error import ContentTooLargeError
 from .forbidden_error import ForbiddenError
+from .internal_server_error import InternalServerError
 from .locked_error import LockedError
 from .method_not_allowed_error import MethodNotAllowedError
 from .not_found_error import NotFoundError
 from .precondition_failed_error import PreconditionFailedError
+from .unauthorized_error import UnauthorizedError
 from .unprocessable_entity_error import UnprocessableEntityError
 
 __all__ = [
@@ -15,9 +17,11 @@ __all__ = [
     "ConflictError",
     "ContentTooLargeError",
     "ForbiddenError",
+    "InternalServerError",
     "LockedError",
     "MethodNotAllowedError",
     "NotFoundError",
     "PreconditionFailedError",
+    "UnauthorizedError",
     "UnprocessableEntityError",
 ]

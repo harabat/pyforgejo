@@ -36,6 +36,7 @@ class Repository(UniversalBaseModel):
     default_branch: typing.Optional[str] = None
     default_delete_branch_after_merge: typing.Optional[bool] = None
     default_merge_style: typing.Optional[str] = None
+    default_update_style: typing.Optional[str] = None
     description: typing.Optional[str] = None
     empty: typing.Optional[bool] = None
     external_tracker: typing.Optional[ExternalTracker] = None

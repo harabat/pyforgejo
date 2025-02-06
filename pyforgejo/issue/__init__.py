@@ -4,10 +4,14 @@ from .types import (
     CreateMilestoneOptionState,
     IssueListIssuesRequestState,
     IssueListIssuesRequestType,
+    IssueSearchIssuesRequestState,
+    IssueSearchIssuesRequestType,
 )
 
 __all__ = [
     "CreateMilestoneOptionState",
     "IssueListIssuesRequestState",
     "IssueListIssuesRequestType",
+    "IssueSearchIssuesRequestState",
+    "IssueSearchIssuesRequestType",
 ]

@@ -2,6 +2,6 @@
 
 import typing
 
-RepoListPullRequestsRequestState = typing.Union[
+IssueSearchIssuesRequestState = typing.Union[
     typing.Literal["open", "closed", "all"], typing.Any
 ]

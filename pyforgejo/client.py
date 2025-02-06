@@ -42,7 +42,7 @@ class PyforgejoApi:
     Parameters
     ----------
     base_url : typing.Optional[str]
-        The base url to use for requests from the client. Defaults to the BASE_URL from .env file.
+        The base url to use for requests from the client. Defaults to BASE_URL from .env file.
 
     environment : PyforgejoApiEnvironment
         The environment to use for requests from the client. from .environment import PyforgejoApiEnvironment
@@ -50,7 +50,7 @@ class PyforgejoApi:
         Defaults to PyforgejoApiEnvironment.DEFAULT
 
     api_key : typing.Optional[str]
-        The API key to use for authentication. Defaults to the API_KEY from .env file.
+        The API key to use for authentication. Defaults to API_KEY from .env file.
 
     timeout : typing.Optional[float]
         The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
@@ -84,12 +84,12 @@ class PyforgejoApi:
         api_key = api_key or API_KEY
 
         print(f"Using BASE_URL: {base_url if base_url else 'Not set'}")
-        print(f"Using API_KEY: {'*' * len(api_key) if api_key else 'Not set'}")
+        print(f"Using API_KEY: {'*' * 40 if api_key else 'Not set'}")
 
         if not base_url:
-            raise ValueError("base_url must be provided either in .env, as an environment variable, or as an argument")
+            raise ValueError("base_url must be provided either as an .env variable or as an argument")
         if not api_key:
-            raise ValueError("api_key must be provided either in .env, as an environment variable, or as an argument")
+            raise ValueError("api_key must be provided either as an .env variable or as an argument")
 
         _defaulted_timeout = (
             timeout if timeout is not None else 60 if httpx_client is None else None
@@ -125,7 +125,7 @@ class AsyncPyforgejoApi:
     Parameters
     ----------
     base_url : typing.Optional[str]
-        The base url to use for requests from the client. Defaults to the BASE_URL from .env file.
+        The base url to use for requests from the client. Defaults to BASE_URL from .env file.
 
     environment : PyforgejoApiEnvironment
         The environment to use for requests from the client. from .environment import PyforgejoApiEnvironment
@@ -133,7 +133,7 @@ class AsyncPyforgejoApi:
         Defaults to PyforgejoApiEnvironment.DEFAULT
 
     api_key : typing.Optional[str]
-        The API key to use for authentication. Defaults to the API_KEY from .env file.
+        The API key to use for authentication. Defaults to API_KEY from .env file.
 
     timeout : typing.Optional[float]
         The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
@@ -166,10 +166,13 @@ class AsyncPyforgejoApi:
         base_url = base_url or BASE_URL
         api_key = api_key or API_KEY
 
+        print(f"Using BASE_URL: {base_url if base_url else 'Not set'}")
+        print(f"Using API_KEY: {'*' * 40 if api_key else 'Not set'}")
+
         if not base_url:
-            raise ValueError("base_url must be provided either in .env or as an argument")
+            raise ValueError("base_url must be provided either as an .env variable or as an argument")
         if not api_key:
-            raise ValueError("api_key must be provided either in .env or as an argument")
+            raise ValueError("api_key must be provided either as an .env variable or as an argument")
 
         _defaulted_timeout = (
             timeout if timeout is not None else 60 if httpx_client is None else None

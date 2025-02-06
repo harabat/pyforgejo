@@ -380,6 +380,9 @@ class MiscellaneousClient:
                 "Text": text,
                 "Wiki": wiki,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -462,6 +465,7 @@ class MiscellaneousClient:
     def render_markup(
         self,
         *,
+        branch_path: typing.Optional[str] = OMIT,
         context: typing.Optional[str] = OMIT,
         file_path: typing.Optional[str] = OMIT,
         mode: typing.Optional[str] = OMIT,
@@ -472,6 +476,11 @@ class MiscellaneousClient:
         """
         Parameters
         ----------
+        branch_path : typing.Optional[str]
+            The current branch path where the form gets posted
+
+            in: body
+
         context : typing.Optional[str]
             Context to render
 
@@ -518,11 +527,15 @@ class MiscellaneousClient:
             "markup",
             method="POST",
             json={
+                "BranchPath": branch_path,
                 "Context": context,
                 "FilePath": file_path,
                 "Mode": mode,
                 "Text": text,
                 "Wiki": wiki,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -1087,6 +1100,9 @@ class AsyncMiscellaneousClient:
                 "Text": text,
                 "Wiki": wiki,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1177,6 +1193,7 @@ class AsyncMiscellaneousClient:
     async def render_markup(
         self,
         *,
+        branch_path: typing.Optional[str] = OMIT,
         context: typing.Optional[str] = OMIT,
         file_path: typing.Optional[str] = OMIT,
         mode: typing.Optional[str] = OMIT,
@@ -1187,6 +1204,11 @@ class AsyncMiscellaneousClient:
         """
         Parameters
         ----------
+        branch_path : typing.Optional[str]
+            The current branch path where the form gets posted
+
+            in: body
+
         context : typing.Optional[str]
             Context to render
 
@@ -1241,11 +1263,15 @@ class AsyncMiscellaneousClient:
             "markup",
             method="POST",
             json={
+                "BranchPath": branch_path,
                 "Context": context,
                 "FilePath": file_path,
                 "Mode": mode,
                 "Text": text,
                 "Wiki": wiki,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,

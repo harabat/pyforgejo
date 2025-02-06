@@ -2,25 +2,29 @@
 
 import typing
 from ..core.client_wrapper import SyncClientWrapper
+from .types.issue_search_issues_request_state import IssueSearchIssuesRequestState
+from .types.issue_search_issues_request_type import IssueSearchIssuesRequestType
 import datetime as dt
 from ..core.request_options import RequestOptions
 from ..types.issue import Issue
 from ..core.datetime_utils import serialize_datetime
 from ..core.pydantic_utilities import parse_obj_as
+from ..errors.bad_request_error import BadRequestError
+from ..types.api_error import ApiError as types_api_error_ApiError
+from ..errors.unprocessable_entity_error import UnprocessableEntityError
 from json.decoder import JSONDecodeError
-from ..core.api_error import ApiError
+from ..core.api_error import ApiError as core_api_error_ApiError
 from .types.issue_list_issues_request_state import IssueListIssuesRequestState
 from .types.issue_list_issues_request_type import IssueListIssuesRequestType
 from ..core.jsonable_encoder import jsonable_encoder
 from ..errors.not_found_error import NotFoundError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.precondition_failed_error import PreconditionFailedError
-from ..errors.unprocessable_entity_error import UnprocessableEntityError
 from ..errors.locked_error import LockedError
+from ..types.api_repo_archived_error import ApiRepoArchivedError
 from ..types.comment import Comment
 from ..types.attachment import Attachment
 from .. import core
-from ..errors.bad_request_error import BadRequestError
 from ..errors.content_too_large_error import ContentTooLargeError
 from ..types.reaction import Reaction
 from ..types.issue_deadline import IssueDeadline
@@ -45,12 +49,12 @@ class IssueClient:
     def search_issues(
         self,
         *,
-        state: typing.Optional[str] = None,
+        state: typing.Optional[IssueSearchIssuesRequestState] = None,
         labels: typing.Optional[str] = None,
         milestones: typing.Optional[str] = None,
         q: typing.Optional[str] = None,
         priority_repo_id: typing.Optional[int] = None,
-        type: typing.Optional[str] = None,
+        type: typing.Optional[IssueSearchIssuesRequestType] = None,
         since: typing.Optional[dt.datetime] = None,
         before: typing.Optional[dt.datetime] = None,
         assigned: typing.Optional[bool] = None,
@@ -67,56 +71,56 @@ class IssueClient:
         """
         Parameters
         ----------
-        state : typing.Optional[str]
-            whether issue is open or closed
+        state : typing.Optional[IssueSearchIssuesRequestState]
+            State of the issue
 
         labels : typing.Optional[str]
-            comma separated list of labels. Fetch only issues that have any of this labels. Non existent labels are discarded
+            Comma-separated list of label names. Fetch only issues that have any of these labels. Non existent labels are discarded.
 
         milestones : typing.Optional[str]
-            comma separated list of milestone names. Fetch only issues that have any of this milestones. Non existent are discarded
+            Comma-separated list of milestone names. Fetch only issues that have any of these milestones. Non existent milestones are discarded.
 
         q : typing.Optional[str]
-            search string
+            Search string
 
         priority_repo_id : typing.Optional[int]
-            repository to prioritize in the results
+            Repository ID to prioritize in the results
 
-        type : typing.Optional[str]
-            filter by type (issues / pulls) if set
+        type : typing.Optional[IssueSearchIssuesRequestType]
+            Filter by issue type
 
         since : typing.Optional[dt.datetime]
-            Only show notifications updated after the given time. This is a timestamp in RFC 3339 format
+            Only show issues updated after the given time (RFC 3339 format)
 
         before : typing.Optional[dt.datetime]
-            Only show notifications updated before the given time. This is a timestamp in RFC 3339 format
+            Only show issues updated before the given time (RFC 3339 format)
 
         assigned : typing.Optional[bool]
-            filter (issues / pulls) assigned to you, default is false
+            Filter issues or pulls assigned to the authenticated user
 
         created : typing.Optional[bool]
-            filter (issues / pulls) created by you, default is false
+            Filter issues or pulls created by the authenticated user
 
         mentioned : typing.Optional[bool]
-            filter (issues / pulls) mentioning you, default is false
+            Filter issues or pulls mentioning the authenticated user
 
         review_requested : typing.Optional[bool]
-            filter pulls requesting your review, default is false
+            Filter pull requests where the authenticated user's review was requested
 
         reviewed : typing.Optional[bool]
-            filter pulls reviewed by you, default is false
+            Filter pull requests reviewed by the authenticated user
 
         owner : typing.Optional[str]
-            filter by owner
+            Filter by repository owner
 
         team : typing.Optional[str]
-            filter by team (requires organization owner parameter to be provided)
+            Filter by team (requires organization owner parameter)
 
         page : typing.Optional[int]
-            page number of results to return (1-based)
+            Page number of results to return (1-based)
 
         limit : typing.Optional[int]
-            page size of results
+            Number of items per page
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -168,10 +172,34 @@ class IssueClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_issues(
         self,
@@ -297,8 +325,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_issue(
         self,
@@ -381,6 +413,9 @@ class IssueClient:
                 "ref": ref,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -416,9 +451,9 @@ class IssueClient:
             if _response.status_code == 412:
                 raise PreconditionFailedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -436,17 +471,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_repo_comments(
         self,
@@ -532,8 +571,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_comment(
         self,
@@ -612,8 +655,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_comment(
         self,
@@ -685,8 +732,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_comment(
         self,
@@ -778,17 +829,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_issue_comment_attachments(
         self,
@@ -857,8 +912,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_issue_comment_attachment(
         self,
@@ -941,9 +1000,9 @@ class IssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -981,17 +1040,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_issue_comment_attachment(
         self,
@@ -1065,8 +1128,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_issue_comment_attachment(
         self,
@@ -1134,17 +1201,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_issue_comment_attachment(
         self,
@@ -1241,17 +1312,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_comment_reactions(
         self,
@@ -1330,8 +1405,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def post_comment_reaction(
         self,
@@ -1417,8 +1496,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_comment_reaction(
         self,
@@ -1497,8 +1580,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_issue(
         self,
@@ -1567,8 +1654,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete(
         self,
@@ -1640,8 +1731,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_issue(
         self,
@@ -1730,6 +1825,9 @@ class IssueClient:
                 "unset_due_date": unset_due_date,
                 "updated_at": updated_at,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1765,17 +1863,21 @@ class IssueClient:
             if _response.status_code == 412:
                 raise PreconditionFailedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_issue_attachments(
         self,
@@ -1844,8 +1946,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_issue_attachment(
         self,
@@ -1928,9 +2034,9 @@ class IssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1968,17 +2074,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_issue_attachment(
         self,
@@ -2052,8 +2162,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_issue_attachment(
         self,
@@ -2121,17 +2235,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_issue_attachment(
         self,
@@ -2228,17 +2346,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_blocks(
         self,
@@ -2319,8 +2441,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_issue_blocking(
         self,
@@ -2404,8 +2530,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def remove_issue_blocking(
         self,
@@ -2489,8 +2619,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_comments(
         self,
@@ -2571,8 +2705,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_comment(
         self,
@@ -2629,6 +2767,9 @@ class IssueClient:
                 "body": body,
                 "updated_at": updated_at,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2664,17 +2805,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_comment_deprecated(
         self,
@@ -2751,8 +2896,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_comment_deprecated(
         self,
@@ -2848,8 +2997,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_issue_deadline(
         self,
@@ -2906,6 +3059,9 @@ class IssueClient:
             json={
                 "due_date": due_date,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2940,8 +3096,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_issue_dependencies(
         self,
@@ -3022,8 +3182,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_issue_dependencies(
         self,
@@ -3108,17 +3272,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def remove_issue_dependencies(
         self,
@@ -3203,17 +3371,21 @@ class IssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_labels(
         self,
@@ -3282,8 +3454,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def add_label(
         self,
@@ -3375,8 +3551,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def replace_labels(
         self,
@@ -3468,8 +3648,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def clear_labels(
         self,
@@ -3548,8 +3732,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def remove_label(
         self,
@@ -3643,8 +3831,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def pin_issue(
         self,
@@ -3716,8 +3908,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def unpin_issue(
         self,
@@ -3789,8 +3985,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def move_issue_pin(
         self,
@@ -3867,8 +4067,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_issue_reactions(
         self,
@@ -3959,8 +4163,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def post_issue_reaction(
         self,
@@ -4046,8 +4254,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_issue_reaction(
         self,
@@ -4126,8 +4338,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_stop_watch(
         self,
@@ -4209,8 +4425,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def start_stop_watch(
         self,
@@ -4292,8 +4512,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def stop_stop_watch(
         self,
@@ -4375,8 +4599,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def subscriptions(
         self,
@@ -4457,8 +4685,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def check_subscription(
         self,
@@ -4527,8 +4759,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def add_subscription(
         self,
@@ -4595,8 +4831,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_subscription(
         self,
@@ -4663,8 +4903,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_comments_and_timeline(
         self,
@@ -4755,8 +4999,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def tracked_times(
         self,
@@ -4852,8 +5100,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def add_time(
         self,
@@ -4916,6 +5168,9 @@ class IssueClient:
                 "time": time,
                 "user_name": user_name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4931,9 +5186,9 @@ class IssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4960,8 +5215,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def reset_time(
         self,
@@ -5014,9 +5273,9 @@ class IssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5043,8 +5302,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_time(
         self,
@@ -5102,9 +5365,9 @@ class IssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5131,8 +5394,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_labels(
         self,
@@ -5208,8 +5475,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_label(
         self,
@@ -5308,8 +5579,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_label(
         self,
@@ -5378,8 +5653,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_label(
         self,
@@ -5441,8 +5720,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_label(
         self,
@@ -5544,8 +5827,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_milestones_list(
         self,
@@ -5631,8 +5918,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_milestone(
         self,
@@ -5691,6 +5982,9 @@ class IssueClient:
                 "state": state,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5715,8 +6009,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_milestone(
         self,
@@ -5785,8 +6083,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_milestone(
         self,
@@ -5848,8 +6150,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_milestone(
         self,
@@ -5913,6 +6219,9 @@ class IssueClient:
                 "state": state,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5937,8 +6246,12 @@ class IssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
 
 class AsyncIssueClient:
@@ -5948,12 +6261,12 @@ class AsyncIssueClient:
     async def search_issues(
         self,
         *,
-        state: typing.Optional[str] = None,
+        state: typing.Optional[IssueSearchIssuesRequestState] = None,
         labels: typing.Optional[str] = None,
         milestones: typing.Optional[str] = None,
         q: typing.Optional[str] = None,
         priority_repo_id: typing.Optional[int] = None,
-        type: typing.Optional[str] = None,
+        type: typing.Optional[IssueSearchIssuesRequestType] = None,
         since: typing.Optional[dt.datetime] = None,
         before: typing.Optional[dt.datetime] = None,
         assigned: typing.Optional[bool] = None,
@@ -5970,56 +6283,56 @@ class AsyncIssueClient:
         """
         Parameters
         ----------
-        state : typing.Optional[str]
-            whether issue is open or closed
+        state : typing.Optional[IssueSearchIssuesRequestState]
+            State of the issue
 
         labels : typing.Optional[str]
-            comma separated list of labels. Fetch only issues that have any of this labels. Non existent labels are discarded
+            Comma-separated list of label names. Fetch only issues that have any of these labels. Non existent labels are discarded.
 
         milestones : typing.Optional[str]
-            comma separated list of milestone names. Fetch only issues that have any of this milestones. Non existent are discarded
+            Comma-separated list of milestone names. Fetch only issues that have any of these milestones. Non existent milestones are discarded.
 
         q : typing.Optional[str]
-            search string
+            Search string
 
         priority_repo_id : typing.Optional[int]
-            repository to prioritize in the results
+            Repository ID to prioritize in the results
 
-        type : typing.Optional[str]
-            filter by type (issues / pulls) if set
+        type : typing.Optional[IssueSearchIssuesRequestType]
+            Filter by issue type
 
         since : typing.Optional[dt.datetime]
-            Only show notifications updated after the given time. This is a timestamp in RFC 3339 format
+            Only show issues updated after the given time (RFC 3339 format)
 
         before : typing.Optional[dt.datetime]
-            Only show notifications updated before the given time. This is a timestamp in RFC 3339 format
+            Only show issues updated before the given time (RFC 3339 format)
 
         assigned : typing.Optional[bool]
-            filter (issues / pulls) assigned to you, default is false
+            Filter issues or pulls assigned to the authenticated user
 
         created : typing.Optional[bool]
-            filter (issues / pulls) created by you, default is false
+            Filter issues or pulls created by the authenticated user
 
         mentioned : typing.Optional[bool]
-            filter (issues / pulls) mentioning you, default is false
+            Filter issues or pulls mentioning the authenticated user
 
         review_requested : typing.Optional[bool]
-            filter pulls requesting your review, default is false
+            Filter pull requests where the authenticated user's review was requested
 
         reviewed : typing.Optional[bool]
-            filter pulls reviewed by you, default is false
+            Filter pull requests reviewed by the authenticated user
 
         owner : typing.Optional[str]
-            filter by owner
+            Filter by repository owner
 
         team : typing.Optional[str]
-            filter by team (requires organization owner parameter to be provided)
+            Filter by team (requires organization owner parameter)
 
         page : typing.Optional[int]
-            page number of results to return (1-based)
+            Page number of results to return (1-based)
 
         limit : typing.Optional[int]
-            page size of results
+            Number of items per page
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -6079,10 +6392,34 @@ class AsyncIssueClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_issues(
         self,
@@ -6216,8 +6553,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_issue(
         self,
@@ -6308,6 +6649,9 @@ class AsyncIssueClient:
                 "ref": ref,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6343,9 +6687,9 @@ class AsyncIssueClient:
             if _response.status_code == 412:
                 raise PreconditionFailedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -6363,17 +6707,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_repo_comments(
         self,
@@ -6467,8 +6815,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_comment(
         self,
@@ -6555,8 +6907,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_comment(
         self,
@@ -6636,8 +6992,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_comment(
         self,
@@ -6737,17 +7097,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_issue_comment_attachments(
         self,
@@ -6824,8 +7188,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_issue_comment_attachment(
         self,
@@ -6916,9 +7284,9 @@ class AsyncIssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -6956,17 +7324,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_issue_comment_attachment(
         self,
@@ -7048,8 +7420,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_issue_comment_attachment(
         self,
@@ -7125,17 +7501,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_issue_comment_attachment(
         self,
@@ -7240,17 +7620,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_comment_reactions(
         self,
@@ -7337,8 +7721,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def post_comment_reaction(
         self,
@@ -7432,8 +7820,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_comment_reaction(
         self,
@@ -7520,8 +7912,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_issue(
         self,
@@ -7598,8 +7994,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete(
         self,
@@ -7679,8 +8079,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_issue(
         self,
@@ -7777,6 +8181,9 @@ class AsyncIssueClient:
                 "unset_due_date": unset_due_date,
                 "updated_at": updated_at,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -7812,17 +8219,21 @@ class AsyncIssueClient:
             if _response.status_code == 412:
                 raise PreconditionFailedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_issue_attachments(
         self,
@@ -7899,8 +8310,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_issue_attachment(
         self,
@@ -7991,9 +8406,9 @@ class AsyncIssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -8031,17 +8446,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_issue_attachment(
         self,
@@ -8123,8 +8542,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_issue_attachment(
         self,
@@ -8200,17 +8623,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_issue_attachment(
         self,
@@ -8315,17 +8742,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_blocks(
         self,
@@ -8414,8 +8845,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_issue_blocking(
         self,
@@ -8507,8 +8942,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def remove_issue_blocking(
         self,
@@ -8600,8 +9039,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_comments(
         self,
@@ -8690,8 +9133,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_comment(
         self,
@@ -8756,6 +9203,9 @@ class AsyncIssueClient:
                 "body": body,
                 "updated_at": updated_at,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -8791,17 +9241,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_comment_deprecated(
         self,
@@ -8886,8 +9340,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_comment_deprecated(
         self,
@@ -8991,8 +9449,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_issue_deadline(
         self,
@@ -9056,6 +9518,9 @@ class AsyncIssueClient:
             json={
                 "due_date": due_date,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -9090,8 +9555,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_issue_dependencies(
         self,
@@ -9180,8 +9649,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_issue_dependencies(
         self,
@@ -9274,17 +9747,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def remove_issue_dependencies(
         self,
@@ -9377,17 +9854,21 @@ class AsyncIssueClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_labels(
         self,
@@ -9464,8 +9945,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def add_label(
         self,
@@ -9565,8 +10050,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def replace_labels(
         self,
@@ -9666,8 +10155,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def clear_labels(
         self,
@@ -9754,8 +10247,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def remove_label(
         self,
@@ -9857,8 +10354,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def pin_issue(
         self,
@@ -9938,8 +10439,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def unpin_issue(
         self,
@@ -10019,8 +10524,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def move_issue_pin(
         self,
@@ -10105,8 +10614,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_issue_reactions(
         self,
@@ -10205,8 +10718,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def post_issue_reaction(
         self,
@@ -10300,8 +10817,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_issue_reaction(
         self,
@@ -10388,8 +10909,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_stop_watch(
         self,
@@ -10479,8 +11004,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def start_stop_watch(
         self,
@@ -10570,8 +11099,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def stop_stop_watch(
         self,
@@ -10661,8 +11194,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def subscriptions(
         self,
@@ -10751,8 +11288,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def check_subscription(
         self,
@@ -10829,8 +11370,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def add_subscription(
         self,
@@ -10905,8 +11450,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_subscription(
         self,
@@ -10981,8 +11530,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_comments_and_timeline(
         self,
@@ -11081,8 +11634,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def tracked_times(
         self,
@@ -11186,8 +11743,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def add_time(
         self,
@@ -11258,6 +11819,9 @@ class AsyncIssueClient:
                 "time": time,
                 "user_name": user_name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -11273,9 +11837,9 @@ class AsyncIssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -11302,8 +11866,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def reset_time(
         self,
@@ -11364,9 +11932,9 @@ class AsyncIssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -11393,8 +11961,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_time(
         self,
@@ -11460,9 +12032,9 @@ class AsyncIssueClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -11489,8 +12061,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_labels(
         self,
@@ -11574,8 +12150,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_label(
         self,
@@ -11682,8 +12262,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_label(
         self,
@@ -11760,8 +12344,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_label(
         self,
@@ -11831,8 +12419,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_label(
         self,
@@ -11942,8 +12534,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_milestones_list(
         self,
@@ -12037,8 +12633,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_milestone(
         self,
@@ -12105,6 +12705,9 @@ class AsyncIssueClient:
                 "state": state,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -12129,8 +12732,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_milestone(
         self,
@@ -12207,8 +12814,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_milestone(
         self,
@@ -12278,8 +12889,12 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_milestone(
         self,
@@ -12351,6 +12966,9 @@ class AsyncIssueClient:
                 "state": state,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -12375,5 +12993,9 @@ class AsyncIssueClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )

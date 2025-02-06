@@ -11,6 +11,12 @@ from .types import (
     AnnotatedTag,
     AnnotatedTagObject,
     ApiError,
+    ApiForbiddenError,
+    ApiInvalidTopicsError,
+    ApiNotFound,
+    ApiRepoArchivedError,
+    ApiUnauthorizedError,
+    ApiValidationError,
     Attachment,
     AttachmentType,
     BlockedUser,
@@ -185,10 +191,12 @@ from .errors import (
     ConflictError,
     ContentTooLargeError,
     ForbiddenError,
+    InternalServerError,
     LockedError,
     MethodNotAllowedError,
     NotFoundError,
     PreconditionFailedError,
+    UnauthorizedError,
     UnprocessableEntityError,
 )
 from . import (
@@ -203,12 +211,15 @@ from . import (
     settings,
     user,
 )
+from .admin import AdminSearchUsersRequestSort
 from .client import AsyncPyforgejoApi, PyforgejoApi
 from .environment import PyforgejoApiEnvironment
 from .issue import (
     CreateMilestoneOptionState,
     IssueListIssuesRequestState,
     IssueListIssuesRequestType,
+    IssueSearchIssuesRequestState,
+    IssueSearchIssuesRequestType,
 )
 from .notification import (
     NotifyGetListRequestSubjectTypeItem,
@@ -247,9 +258,16 @@ __all__ = [
     "ActivityOpType",
     "ActivityPub",
     "AddCollaboratorOptionPermission",
+    "AdminSearchUsersRequestSort",
     "AnnotatedTag",
     "AnnotatedTagObject",
     "ApiError",
+    "ApiForbiddenError",
+    "ApiInvalidTopicsError",
+    "ApiNotFound",
+    "ApiRepoArchivedError",
+    "ApiUnauthorizedError",
+    "ApiValidationError",
     "AsyncPyforgejoApi",
     "Attachment",
     "AttachmentType",
@@ -327,6 +345,7 @@ __all__ = [
     "GpgKeyEmail",
     "Hook",
     "Identity",
+    "InternalServerError",
     "InternalTracker",
     "Issue",
     "IssueConfig",
@@ -340,6 +359,8 @@ __all__ = [
     "IssueListIssuesRequestState",
     "IssueListIssuesRequestType",
     "IssueMeta",
+    "IssueSearchIssuesRequestState",
+    "IssueSearchIssuesRequestType",
     "IssueTemplate",
     "IssueTemplateLabels",
     "Label",
@@ -440,6 +461,7 @@ __all__ = [
     "TopicName",
     "TopicResponse",
     "TrackedTime",
+    "UnauthorizedError",
     "UnprocessableEntityError",
     "UpdateFileOptions",
     "UpdateUserAvatarOption",

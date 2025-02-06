@@ -11,7 +11,7 @@ from ..errors.conflict_error import ConflictError
 from ..errors.content_too_large_error import ContentTooLargeError
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
 from json.decoder import JSONDecodeError
-from ..core.api_error import ApiError
+from ..core.api_error import ApiError as core_api_error_ApiError
 from ..types.search_results import SearchResults
 from ..core.jsonable_encoder import jsonable_encoder
 from ..errors.not_found_error import NotFoundError
@@ -21,12 +21,14 @@ from ..types.internal_tracker import InternalTracker
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..types.secret import Secret
 from ..errors.bad_request_error import BadRequestError
+from ..types.api_error import ApiError as types_api_error_ApiError
 from ..types.action_task_response import ActionTaskResponse
 from ..types.action_variable import ActionVariable
 from ..types.activity import Activity
 from ..types.user import User
 from ..types.branch_protection import BranchProtection
 from ..errors.locked_error import LockedError
+from ..types.api_repo_archived_error import ApiRepoArchivedError
 from ..types.branch import Branch
 from .types.add_collaborator_option_permission import AddCollaboratorOptionPermission
 from ..types.repo_collaborator_permission import RepoCollaboratorPermission
@@ -70,6 +72,7 @@ from .types.repo_list_pull_requests_request_state import (
     RepoListPullRequestsRequestState,
 )
 from .types.repo_list_pull_requests_request_sort import RepoListPullRequestsRequestSort
+from ..errors.internal_server_error import InternalServerError
 import datetime as dt
 from ..errors.precondition_failed_error import PreconditionFailedError
 from .types.repo_download_pull_diff_or_patch_request_diff_type import (
@@ -110,6 +113,8 @@ from ..types.create_repo_option_object_format_name import (
     CreateRepoOptionObjectFormatName,
 )
 from ..types.create_repo_option_trust_model import CreateRepoOptionTrustModel
+from ..errors.unauthorized_error import UnauthorizedError
+from ..types.api_unauthorized_error import ApiUnauthorizedError
 from ..core.client_wrapper import AsyncClientWrapper
 
 # this is used as the default value for optional parameters
@@ -235,6 +240,9 @@ class RepositoryClient:
                 "uid": uid,
                 "wiki": wiki,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -289,8 +297,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_search(
         self,
@@ -430,8 +442,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get(
         self,
@@ -495,8 +511,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete(
         self,
@@ -563,8 +583,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit(
         self,
@@ -584,6 +608,7 @@ class RepositoryClient:
         default_branch: typing.Optional[str] = OMIT,
         default_delete_branch_after_merge: typing.Optional[bool] = OMIT,
         default_merge_style: typing.Optional[str] = OMIT,
+        default_update_style: typing.Optional[str] = OMIT,
         description: typing.Optional[str] = OMIT,
         enable_prune: typing.Optional[bool] = OMIT,
         external_tracker: typing.Optional[ExternalTracker] = OMIT,
@@ -653,6 +678,9 @@ class RepositoryClient:
 
         default_merge_style : typing.Optional[str]
             set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
+
+        default_update_style : typing.Optional[str]
+            set to a update style to be used by this repository: "rebase" or "merge"
 
         description : typing.Optional[str]
             a short description of the repository.
@@ -750,6 +778,7 @@ class RepositoryClient:
                 "default_branch": default_branch,
                 "default_delete_branch_after_merge": default_delete_branch_after_merge,
                 "default_merge_style": default_merge_style,
+                "default_update_style": default_update_style,
                 "description": description,
                 "enable_prune": enable_prune,
                 "external_tracker": convert_and_respect_annotation_metadata(
@@ -780,6 +809,9 @@ class RepositoryClient:
                 "template": template,
                 "website": website,
                 "wiki_branch": wiki_branch,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -825,8 +857,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_runner_registration_token(
         self,
@@ -873,8 +909,12 @@ class RepositoryClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_actions_secrets(
         self,
@@ -950,8 +990,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_repo_secret(
         self,
@@ -1013,9 +1057,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1032,8 +1076,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_repo_secret(
         self,
@@ -1086,9 +1134,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1105,8 +1153,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_action_tasks(
         self,
@@ -1173,9 +1225,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1222,8 +1274,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_repo_variables_list(
         self,
@@ -1290,9 +1346,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1309,8 +1365,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_repo_variable(
         self,
@@ -1370,9 +1430,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1389,8 +1449,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_repo_variable(
         self,
@@ -1452,9 +1516,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1471,8 +1535,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_repo_variable(
         self,
@@ -1539,9 +1607,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1558,8 +1626,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_repo_variable(
         self,
@@ -1619,9 +1691,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1638,8 +1710,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def dispatch_workflow(
         self,
@@ -1697,6 +1773,9 @@ class RepositoryClient:
                 "inputs": inputs,
                 "ref": ref,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1715,8 +1794,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_activity_feeds(
         self,
@@ -1797,8 +1880,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_archive(
         self,
@@ -1860,8 +1947,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_assignees(
         self,
@@ -1925,8 +2016,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_update_avatar(
         self,
@@ -1973,6 +2068,9 @@ class RepositoryClient:
             json={
                 "image": image,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1991,8 +2089,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_avatar(
         self,
@@ -2049,8 +2151,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_branch_protection(
         self,
@@ -2104,8 +2210,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_branch_protection(
         self,
@@ -2249,6 +2359,9 @@ class RepositoryClient:
                 "status_check_contexts": status_check_contexts,
                 "unprotected_file_patterns": unprotected_file_patterns,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2294,17 +2407,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_branch_protection(
         self,
@@ -2373,8 +2490,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_branch_protection(
         self,
@@ -2436,8 +2557,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_branch_protection(
         self,
@@ -2577,6 +2702,9 @@ class RepositoryClient:
                 "status_check_contexts": status_check_contexts,
                 "unprotected_file_patterns": unprotected_file_patterns,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2612,17 +2740,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_branches(
         self,
@@ -2688,8 +2820,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_branch(
         self,
@@ -2749,6 +2885,9 @@ class RepositoryClient:
                 "old_branch_name": old_branch_name,
                 "old_ref_name": old_ref_name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2804,17 +2943,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_branch(
         self,
@@ -2883,8 +3026,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_branch(
         self,
@@ -2957,6 +3104,105 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
+                        ApiRepoArchivedError,
+                        parse_obj_as(
+                            type_=ApiRepoArchivedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
+
+    def repo_update_branch(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        name: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            name of the branch
+
+        name : str
+            New branch name
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_update_branch(
+            owner="owner",
+            repo="repo",
+            branch="branch",
+            name="name",
+        )
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/branches/{jsonable_encoder(branch)}",
+            method="PATCH",
+            json={
+                "name": name,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -2966,8 +3212,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_collaborators(
         self,
@@ -3043,8 +3293,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_check_collaborator(
         self,
@@ -3116,8 +3370,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_add_collaborator(
         self,
@@ -3168,6 +3426,9 @@ class RepositoryClient:
             json={
                 "permission": permission,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -3206,8 +3467,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_collaborator(
         self,
@@ -3279,8 +3544,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_repo_permissions(
         self,
@@ -3359,8 +3628,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_all_commits(
         self,
@@ -3476,8 +3749,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_combined_status_by_ref(
         self,
@@ -3549,9 +3826,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -3568,8 +3845,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_statuses_by_ref(
         self,
@@ -3651,9 +3932,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -3670,8 +3951,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_commit_pull_request(
         self,
@@ -3740,8 +4025,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_compare_diff(
         self,
@@ -3810,8 +4099,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_contents_list(
         self,
@@ -3882,8 +4175,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_change_files(
         self,
@@ -3979,6 +4276,9 @@ class RepositoryClient:
                 "new_branch": new_branch,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4034,17 +4334,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_contents(
         self,
@@ -4120,8 +4424,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_file(
         self,
@@ -4213,6 +4521,9 @@ class RepositoryClient:
                 "new_branch": new_branch,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4268,17 +4579,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_update_file(
         self,
@@ -4436,17 +4751,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_file(
         self,
@@ -4538,6 +4857,9 @@ class RepositoryClient:
                 "sha": sha,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4553,9 +4875,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4593,17 +4915,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_apply_diff_patch(
         self,
@@ -4736,17 +5062,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_editor_config(
         self,
@@ -4815,8 +5145,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_flags(
         self,
@@ -4890,8 +5224,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_replace_all_flags(
         self,
@@ -4937,6 +5275,9 @@ class RepositoryClient:
             json={
                 "flags": flags,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4965,8 +5306,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_all_flags(
         self,
@@ -5033,8 +5378,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_check_flag(
         self,
@@ -5106,8 +5455,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_add_flag(
         self,
@@ -5179,8 +5532,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_flag(
         self,
@@ -5252,8 +5609,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_forks(
         self,
@@ -5329,8 +5690,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_fork(
         self,
@@ -5382,6 +5747,9 @@ class RepositoryClient:
             json={
                 "name": name,
                 "organization": organization,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -5447,8 +5815,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_blob(
         self,
@@ -5508,9 +5880,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5527,8 +5899,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_single_commit(
         self,
@@ -5624,8 +6000,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_download_commit_diff_or_patch(
         self,
@@ -5699,8 +6079,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_note(
         self,
@@ -5791,8 +6175,183 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
+
+    def repo_set_note(
+        self,
+        owner: str,
+        repo: str,
+        sha: str,
+        *,
+        message: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Note:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        sha : str
+            a git ref or commit sha
+
+        message : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Note
+            Note
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_set_note(
+            owner="owner",
+            repo="repo",
+            sha="sha",
+        )
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/notes/{jsonable_encoder(sha)}",
+            method="POST",
+            json={
+                "message": message,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return typing.cast(
+                    Note,
+                    parse_obj_as(
+                        type_=Note,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
+
+    def repo_remove_note(
+        self,
+        owner: str,
+        repo: str,
+        sha: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        sha : str
+            a git ref or commit sha
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_remove_note(
+            owner="owner",
+            repo="repo",
+            sha="sha",
+        )
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/notes/{jsonable_encoder(sha)}",
+            method="DELETE",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_all_git_refs(
         self,
@@ -5856,8 +6415,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_git_refs(
         self,
@@ -5926,8 +6489,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_annotated_tag(
         self,
@@ -5987,9 +6554,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -6006,8 +6573,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_tree(
         self,
@@ -6084,9 +6655,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -6103,8 +6674,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_hooks(
         self,
@@ -6180,8 +6755,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_hook(
         self,
@@ -6274,8 +6853,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_git_hooks(
         self,
@@ -6339,8 +6922,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_git_hook(
         self,
@@ -6409,8 +6996,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_git_hook(
         self,
@@ -6472,8 +7063,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_git_hook(
         self,
@@ -6525,6 +7120,9 @@ class RepositoryClient:
             json={
                 "content": content,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6549,8 +7147,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_hook(
         self,
@@ -6619,8 +7221,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_hook(
         self,
@@ -6682,8 +7288,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_hook(
         self,
@@ -6775,8 +7385,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_test_hook(
         self,
@@ -6845,8 +7459,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_issue_config(
         self,
@@ -6910,8 +7528,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_validate_issue_config(
         self,
@@ -6975,8 +7597,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_issue_templates(
         self,
@@ -7040,8 +7666,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_pinned_issues(
         self,
@@ -7105,8 +7735,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_keys(
         self,
@@ -7192,8 +7826,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_key(
         self,
@@ -7287,8 +7925,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_key(
         self,
@@ -7357,8 +7999,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_key(
         self,
@@ -7430,8 +8076,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_languages(
         self,
@@ -7495,8 +8145,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_raw_file_or_lfs(
         self,
@@ -7523,26 +8177,12 @@ class RepositoryClient:
             The name of the commit/branch/tag. Default the repository’s default branch (usually master)
 
         request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
+            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
 
         Yields
         ------
         typing.Iterator[bytes]
             Returns raw file content.
-
-        Examples
-        --------
-        from pyforgejo import PyforgejoApi
-
-        client = PyforgejoApi(
-            api_key="YOUR_API_KEY",
-        )
-        client.repository.repo_get_raw_file_or_lfs(
-            owner="string",
-            repo="string",
-            filepath="string",
-            ref="string",
-        )
         """
         with self._client_wrapper.httpx_client.stream(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/media/{jsonable_encoder(filepath)}",
@@ -7554,7 +8194,12 @@ class RepositoryClient:
         ) as _response:
             try:
                 if 200 <= _response.status_code < 300:
-                    for _chunk in _response.iter_bytes():
+                    _chunk_size = (
+                        request_options.get("chunk_size", None)
+                        if request_options is not None
+                        else None
+                    )
+                    for _chunk in _response.iter_bytes(chunk_size=_chunk_size):
                         yield _chunk
                     return
                 _response.read()
@@ -7570,8 +8215,12 @@ class RepositoryClient:
                     )
                 _response_json = _response.json()
             except JSONDecodeError:
-                raise ApiError(status_code=_response.status_code, body=_response.text)
-            raise ApiError(status_code=_response.status_code, body=_response_json)
+                raise core_api_error_ApiError(
+                    status_code=_response.status_code, body=_response.text
+                )
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response_json
+            )
 
     def repo_mirror_sync(
         self,
@@ -7648,8 +8297,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_new_pin_allowed(
         self,
@@ -7713,8 +8366,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_pull_requests(
         self,
@@ -7725,6 +8382,7 @@ class RepositoryClient:
         sort: typing.Optional[RepoListPullRequestsRequestSort] = None,
         milestone: typing.Optional[int] = None,
         labels: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None,
+        poster: typing.Optional[str] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -7733,13 +8391,13 @@ class RepositoryClient:
         Parameters
         ----------
         owner : str
-            owner of the repo
+            Owner of the repo
 
         repo : str
-            name of the repo
+            Name of the repo
 
         state : typing.Optional[RepoListPullRequestsRequestState]
-            State of pull request: open or closed (optional)
+            State of pull request
 
         sort : typing.Optional[RepoListPullRequestsRequestSort]
             Type of sort
@@ -7750,11 +8408,14 @@ class RepositoryClient:
         labels : typing.Optional[typing.Union[int, typing.Sequence[int]]]
             Label IDs
 
+        poster : typing.Optional[str]
+            Filter by pull request author
+
         page : typing.Optional[int]
-            page number of results to return (1-based)
+            Page number of results to return (1-based)
 
         limit : typing.Optional[int]
-            page size of results
+            Page size of results
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -7784,6 +8445,7 @@ class RepositoryClient:
                 "sort": sort,
                 "milestone": milestone,
                 "labels": labels,
+                "poster": poster,
                 "page": page,
                 "limit": limit,
             },
@@ -7808,10 +8470,24 @@ class RepositoryClient:
                         ),
                     )
                 )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_pull_request(
         self,
@@ -7890,6 +8566,9 @@ class RepositoryClient:
                 "milestone": milestone,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -7945,17 +8624,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_pinned_pull_requests(
         self,
@@ -8019,8 +8702,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_pull_request_by_base_head(
         self,
@@ -8094,8 +8781,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_pull_request(
         self,
@@ -8164,8 +8855,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_pull_request(
         self,
@@ -8257,6 +8952,9 @@ class RepositoryClient:
                 "title": title,
                 "unset_due_date": unset_due_date,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -8302,9 +9000,9 @@ class RepositoryClient:
             if _response.status_code == 412:
                 raise PreconditionFailedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -8321,8 +9019,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_download_pull_diff_or_patch(
         self,
@@ -8403,8 +9105,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_pull_request_commits(
         self,
@@ -8495,8 +9201,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_pull_request_files(
         self,
@@ -8587,8 +9297,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_pull_request_is_merged(
         self,
@@ -8650,8 +9364,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_merge_pull_request(
         self,
@@ -8731,6 +9449,9 @@ class RepositoryClient:
                 "head_commit_id": head_commit_id,
                 "merge_when_checks_succeed": merge_when_checks_succeed,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -8780,17 +9501,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_cancel_scheduled_auto_merge(
         self,
@@ -8863,17 +9588,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_pull_review_requests(
         self,
@@ -8963,8 +9692,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_pull_review_requests(
         self,
@@ -9057,8 +9790,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_pull_reviews(
         self,
@@ -9139,8 +9876,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_pull_review(
         self,
@@ -9208,6 +9949,9 @@ class RepositoryClient:
                 "commit_id": commit_id,
                 "event": event,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -9242,8 +9986,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_pull_review(
         self,
@@ -9317,8 +10065,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_submit_pull_review(
         self,
@@ -9379,6 +10131,9 @@ class RepositoryClient:
                 "body": body,
                 "event": event,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -9413,8 +10168,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_pull_review(
         self,
@@ -9491,8 +10250,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_pull_review_comments(
         self,
@@ -9566,8 +10329,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_pull_review_comment(
         self,
@@ -9673,8 +10440,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_pull_review_comment(
         self,
@@ -9763,8 +10534,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_pull_review_comment(
         self,
@@ -9846,8 +10621,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_dismiss_pull_review(
         self,
@@ -9908,6 +10687,9 @@ class RepositoryClient:
                 "message": message,
                 "priors": priors,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -9952,8 +10734,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_un_dismiss_pull_review(
         self,
@@ -10047,8 +10833,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_update_pull_request(
         self,
@@ -10157,8 +10947,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_push_mirrors(
         self,
@@ -10225,9 +11019,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -10254,8 +11048,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_add_push_mirror(
         self,
@@ -10322,6 +11120,9 @@ class RepositoryClient:
                 "sync_on_commit": sync_on_commit,
                 "use_ssh": use_ssh,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -10337,9 +11138,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -10376,8 +11177,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_push_mirror_sync(
         self,
@@ -10425,9 +11230,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -10464,8 +11269,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_push_mirror_by_remote_name(
         self,
@@ -10525,9 +11334,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -10554,8 +11363,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_push_mirror(
         self,
@@ -10608,9 +11421,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -10627,8 +11440,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_raw_file(
         self,
@@ -10655,26 +11472,12 @@ class RepositoryClient:
             The name of the commit/branch/tag. Default the repository’s default branch (usually master)
 
         request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
+            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
 
         Yields
         ------
         typing.Iterator[bytes]
             Returns raw file content.
-
-        Examples
-        --------
-        from pyforgejo import PyforgejoApi
-
-        client = PyforgejoApi(
-            api_key="YOUR_API_KEY",
-        )
-        client.repository.repo_get_raw_file(
-            owner="string",
-            repo="string",
-            filepath="string",
-            ref="string",
-        )
         """
         with self._client_wrapper.httpx_client.stream(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/raw/{jsonable_encoder(filepath)}",
@@ -10686,7 +11489,12 @@ class RepositoryClient:
         ) as _response:
             try:
                 if 200 <= _response.status_code < 300:
-                    for _chunk in _response.iter_bytes():
+                    _chunk_size = (
+                        request_options.get("chunk_size", None)
+                        if request_options is not None
+                        else None
+                    )
+                    for _chunk in _response.iter_bytes(chunk_size=_chunk_size):
                         yield _chunk
                     return
                 _response.read()
@@ -10702,8 +11510,12 @@ class RepositoryClient:
                     )
                 _response_json = _response.json()
             except JSONDecodeError:
-                raise ApiError(status_code=_response.status_code, body=_response.text)
-            raise ApiError(status_code=_response.status_code, body=_response_json)
+                raise core_api_error_ApiError(
+                    status_code=_response.status_code, body=_response.text
+                )
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response_json
+            )
 
     def repo_list_releases(
         self,
@@ -10712,6 +11524,7 @@ class RepositoryClient:
         *,
         draft: typing.Optional[bool] = None,
         pre_release: typing.Optional[bool] = None,
+        q: typing.Optional[str] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -10730,6 +11543,9 @@ class RepositoryClient:
 
         pre_release : typing.Optional[bool]
             filter (exclude / include) pre-releases
+
+        q : typing.Optional[str]
+            Search string
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -10763,6 +11579,7 @@ class RepositoryClient:
             params={
                 "draft": draft,
                 "pre-release": pre_release,
+                "q": q,
                 "page": page,
                 "limit": limit,
             },
@@ -10789,8 +11606,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_release(
         self,
@@ -10862,6 +11683,9 @@ class RepositoryClient:
                 "tag_name": tag_name,
                 "target_commitish": target_commitish,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -10906,8 +11730,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_latest_release(
         self,
@@ -10971,8 +11799,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_release_by_tag(
         self,
@@ -11041,8 +11873,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_release_by_tag(
         self,
@@ -11114,8 +11950,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_release(
         self,
@@ -11184,8 +12024,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_release(
         self,
@@ -11257,8 +12101,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_release(
         self,
@@ -11334,6 +12182,9 @@ class RepositoryClient:
                 "tag_name": tag_name,
                 "target_commitish": target_commitish,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -11358,8 +12209,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_release_attachments(
         self,
@@ -11428,8 +12283,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_release_attachment(
         self,
@@ -11511,9 +12370,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -11540,8 +12399,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_release_attachment(
         self,
@@ -11615,8 +12478,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_release_attachment(
         self,
@@ -11683,8 +12550,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_release_attachment(
         self,
@@ -11780,8 +12651,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_reviewers(
         self,
@@ -11845,8 +12720,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_signing_key(
         self,
@@ -11880,8 +12759,8 @@ class RepositoryClient:
             api_key="YOUR_API_KEY",
         )
         client.repository.repo_signing_key(
-            owner="string",
-            repo="string",
+            owner="owner",
+            repo="repo",
         )
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -11894,8 +12773,12 @@ class RepositoryClient:
                 return _response.text  # type: ignore
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_stargazers(
         self,
@@ -11971,8 +12854,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_statuses(
         self,
@@ -12054,9 +12941,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -12073,8 +12960,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_status(
         self,
@@ -12138,6 +13029,9 @@ class RepositoryClient:
                 "state": state,
                 "target_url": target_url,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -12153,9 +13047,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -12172,8 +13066,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_subscribers(
         self,
@@ -12249,8 +13147,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_current_check_subscription(
         self,
@@ -12314,8 +13216,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_current_put_subscription(
         self,
@@ -12379,8 +13285,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_current_delete_subscription(
         self,
@@ -12437,8 +13347,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_tag_protection(
         self,
@@ -12492,8 +13406,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_tag_protection(
         self,
@@ -12548,6 +13466,9 @@ class RepositoryClient:
                 "whitelist_teams": whitelist_teams,
                 "whitelist_usernames": whitelist_usernames,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -12593,17 +13514,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_tag_protection(
         self,
@@ -12672,8 +13597,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_tag_protection(
         self,
@@ -12735,8 +13664,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_tag_protection(
         self,
@@ -12796,6 +13729,9 @@ class RepositoryClient:
                 "whitelist_teams": whitelist_teams,
                 "whitelist_usernames": whitelist_usernames,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -12831,17 +13767,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_tags(
         self,
@@ -12917,8 +13857,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_tag(
         self,
@@ -12973,6 +13917,9 @@ class RepositoryClient:
                 "message": message,
                 "tag_name": tag_name,
                 "target": target,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -13039,17 +13986,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_tag(
         self,
@@ -13118,8 +14069,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_tag(
         self,
@@ -13212,17 +14167,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_teams(
         self,
@@ -13286,8 +14245,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_check_team(
         self,
@@ -13366,8 +14329,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_add_team(
         self,
@@ -13449,8 +14416,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_team(
         self,
@@ -13532,8 +14503,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_tracked_times(
         self,
@@ -13615,9 +14590,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -13644,8 +14619,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def user_tracked_times(
         self,
@@ -13705,9 +14684,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -13734,8 +14713,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_list_topics(
         self,
@@ -13811,8 +14794,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_update_topics(
         self,
@@ -13859,6 +14846,9 @@ class RepositoryClient:
             json={
                 "topics": topics,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -13887,8 +14877,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_add_topic(
         self,
@@ -13960,8 +14954,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_topic(
         self,
@@ -14033,8 +15031,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_transfer(
         self,
@@ -14086,6 +15088,9 @@ class RepositoryClient:
             json={
                 "new_owner": new_owner,
                 "team_ids": team_ids,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -14141,8 +15146,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def accept_repo_transfer(
         self,
@@ -14226,8 +15235,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def reject_repo_transfer(
         self,
@@ -14301,8 +15314,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_create_wiki_page(
         self,
@@ -14375,9 +15392,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -14415,17 +15432,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_wiki_page(
         self,
@@ -14494,8 +15515,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_delete_wiki_page(
         self,
@@ -14568,17 +15593,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_edit_wiki_page(
         self,
@@ -14656,9 +15685,9 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -14696,17 +15725,21 @@ class RepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_wiki_pages(
         self,
@@ -14782,8 +15815,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_wiki_page_revisions(
         self,
@@ -14859,8 +15896,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def generate_repo(
         self,
@@ -14965,6 +16006,9 @@ class RepositoryClient:
                 "topics": topics,
                 "webhooks": webhooks,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -15029,8 +16073,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def repo_get_by_id(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -15086,8 +16134,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def topic_search(
         self,
@@ -15169,8 +16221,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_current_user_repo(
         self,
@@ -15279,6 +16335,26 @@ class RepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -15318,8 +16394,12 @@ class RepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
 
 class AsyncRepositoryClient:
@@ -15449,6 +16529,9 @@ class AsyncRepositoryClient:
                 "uid": uid,
                 "wiki": wiki,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -15503,8 +16586,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_search(
         self,
@@ -15652,8 +16739,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get(
         self,
@@ -15725,8 +16816,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete(
         self,
@@ -15801,8 +16896,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit(
         self,
@@ -15822,6 +16921,7 @@ class AsyncRepositoryClient:
         default_branch: typing.Optional[str] = OMIT,
         default_delete_branch_after_merge: typing.Optional[bool] = OMIT,
         default_merge_style: typing.Optional[str] = OMIT,
+        default_update_style: typing.Optional[str] = OMIT,
         description: typing.Optional[str] = OMIT,
         enable_prune: typing.Optional[bool] = OMIT,
         external_tracker: typing.Optional[ExternalTracker] = OMIT,
@@ -15891,6 +16991,9 @@ class AsyncRepositoryClient:
 
         default_merge_style : typing.Optional[str]
             set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
+
+        default_update_style : typing.Optional[str]
+            set to a update style to be used by this repository: "rebase" or "merge"
 
         description : typing.Optional[str]
             a short description of the repository.
@@ -15996,6 +17099,7 @@ class AsyncRepositoryClient:
                 "default_branch": default_branch,
                 "default_delete_branch_after_merge": default_delete_branch_after_merge,
                 "default_merge_style": default_merge_style,
+                "default_update_style": default_update_style,
                 "description": description,
                 "enable_prune": enable_prune,
                 "external_tracker": convert_and_respect_annotation_metadata(
@@ -16026,6 +17130,9 @@ class AsyncRepositoryClient:
                 "template": template,
                 "website": website,
                 "wiki_branch": wiki_branch,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -16071,8 +17178,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_runner_registration_token(
         self,
@@ -16127,8 +17238,12 @@ class AsyncRepositoryClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_actions_secrets(
         self,
@@ -16212,8 +17327,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_repo_secret(
         self,
@@ -16283,9 +17402,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16302,8 +17421,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_repo_secret(
         self,
@@ -16364,9 +17487,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16383,8 +17506,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_action_tasks(
         self,
@@ -16459,9 +17586,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16508,8 +17635,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_repo_variables_list(
         self,
@@ -16584,9 +17715,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16603,8 +17734,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_repo_variable(
         self,
@@ -16672,9 +17807,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16691,8 +17826,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_repo_variable(
         self,
@@ -16762,9 +17901,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16781,8 +17920,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_repo_variable(
         self,
@@ -16857,9 +18000,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16876,8 +18019,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_repo_variable(
         self,
@@ -16945,9 +18092,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -16964,8 +18111,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def dispatch_workflow(
         self,
@@ -17031,6 +18182,9 @@ class AsyncRepositoryClient:
                 "inputs": inputs,
                 "ref": ref,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -17049,8 +18203,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_activity_feeds(
         self,
@@ -17139,8 +18297,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_archive(
         self,
@@ -17210,8 +18372,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_assignees(
         self,
@@ -17283,8 +18449,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_update_avatar(
         self,
@@ -17339,6 +18509,9 @@ class AsyncRepositoryClient:
             json={
                 "image": image,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -17357,8 +18530,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_avatar(
         self,
@@ -17423,8 +18600,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_branch_protection(
         self,
@@ -17486,8 +18667,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_branch_protection(
         self,
@@ -17639,6 +18824,9 @@ class AsyncRepositoryClient:
                 "status_check_contexts": status_check_contexts,
                 "unprotected_file_patterns": unprotected_file_patterns,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -17684,17 +18872,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_branch_protection(
         self,
@@ -17771,8 +18963,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_branch_protection(
         self,
@@ -17842,8 +19038,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_branch_protection(
         self,
@@ -17991,6 +19191,9 @@ class AsyncRepositoryClient:
                 "status_check_contexts": status_check_contexts,
                 "unprotected_file_patterns": unprotected_file_patterns,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -18026,17 +19229,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_branches(
         self,
@@ -18110,8 +19317,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_branch(
         self,
@@ -18179,6 +19390,9 @@ class AsyncRepositoryClient:
                 "old_branch_name": old_branch_name,
                 "old_ref_name": old_ref_name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -18234,17 +19448,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_branch(
         self,
@@ -18321,8 +19539,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_branch(
         self,
@@ -18403,6 +19625,113 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
+                        ApiRepoArchivedError,
+                        parse_obj_as(
+                            type_=ApiRepoArchivedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
+
+    async def repo_update_branch(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        name: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            name of the branch
+
+        name : str
+            New branch name
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_update_branch(
+                owner="owner",
+                repo="repo",
+                branch="branch",
+                name="name",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/branches/{jsonable_encoder(branch)}",
+            method="PATCH",
+            json={
+                "name": name,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -18412,8 +19741,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_collaborators(
         self,
@@ -18497,8 +19830,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_check_collaborator(
         self,
@@ -18578,8 +19915,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_add_collaborator(
         self,
@@ -18638,6 +19979,9 @@ class AsyncRepositoryClient:
             json={
                 "permission": permission,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -18676,8 +20020,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_collaborator(
         self,
@@ -18757,8 +20105,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_repo_permissions(
         self,
@@ -18845,8 +20197,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_all_commits(
         self,
@@ -18970,8 +20326,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_combined_status_by_ref(
         self,
@@ -19051,9 +20411,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -19070,8 +20430,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_statuses_by_ref(
         self,
@@ -19161,9 +20525,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -19180,8 +20544,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_commit_pull_request(
         self,
@@ -19258,8 +20626,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_compare_diff(
         self,
@@ -19336,8 +20708,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_contents_list(
         self,
@@ -19416,8 +20792,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_change_files(
         self,
@@ -19521,6 +20901,9 @@ class AsyncRepositoryClient:
                 "new_branch": new_branch,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -19576,17 +20959,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_contents(
         self,
@@ -19670,8 +21057,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_file(
         self,
@@ -19771,6 +21162,9 @@ class AsyncRepositoryClient:
                 "new_branch": new_branch,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -19826,17 +21220,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_update_file(
         self,
@@ -20002,17 +21400,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_file(
         self,
@@ -20112,6 +21514,9 @@ class AsyncRepositoryClient:
                 "sha": sha,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -20127,9 +21532,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -20167,17 +21572,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_apply_diff_patch(
         self,
@@ -20318,17 +21727,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_editor_config(
         self,
@@ -20405,8 +21818,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_flags(
         self,
@@ -20488,8 +21905,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_replace_all_flags(
         self,
@@ -20543,6 +21964,9 @@ class AsyncRepositoryClient:
             json={
                 "flags": flags,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -20571,8 +21995,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_all_flags(
         self,
@@ -20647,8 +22075,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_check_flag(
         self,
@@ -20728,8 +22160,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_add_flag(
         self,
@@ -20809,8 +22245,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_flag(
         self,
@@ -20890,8 +22330,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_forks(
         self,
@@ -20975,8 +22419,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_fork(
         self,
@@ -21036,6 +22484,9 @@ class AsyncRepositoryClient:
             json={
                 "name": name,
                 "organization": organization,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -21101,8 +22552,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_blob(
         self,
@@ -21170,9 +22625,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -21189,8 +22644,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_single_commit(
         self,
@@ -21294,8 +22753,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_download_commit_diff_or_patch(
         self,
@@ -21377,8 +22840,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_note(
         self,
@@ -21477,8 +22944,199 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
+
+    async def repo_set_note(
+        self,
+        owner: str,
+        repo: str,
+        sha: str,
+        *,
+        message: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Note:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        sha : str
+            a git ref or commit sha
+
+        message : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Note
+            Note
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_set_note(
+                owner="owner",
+                repo="repo",
+                sha="sha",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/notes/{jsonable_encoder(sha)}",
+            method="POST",
+            json={
+                "message": message,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return typing.cast(
+                    Note,
+                    parse_obj_as(
+                        type_=Note,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
+
+    async def repo_remove_note(
+        self,
+        owner: str,
+        repo: str,
+        sha: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        sha : str
+            a git ref or commit sha
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_remove_note(
+                owner="owner",
+                repo="repo",
+                sha="sha",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/notes/{jsonable_encoder(sha)}",
+            method="DELETE",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_all_git_refs(
         self,
@@ -21550,8 +23208,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_git_refs(
         self,
@@ -21628,8 +23290,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_annotated_tag(
         self,
@@ -21697,9 +23363,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -21716,8 +23382,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_tree(
         self,
@@ -21802,9 +23472,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -21821,8 +23491,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_hooks(
         self,
@@ -21906,8 +23580,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_hook(
         self,
@@ -22008,8 +23686,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_git_hooks(
         self,
@@ -22081,8 +23763,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_git_hook(
         self,
@@ -22159,8 +23845,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_git_hook(
         self,
@@ -22230,8 +23920,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_git_hook(
         self,
@@ -22291,6 +23985,9 @@ class AsyncRepositoryClient:
             json={
                 "content": content,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -22315,8 +24012,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_hook(
         self,
@@ -22393,8 +24094,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_hook(
         self,
@@ -22464,8 +24169,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_hook(
         self,
@@ -22565,8 +24274,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_test_hook(
         self,
@@ -22643,8 +24356,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_issue_config(
         self,
@@ -22716,8 +24433,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_validate_issue_config(
         self,
@@ -22789,8 +24510,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_issue_templates(
         self,
@@ -22862,8 +24587,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_pinned_issues(
         self,
@@ -22935,8 +24664,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_keys(
         self,
@@ -23030,8 +24763,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_key(
         self,
@@ -23133,8 +24870,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_key(
         self,
@@ -23211,8 +24952,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_key(
         self,
@@ -23292,8 +25037,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_languages(
         self,
@@ -23365,8 +25114,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_raw_file_or_lfs(
         self,
@@ -23393,34 +25146,12 @@ class AsyncRepositoryClient:
             The name of the commit/branch/tag. Default the repository’s default branch (usually master)
 
         request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
+            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
 
         Yields
         ------
         typing.AsyncIterator[bytes]
             Returns raw file content.
-
-        Examples
-        --------
-        import asyncio
-
-        from pyforgejo import AsyncPyforgejoApi
-
-        client = AsyncPyforgejoApi(
-            api_key="YOUR_API_KEY",
-        )
-
-
-        async def main() -> None:
-            await client.repository.repo_get_raw_file_or_lfs(
-                owner="string",
-                repo="string",
-                filepath="string",
-                ref="string",
-            )
-
-
-        asyncio.run(main())
         """
         async with self._client_wrapper.httpx_client.stream(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/media/{jsonable_encoder(filepath)}",
@@ -23432,7 +25163,12 @@ class AsyncRepositoryClient:
         ) as _response:
             try:
                 if 200 <= _response.status_code < 300:
-                    async for _chunk in _response.aiter_bytes():
+                    _chunk_size = (
+                        request_options.get("chunk_size", None)
+                        if request_options is not None
+                        else None
+                    )
+                    async for _chunk in _response.aiter_bytes(chunk_size=_chunk_size):
                         yield _chunk
                     return
                 await _response.aread()
@@ -23448,8 +25184,12 @@ class AsyncRepositoryClient:
                     )
                 _response_json = _response.json()
             except JSONDecodeError:
-                raise ApiError(status_code=_response.status_code, body=_response.text)
-            raise ApiError(status_code=_response.status_code, body=_response_json)
+                raise core_api_error_ApiError(
+                    status_code=_response.status_code, body=_response.text
+                )
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response_json
+            )
 
     async def repo_mirror_sync(
         self,
@@ -23534,8 +25274,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_new_pin_allowed(
         self,
@@ -23607,8 +25351,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_pull_requests(
         self,
@@ -23619,6 +25367,7 @@ class AsyncRepositoryClient:
         sort: typing.Optional[RepoListPullRequestsRequestSort] = None,
         milestone: typing.Optional[int] = None,
         labels: typing.Optional[typing.Union[int, typing.Sequence[int]]] = None,
+        poster: typing.Optional[str] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -23627,13 +25376,13 @@ class AsyncRepositoryClient:
         Parameters
         ----------
         owner : str
-            owner of the repo
+            Owner of the repo
 
         repo : str
-            name of the repo
+            Name of the repo
 
         state : typing.Optional[RepoListPullRequestsRequestState]
-            State of pull request: open or closed (optional)
+            State of pull request
 
         sort : typing.Optional[RepoListPullRequestsRequestSort]
             Type of sort
@@ -23644,11 +25393,14 @@ class AsyncRepositoryClient:
         labels : typing.Optional[typing.Union[int, typing.Sequence[int]]]
             Label IDs
 
+        poster : typing.Optional[str]
+            Filter by pull request author
+
         page : typing.Optional[int]
-            page number of results to return (1-based)
+            Page number of results to return (1-based)
 
         limit : typing.Optional[int]
-            page size of results
+            Page size of results
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -23686,6 +25438,7 @@ class AsyncRepositoryClient:
                 "sort": sort,
                 "milestone": milestone,
                 "labels": labels,
+                "poster": poster,
                 "page": page,
                 "limit": limit,
             },
@@ -23710,10 +25463,24 @@ class AsyncRepositoryClient:
                         ),
                     )
                 )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_pull_request(
         self,
@@ -23800,6 +25567,9 @@ class AsyncRepositoryClient:
                 "milestone": milestone,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -23855,17 +25625,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_pinned_pull_requests(
         self,
@@ -23937,8 +25711,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_pull_request_by_base_head(
         self,
@@ -24020,8 +25798,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_pull_request(
         self,
@@ -24098,8 +25880,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_pull_request(
         self,
@@ -24199,6 +25985,9 @@ class AsyncRepositoryClient:
                 "title": title,
                 "unset_due_date": unset_due_date,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -24244,9 +26033,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 412:
                 raise PreconditionFailedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -24263,8 +26052,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_download_pull_diff_or_patch(
         self,
@@ -24353,8 +26146,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_pull_request_commits(
         self,
@@ -24453,8 +26250,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_pull_request_files(
         self,
@@ -24553,8 +26354,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_pull_request_is_merged(
         self,
@@ -24624,8 +26429,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_merge_pull_request(
         self,
@@ -24713,6 +26522,9 @@ class AsyncRepositoryClient:
                 "head_commit_id": head_commit_id,
                 "merge_when_checks_succeed": merge_when_checks_succeed,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -24762,17 +26574,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_cancel_scheduled_auto_merge(
         self,
@@ -24853,17 +26669,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_pull_review_requests(
         self,
@@ -24961,8 +26781,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_pull_review_requests(
         self,
@@ -25063,8 +26887,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_pull_reviews(
         self,
@@ -25153,8 +26981,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_pull_review(
         self,
@@ -25230,6 +27062,9 @@ class AsyncRepositoryClient:
                 "commit_id": commit_id,
                 "event": event,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -25264,8 +27099,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_pull_review(
         self,
@@ -25347,8 +27186,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_submit_pull_review(
         self,
@@ -25417,6 +27260,9 @@ class AsyncRepositoryClient:
                 "body": body,
                 "event": event,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -25451,8 +27297,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_pull_review(
         self,
@@ -25537,8 +27387,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_pull_review_comments(
         self,
@@ -25620,8 +27474,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_pull_review_comment(
         self,
@@ -25735,8 +27593,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_pull_review_comment(
         self,
@@ -25833,8 +27695,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_pull_review_comment(
         self,
@@ -25924,8 +27790,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_dismiss_pull_review(
         self,
@@ -25994,6 +27864,9 @@ class AsyncRepositoryClient:
                 "message": message,
                 "priors": priors,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -26038,8 +27911,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_un_dismiss_pull_review(
         self,
@@ -26141,8 +28018,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_update_pull_request(
         self,
@@ -26259,8 +28140,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_push_mirrors(
         self,
@@ -26335,9 +28220,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -26364,8 +28249,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_add_push_mirror(
         self,
@@ -26440,6 +28329,9 @@ class AsyncRepositoryClient:
                 "sync_on_commit": sync_on_commit,
                 "use_ssh": use_ssh,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -26455,9 +28347,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -26494,8 +28386,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_push_mirror_sync(
         self,
@@ -26551,9 +28447,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -26590,8 +28486,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_push_mirror_by_remote_name(
         self,
@@ -26659,9 +28559,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -26688,8 +28588,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_push_mirror(
         self,
@@ -26750,9 +28654,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -26769,8 +28673,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_raw_file(
         self,
@@ -26797,34 +28705,12 @@ class AsyncRepositoryClient:
             The name of the commit/branch/tag. Default the repository’s default branch (usually master)
 
         request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
+            Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
 
         Yields
         ------
         typing.AsyncIterator[bytes]
             Returns raw file content.
-
-        Examples
-        --------
-        import asyncio
-
-        from pyforgejo import AsyncPyforgejoApi
-
-        client = AsyncPyforgejoApi(
-            api_key="YOUR_API_KEY",
-        )
-
-
-        async def main() -> None:
-            await client.repository.repo_get_raw_file(
-                owner="string",
-                repo="string",
-                filepath="string",
-                ref="string",
-            )
-
-
-        asyncio.run(main())
         """
         async with self._client_wrapper.httpx_client.stream(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/raw/{jsonable_encoder(filepath)}",
@@ -26836,7 +28722,12 @@ class AsyncRepositoryClient:
         ) as _response:
             try:
                 if 200 <= _response.status_code < 300:
-                    async for _chunk in _response.aiter_bytes():
+                    _chunk_size = (
+                        request_options.get("chunk_size", None)
+                        if request_options is not None
+                        else None
+                    )
+                    async for _chunk in _response.aiter_bytes(chunk_size=_chunk_size):
                         yield _chunk
                     return
                 await _response.aread()
@@ -26852,8 +28743,12 @@ class AsyncRepositoryClient:
                     )
                 _response_json = _response.json()
             except JSONDecodeError:
-                raise ApiError(status_code=_response.status_code, body=_response.text)
-            raise ApiError(status_code=_response.status_code, body=_response_json)
+                raise core_api_error_ApiError(
+                    status_code=_response.status_code, body=_response.text
+                )
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response_json
+            )
 
     async def repo_list_releases(
         self,
@@ -26862,6 +28757,7 @@ class AsyncRepositoryClient:
         *,
         draft: typing.Optional[bool] = None,
         pre_release: typing.Optional[bool] = None,
+        q: typing.Optional[str] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -26880,6 +28776,9 @@ class AsyncRepositoryClient:
 
         pre_release : typing.Optional[bool]
             filter (exclude / include) pre-releases
+
+        q : typing.Optional[str]
+            Search string
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -26921,6 +28820,7 @@ class AsyncRepositoryClient:
             params={
                 "draft": draft,
                 "pre-release": pre_release,
+                "q": q,
                 "page": page,
                 "limit": limit,
             },
@@ -26947,8 +28847,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_release(
         self,
@@ -27028,6 +28932,9 @@ class AsyncRepositoryClient:
                 "tag_name": tag_name,
                 "target_commitish": target_commitish,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -27072,8 +28979,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_latest_release(
         self,
@@ -27145,8 +29056,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_release_by_tag(
         self,
@@ -27223,8 +29138,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_release_by_tag(
         self,
@@ -27304,8 +29223,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_release(
         self,
@@ -27382,8 +29305,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_release(
         self,
@@ -27463,8 +29390,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_release(
         self,
@@ -27548,6 +29479,9 @@ class AsyncRepositoryClient:
                 "tag_name": tag_name,
                 "target_commitish": target_commitish,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -27572,8 +29506,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_release_attachments(
         self,
@@ -27650,8 +29588,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_release_attachment(
         self,
@@ -27741,9 +29683,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -27770,8 +29712,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_release_attachment(
         self,
@@ -27853,8 +29799,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_release_attachment(
         self,
@@ -27929,8 +29879,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_release_attachment(
         self,
@@ -28034,8 +29988,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_reviewers(
         self,
@@ -28107,8 +30065,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_signing_key(
         self,
@@ -28147,8 +30109,8 @@ class AsyncRepositoryClient:
 
         async def main() -> None:
             await client.repository.repo_signing_key(
-                owner="string",
-                repo="string",
+                owner="owner",
+                repo="repo",
             )
 
 
@@ -28164,8 +30126,12 @@ class AsyncRepositoryClient:
                 return _response.text  # type: ignore
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_stargazers(
         self,
@@ -28249,8 +30215,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_statuses(
         self,
@@ -28340,9 +30310,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -28359,8 +30329,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_status(
         self,
@@ -28432,6 +30406,9 @@ class AsyncRepositoryClient:
                 "state": state,
                 "target_url": target_url,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -28447,9 +30424,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -28466,8 +30443,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_subscribers(
         self,
@@ -28551,8 +30532,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_current_check_subscription(
         self,
@@ -28624,8 +30609,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_current_put_subscription(
         self,
@@ -28697,8 +30686,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_current_delete_subscription(
         self,
@@ -28763,8 +30756,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_tag_protection(
         self,
@@ -28826,8 +30823,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_tag_protection(
         self,
@@ -28890,6 +30891,9 @@ class AsyncRepositoryClient:
                 "whitelist_teams": whitelist_teams,
                 "whitelist_usernames": whitelist_usernames,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -28935,17 +30939,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_tag_protection(
         self,
@@ -29022,8 +31030,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_tag_protection(
         self,
@@ -29093,8 +31105,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_tag_protection(
         self,
@@ -29162,6 +31178,9 @@ class AsyncRepositoryClient:
                 "whitelist_teams": whitelist_teams,
                 "whitelist_usernames": whitelist_usernames,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -29197,17 +31216,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_tags(
         self,
@@ -29291,8 +31314,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_tag(
         self,
@@ -29355,6 +31382,9 @@ class AsyncRepositoryClient:
                 "message": message,
                 "tag_name": tag_name,
                 "target": target,
+            },
+            headers={
+                "content-type": "application/json",
             },
             request_options=request_options,
             omit=OMIT,
@@ -29421,17 +31451,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_tag(
         self,
@@ -29508,8 +31542,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_tag(
         self,
@@ -29610,17 +31648,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_teams(
         self,
@@ -29692,8 +31734,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_check_team(
         self,
@@ -29780,8 +31826,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_add_team(
         self,
@@ -29871,8 +31921,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_team(
         self,
@@ -29962,8 +32016,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_tracked_times(
         self,
@@ -30053,9 +32111,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -30082,8 +32140,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def user_tracked_times(
         self,
@@ -30151,9 +32213,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -30180,8 +32242,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_list_topics(
         self,
@@ -30265,8 +32331,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_update_topics(
         self,
@@ -30321,6 +32391,9 @@ class AsyncRepositoryClient:
             json={
                 "topics": topics,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -30349,8 +32422,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_add_topic(
         self,
@@ -30430,8 +32507,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_topic(
         self,
@@ -30511,8 +32592,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_transfer(
         self,
@@ -30573,6 +32658,9 @@ class AsyncRepositoryClient:
                 "new_owner": new_owner,
                 "team_ids": team_ids,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -30627,8 +32715,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def accept_repo_transfer(
         self,
@@ -30720,8 +32812,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def reject_repo_transfer(
         self,
@@ -30803,8 +32899,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_create_wiki_page(
         self,
@@ -30885,9 +32985,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -30925,17 +33025,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_wiki_page(
         self,
@@ -31012,8 +33116,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_delete_wiki_page(
         self,
@@ -31094,17 +33202,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_edit_wiki_page(
         self,
@@ -31190,9 +33302,9 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -31230,17 +33342,21 @@ class AsyncRepositoryClient:
             if _response.status_code == 423:
                 raise LockedError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        ApiRepoArchivedError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_wiki_pages(
         self,
@@ -31324,8 +33440,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_wiki_page_revisions(
         self,
@@ -31409,8 +33529,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def generate_repo(
         self,
@@ -31523,6 +33647,9 @@ class AsyncRepositoryClient:
                 "topics": topics,
                 "webhooks": webhooks,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -31587,8 +33714,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def repo_get_by_id(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -31652,8 +33783,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def topic_search(
         self,
@@ -31743,8 +33878,12 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_current_user_repo(
         self,
@@ -31861,6 +34000,26 @@ class AsyncRepositoryClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
@@ -31900,5 +34059,9 @@ class AsyncRepositoryClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )

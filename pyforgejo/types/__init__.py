@@ -10,6 +10,12 @@ from .activity_pub import ActivityPub
 from .annotated_tag import AnnotatedTag
 from .annotated_tag_object import AnnotatedTagObject
 from .api_error import ApiError
+from .api_forbidden_error import ApiForbiddenError
+from .api_invalid_topics_error import ApiInvalidTopicsError
+from .api_not_found import ApiNotFound
+from .api_repo_archived_error import ApiRepoArchivedError
+from .api_unauthorized_error import ApiUnauthorizedError
+from .api_validation_error import ApiValidationError
 from .attachment import Attachment
 from .attachment_type import AttachmentType
 from .blocked_user import BlockedUser
@@ -190,6 +196,12 @@ __all__ = [
     "AnnotatedTag",
     "AnnotatedTagObject",
     "ApiError",
+    "ApiForbiddenError",
+    "ApiInvalidTopicsError",
+    "ApiNotFound",
+    "ApiRepoArchivedError",
+    "ApiUnauthorizedError",
+    "ApiValidationError",
     "Attachment",
     "AttachmentType",
     "BlockedUser",

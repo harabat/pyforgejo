@@ -7,7 +7,7 @@ from ..types.cron import Cron
 from ..core.pydantic_utilities import parse_obj_as
 from ..errors.forbidden_error import ForbiddenError
 from json.decoder import JSONDecodeError
-from ..core.api_error import ApiError
+from ..core.api_error import ApiError as core_api_error_ApiError
 from ..core.jsonable_encoder import jsonable_encoder
 from ..errors.not_found_error import NotFoundError
 from ..types.email import Email
@@ -20,10 +20,12 @@ from ..types.create_quota_rule_options import CreateQuotaRuleOptions
 from ..types.quota_group import QuotaGroup
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
+from ..types.api_error import ApiError as types_api_error_ApiError
 from ..errors.conflict_error import ConflictError
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
 from ..types.user import User
 from ..types.quota_rule_info import QuotaRuleInfo
+from .types.admin_search_users_request_sort import AdminSearchUsersRequestSort
 import datetime as dt
 from ..types.public_key import PublicKey
 from ..types.create_org_option_visibility import CreateOrgOptionVisibility
@@ -106,8 +108,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def cron_run(
         self, task: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -156,8 +162,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_all_emails(
         self,
@@ -222,8 +232,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def search_emails(
         self,
@@ -293,8 +307,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_hooks(
         self,
@@ -349,8 +367,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_hook(
         self,
@@ -423,8 +445,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -470,8 +496,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -510,8 +540,12 @@ class AdminClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_hook(
         self,
@@ -583,8 +617,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_all_orgs(
         self,
@@ -649,8 +687,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_quota_groups(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -701,8 +743,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_quota_group(
         self,
@@ -749,6 +795,9 @@ class AdminClient:
                     direction="write",
                 ),
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -764,9 +813,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -803,8 +852,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_quota_group(
         self,
@@ -854,9 +907,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -883,8 +936,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_quota_group(
         self,
@@ -927,9 +984,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -956,8 +1013,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def add_rule_to_quota_group(
         self,
@@ -1005,9 +1066,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1054,8 +1115,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def remove_rule_from_quota_group(
         self,
@@ -1103,9 +1168,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1132,8 +1197,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_users_in_quota_group(
         self,
@@ -1183,9 +1252,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1212,8 +1281,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def add_user_to_quota_group(
         self,
@@ -1261,9 +1334,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1310,8 +1383,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def remove_user_from_quota_group(
         self,
@@ -1359,9 +1436,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1388,8 +1465,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def list_quota_rules(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -1440,8 +1521,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_quota_rule(
         self,
@@ -1503,9 +1588,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1542,8 +1627,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_quota_rule(
         self, quotarule: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1590,9 +1679,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1619,8 +1708,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def admin_d_elete_quota_rule(
         self, quotarule: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1660,9 +1753,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1689,8 +1782,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_quota_rule(
         self,
@@ -1738,6 +1835,9 @@ class AdminClient:
                 "limit": limit,
                 "subjects": subjects,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1753,9 +1853,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1792,8 +1892,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -1827,8 +1931,12 @@ class AdminClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def unadopted_list(
         self,
@@ -1898,8 +2006,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def adopt_repository(
         self,
@@ -1966,8 +2078,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_unadopted_repository(
         self,
@@ -2024,14 +2140,19 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def search_users(
         self,
         *,
         source_id: typing.Optional[int] = None,
         login_name: typing.Optional[str] = None,
+        sort: typing.Optional[AdminSearchUsersRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2044,6 +2165,9 @@ class AdminClient:
 
         login_name : typing.Optional[str]
             user's login name to search for
+
+        sort : typing.Optional[AdminSearchUsersRequestSort]
+            sort order of results
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -2074,6 +2198,7 @@ class AdminClient:
             params={
                 "source_id": source_id,
                 "login_name": login_name,
+                "sort": sort,
                 "page": page,
                 "limit": limit,
             },
@@ -2100,8 +2225,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_user(
         self,
@@ -2183,6 +2312,9 @@ class AdminClient:
                 "username": username,
                 "visibility": visibility,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2198,9 +2330,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -2227,8 +2359,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_user(
         self,
@@ -2307,8 +2443,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def edit_user(
         self,
@@ -2422,6 +2562,9 @@ class AdminClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2437,9 +2580,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -2466,8 +2609,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_public_key(
         self,
@@ -2556,8 +2703,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_user_public_key(
         self,
@@ -2624,8 +2775,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_org(
         self,
@@ -2731,8 +2886,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_user_quota(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -2779,9 +2938,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -2818,8 +2977,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def set_user_quota_groups(
         self,
@@ -2862,6 +3025,9 @@ class AdminClient:
             json={
                 "groups": groups,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2871,9 +3037,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -2910,8 +3076,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def rename_user(
         self,
@@ -2954,6 +3124,9 @@ class AdminClient:
             json={
                 "new_username": new_username,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2982,8 +3155,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_repo(
         self,
@@ -3097,9 +3274,9 @@ class AdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -3146,8 +3323,12 @@ class AdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
 
 class AsyncAdminClient:
@@ -3225,8 +3406,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def cron_run(
         self, task: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3283,8 +3468,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_all_emails(
         self,
@@ -3357,8 +3546,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def search_emails(
         self,
@@ -3436,8 +3629,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_hooks(
         self,
@@ -3500,8 +3697,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_hook(
         self,
@@ -3582,8 +3783,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -3637,8 +3842,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -3685,8 +3894,12 @@ class AsyncAdminClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_hook(
         self,
@@ -3766,8 +3979,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_all_orgs(
         self,
@@ -3840,8 +4057,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_quota_groups(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -3900,8 +4121,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_quota_group(
         self,
@@ -3956,6 +4181,9 @@ class AsyncAdminClient:
                     direction="write",
                 ),
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -3971,9 +4199,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4010,8 +4238,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_quota_group(
         self,
@@ -4069,9 +4301,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4098,8 +4330,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_quota_group(
         self,
@@ -4150,9 +4386,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4179,8 +4415,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def add_rule_to_quota_group(
         self,
@@ -4236,9 +4476,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4285,8 +4525,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def remove_rule_from_quota_group(
         self,
@@ -4342,9 +4586,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4371,8 +4615,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_users_in_quota_group(
         self,
@@ -4430,9 +4678,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4459,8 +4707,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def add_user_to_quota_group(
         self,
@@ -4516,9 +4768,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4565,8 +4817,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def remove_user_from_quota_group(
         self,
@@ -4622,9 +4878,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4651,8 +4907,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def list_quota_rules(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -4711,8 +4971,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_quota_rule(
         self,
@@ -4782,9 +5046,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4821,8 +5085,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_quota_rule(
         self, quotarule: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -4877,9 +5145,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4906,8 +5174,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def admin_d_elete_quota_rule(
         self, quotarule: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -4955,9 +5227,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -4984,8 +5256,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_quota_rule(
         self,
@@ -5041,6 +5317,9 @@ class AsyncAdminClient:
                 "limit": limit,
                 "subjects": subjects,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5056,9 +5335,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5095,8 +5374,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -5138,8 +5421,12 @@ class AsyncAdminClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def unadopted_list(
         self,
@@ -5217,8 +5504,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def adopt_repository(
         self,
@@ -5293,8 +5584,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_unadopted_repository(
         self,
@@ -5359,14 +5654,19 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def search_users(
         self,
         *,
         source_id: typing.Optional[int] = None,
         login_name: typing.Optional[str] = None,
+        sort: typing.Optional[AdminSearchUsersRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -5379,6 +5679,9 @@ class AsyncAdminClient:
 
         login_name : typing.Optional[str]
             user's login name to search for
+
+        sort : typing.Optional[AdminSearchUsersRequestSort]
+            sort order of results
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -5417,6 +5720,7 @@ class AsyncAdminClient:
             params={
                 "source_id": source_id,
                 "login_name": login_name,
+                "sort": sort,
                 "page": page,
                 "limit": limit,
             },
@@ -5443,8 +5747,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_user(
         self,
@@ -5534,6 +5842,9 @@ class AsyncAdminClient:
                 "username": username,
                 "visibility": visibility,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5549,9 +5860,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5578,8 +5889,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_user(
         self,
@@ -5666,8 +5981,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def edit_user(
         self,
@@ -5789,6 +6108,9 @@ class AsyncAdminClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5804,9 +6126,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5833,8 +6155,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_public_key(
         self,
@@ -5931,8 +6257,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_user_public_key(
         self,
@@ -6007,8 +6337,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_org(
         self,
@@ -6122,8 +6456,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_user_quota(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -6178,9 +6516,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -6217,8 +6555,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def set_user_quota_groups(
         self,
@@ -6269,6 +6611,9 @@ class AsyncAdminClient:
             json={
                 "groups": groups,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6278,9 +6623,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -6317,8 +6662,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def rename_user(
         self,
@@ -6369,6 +6718,9 @@ class AsyncAdminClient:
             json={
                 "new_username": new_username,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6397,8 +6749,12 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_repo(
         self,
@@ -6520,9 +6876,9 @@ class AsyncAdminClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -6569,5 +6925,9 @@ class AsyncAdminClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )

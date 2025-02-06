@@ -249,9 +249,13 @@ class HttpClient:
             json=json_body,
             data=data_body,
             content=content,
-            files=convert_file_dict_to_httpx_tuples(remove_none_from_dict(files))
-            if (files is not None and files is not omit)
-            else None,
+            files=(
+                convert_file_dict_to_httpx_tuples(
+                    remove_omit_from_dict(remove_none_from_dict(files), omit)
+                )
+                if (files is not None and files is not omit)
+                else None
+            ),
             timeout=timeout,
         )
 
@@ -348,9 +352,13 @@ class HttpClient:
             json=json_body,
             data=data_body,
             content=content,
-            files=convert_file_dict_to_httpx_tuples(remove_none_from_dict(files))
-            if (files is not None and files is not omit)
-            else None,
+            files=(
+                convert_file_dict_to_httpx_tuples(
+                    remove_omit_from_dict(remove_none_from_dict(files), omit)
+                )
+                if (files is not None and files is not omit)
+                else None
+            ),
             timeout=timeout,
         ) as stream:
             yield stream
@@ -453,9 +461,13 @@ class AsyncHttpClient:
             json=json_body,
             data=data_body,
             content=content,
-            files=convert_file_dict_to_httpx_tuples(remove_none_from_dict(files))
-            if files is not None
-            else None,
+            files=(
+                convert_file_dict_to_httpx_tuples(
+                    remove_omit_from_dict(remove_none_from_dict(files), omit)
+                )
+                if files is not None
+                else None
+            ),
             timeout=timeout,
         )
 
@@ -551,9 +563,13 @@ class AsyncHttpClient:
             json=json_body,
             data=data_body,
             content=content,
-            files=convert_file_dict_to_httpx_tuples(remove_none_from_dict(files))
-            if files is not None
-            else None,
+            files=(
+                convert_file_dict_to_httpx_tuples(
+                    remove_omit_from_dict(remove_none_from_dict(files), omit)
+                )
+                if files is not None
+                else None
+            ),
             timeout=timeout,
         ) as stream:
             yield stream

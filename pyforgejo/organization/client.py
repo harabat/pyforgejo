@@ -14,12 +14,13 @@ from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
 from json.decoder import JSONDecodeError
-from ..core.api_error import ApiError
+from ..core.api_error import ApiError as core_api_error_ApiError
 from ..types.organization import Organization
 from ..types.create_org_option_visibility import CreateOrgOptionVisibility
 from .types.edit_org_option_visibility import EditOrgOptionVisibility
 from ..types.secret import Secret
 from ..errors.bad_request_error import BadRequestError
+from ..types.api_error import ApiError as types_api_error_ApiError
 from ..types.action_variable import ActionVariable
 from ..types.activity import Activity
 from ..types.hook import Hook
@@ -36,6 +37,8 @@ from ..types.team import Team
 from .types.create_team_option_permission import CreateTeamOptionPermission
 from .types.team_search_response import TeamSearchResponse
 from .types.edit_team_option_permission import EditTeamOptionPermission
+from ..errors.unauthorized_error import UnauthorizedError
+from ..types.api_unauthorized_error import ApiUnauthorizedError
 from ..types.organization_permissions import OrganizationPermissions
 from ..core.client_wrapper import AsyncClientWrapper
 
@@ -188,8 +191,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get_all(
         self,
@@ -244,8 +251,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_create(
         self,
@@ -346,8 +357,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -403,8 +418,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_delete(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -453,8 +472,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_edit(
         self,
@@ -521,6 +544,9 @@ class OrganizationClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -543,10 +569,24 @@ class OrganizationClient:
                         ),
                     )
                 )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get_runner_registration_token(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -585,8 +625,12 @@ class OrganizationClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_actions_secrets(
         self,
@@ -657,8 +701,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_org_secret(
         self,
@@ -715,9 +763,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -734,8 +782,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_org_secret(
         self,
@@ -783,9 +835,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -802,8 +854,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_org_variables_list(
         self,
@@ -865,9 +921,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -884,8 +940,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def get_org_variable(
         self,
@@ -940,9 +1000,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -959,8 +1019,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_org_variable(
         self,
@@ -1017,9 +1081,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1036,8 +1100,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def update_org_variable(
         self,
@@ -1099,9 +1167,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1118,8 +1186,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def delete_org_variable(
         self,
@@ -1174,9 +1246,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -1193,8 +1265,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_activity_feeds(
         self,
@@ -1270,8 +1346,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_update_avatar(
         self,
@@ -1331,8 +1411,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_delete_avatar(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1381,8 +1465,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_block_user(
         self,
@@ -1449,8 +1537,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_hooks(
         self,
@@ -1521,8 +1613,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_create_hook(
         self,
@@ -1610,8 +1706,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get_hook(
         self,
@@ -1675,8 +1775,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_delete_hook(
         self,
@@ -1733,8 +1837,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_edit_hook(
         self,
@@ -1821,8 +1929,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_labels(
         self,
@@ -1893,8 +2005,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_create_label(
         self,
@@ -1988,8 +2104,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get_label(
         self,
@@ -2053,8 +2173,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_delete_label(
         self,
@@ -2111,8 +2235,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_edit_label(
         self,
@@ -2209,8 +2337,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_blocked_users(
         self,
@@ -2271,8 +2403,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_members(
         self,
@@ -2343,8 +2479,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_is_member(
         self,
@@ -2401,8 +2541,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_delete_member(
         self,
@@ -2459,8 +2603,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_public_members(
         self,
@@ -2531,8 +2679,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_is_public_member(
         self,
@@ -2589,8 +2741,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_publicize_member(
         self,
@@ -2657,8 +2813,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_conceal_member(
         self,
@@ -2725,8 +2885,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get_quota(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -2792,8 +2956,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_quota_artifacts(
         self,
@@ -2874,8 +3042,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_quota_attachments(
         self,
@@ -2956,8 +3128,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_check_quota(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3026,8 +3202,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_quota_packages(
         self,
@@ -3108,8 +3288,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_repos(
         self,
@@ -3180,8 +3364,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def create_org_repo(
         self,
@@ -3295,9 +3483,9 @@ class OrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -3324,8 +3512,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_teams(
         self,
@@ -3396,8 +3588,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_create_team(
         self,
@@ -3464,6 +3660,9 @@ class OrganizationClient:
                 "units": units,
                 "units_map": units_map,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -3498,8 +3697,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def team_search(
         self,
@@ -3580,8 +3783,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_unblock_user(
         self,
@@ -3648,8 +3855,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -3705,8 +3916,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_delete_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -3755,8 +3970,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_edit_team(
         self,
@@ -3823,6 +4042,9 @@ class OrganizationClient:
                 "units": units,
                 "units_map": units_map,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -3847,8 +4069,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_team_activity_feeds(
         self,
@@ -3924,8 +4150,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_team_members(
         self,
@@ -3996,8 +4226,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_team_member(
         self,
@@ -4061,8 +4295,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_add_team_member(
         self,
@@ -4119,8 +4357,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_remove_team_member(
         self,
@@ -4177,8 +4419,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_team_repos(
         self,
@@ -4249,8 +4495,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_team_repo(
         self,
@@ -4319,8 +4569,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_add_team_repository(
         self,
@@ -4392,8 +4646,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_remove_team_repository(
         self,
@@ -4467,8 +4725,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_current_user_orgs(
         self,
@@ -4521,6 +4783,26 @@ class OrganizationClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -4533,8 +4815,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_list_user_orgs(
         self,
@@ -4605,8 +4891,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     def org_get_user_permissions(
         self,
@@ -4680,8 +4970,12 @@ class OrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
 
 class AsyncOrganizationClient:
@@ -4837,8 +5131,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get_all(
         self,
@@ -4901,8 +5199,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_create(
         self,
@@ -5011,8 +5313,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5076,8 +5382,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_delete(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5134,8 +5444,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_edit(
         self,
@@ -5210,6 +5524,9 @@ class AsyncOrganizationClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5232,10 +5549,24 @@ class AsyncOrganizationClient:
                         ),
                     )
                 )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get_runner_registration_token(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5282,8 +5613,12 @@ class AsyncOrganizationClient:
                 return
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_actions_secrets(
         self,
@@ -5362,8 +5697,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_org_secret(
         self,
@@ -5428,9 +5767,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5447,8 +5786,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_org_secret(
         self,
@@ -5504,9 +5847,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5523,8 +5866,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_org_variables_list(
         self,
@@ -5594,9 +5941,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5613,8 +5960,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def get_org_variable(
         self,
@@ -5677,9 +6028,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5696,8 +6047,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_org_variable(
         self,
@@ -5762,9 +6117,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5781,8 +6136,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def update_org_variable(
         self,
@@ -5852,9 +6211,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5871,8 +6230,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def delete_org_variable(
         self,
@@ -5935,9 +6298,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -5954,8 +6317,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_activity_feeds(
         self,
@@ -6039,8 +6406,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_update_avatar(
         self,
@@ -6108,8 +6479,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_delete_avatar(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -6166,8 +6541,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_block_user(
         self,
@@ -6242,8 +6621,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_hooks(
         self,
@@ -6322,8 +6705,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_create_hook(
         self,
@@ -6419,8 +6806,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get_hook(
         self,
@@ -6492,8 +6883,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_delete_hook(
         self,
@@ -6558,8 +6953,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_edit_hook(
         self,
@@ -6654,8 +7053,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_labels(
         self,
@@ -6734,8 +7137,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_create_label(
         self,
@@ -6837,8 +7244,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get_label(
         self,
@@ -6910,8 +7321,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_delete_label(
         self,
@@ -6976,8 +7391,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_edit_label(
         self,
@@ -7082,8 +7501,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_blocked_users(
         self,
@@ -7152,8 +7575,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_members(
         self,
@@ -7232,8 +7659,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_is_member(
         self,
@@ -7298,8 +7729,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_delete_member(
         self,
@@ -7364,8 +7799,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_public_members(
         self,
@@ -7444,8 +7883,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_is_public_member(
         self,
@@ -7510,8 +7953,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_publicize_member(
         self,
@@ -7586,8 +8033,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_conceal_member(
         self,
@@ -7662,8 +8113,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get_quota(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -7737,8 +8192,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_quota_artifacts(
         self,
@@ -7827,8 +8286,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_quota_attachments(
         self,
@@ -7917,8 +8380,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_check_quota(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -7995,8 +8462,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_quota_packages(
         self,
@@ -8085,8 +8556,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_repos(
         self,
@@ -8165,8 +8640,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def create_org_repo(
         self,
@@ -8288,9 +8767,9 @@ class AsyncOrganizationClient:
             if _response.status_code == 400:
                 raise BadRequestError(
                     typing.cast(
-                        typing.Optional[typing.Any],
+                        types_api_error_ApiError,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
                     )
@@ -8317,8 +8796,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_teams(
         self,
@@ -8397,8 +8880,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_create_team(
         self,
@@ -8473,6 +8960,9 @@ class AsyncOrganizationClient:
                 "units": units,
                 "units_map": units_map,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -8507,8 +8997,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def team_search(
         self,
@@ -8597,8 +9091,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_unblock_user(
         self,
@@ -8673,8 +9171,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -8738,8 +9240,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_delete_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -8796,8 +9302,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_edit_team(
         self,
@@ -8872,6 +9382,9 @@ class AsyncOrganizationClient:
                 "units": units,
                 "units_map": units_map,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -8896,8 +9409,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_team_activity_feeds(
         self,
@@ -8981,8 +9498,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_team_members(
         self,
@@ -9061,8 +9582,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_team_member(
         self,
@@ -9134,8 +9659,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_add_team_member(
         self,
@@ -9200,8 +9729,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_remove_team_member(
         self,
@@ -9266,8 +9799,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_team_repos(
         self,
@@ -9346,8 +9883,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_team_repo(
         self,
@@ -9424,8 +9965,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_add_team_repository(
         self,
@@ -9505,8 +10050,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_remove_team_repository(
         self,
@@ -9588,8 +10137,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_current_user_orgs(
         self,
@@ -9650,6 +10203,26 @@ class AsyncOrganizationClient:
                         object_=_response.json(),
                     ),
                 )
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    typing.cast(
+                        ApiUnauthorizedError,
+                        parse_obj_as(
+                            type_=ApiUnauthorizedError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    )
+                )
             if _response.status_code == 404:
                 raise NotFoundError(
                     typing.cast(
@@ -9662,8 +10235,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_list_user_orgs(
         self,
@@ -9742,8 +10319,12 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
 
     async def org_get_user_permissions(
         self,
@@ -9825,5 +10406,9 @@ class AsyncOrganizationClient:
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise core_api_error_ApiError(
+                status_code=_response.status_code, body=_response.text
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code, body=_response_json
+        )
