@@ -34,8 +34,30 @@ print(response)
 
 ## Installation
 
+1. Clone the repository and navigate to the project directory:
+
 ``` shell
-pip install pyforgejo
+git clone https://codeberg.org/harabat/pyforgejo.git
+cd pyforgejo
+git checkout 1.0
+```
+
+2. Create a virtual environment:
+
+``` shell
+# using venv (built-in)
+python -m venv venv
+source venv/bin/activate
+
+# or using conda
+conda create --name pyforgejo_1.0 python=3.10 --yes
+conda activate pyforgejo_1.0
+```
+
+3. Install the package:
+
+``` shell
+pip install ./pyforgejo
 ```
 
 ## Forgejo API
