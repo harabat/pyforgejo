@@ -6,6 +6,7 @@ from pyforgejo.types import (
     Branch,
     ChangedFile,
     CombinedStatus,
+    Comment,
     Commit,
     CommitStatus,
     GeneralApiSettings,
@@ -380,5 +381,63 @@ def test_settings_get_general_ui_settings(client: PyforgejoApi):
     try:
         settings = client.settings.get_general_ui_settings()
         assert isinstance(settings, GeneralUiSettings)
+    except Exception as e:
+        assert False, f"Test failed with exception: {e}"
+
+
+# POST Tests
+def test_repository_create_current_user_repo(client: PyforgejoApi):
+    try:
+        repo = client.repository.create_current_user_repo(name="test_repo")
+        assert isinstance(repo, Repository)
+    except Exception as e:
+        assert False, f"Test failed with exception: {e}"
+
+
+def test_issue_create_issue(client: PyforgejoApi):
+    try:
+        issue = client.issue.create_issue(
+            owner="harabat", repo="test_repo", title="Test Issue"
+        )
+        assert isinstance(issue, Issue)
+    except Exception as e:
+        assert False, f"Test failed with exception: {e}"
+
+
+def test_issue_create_comment(client: PyforgejoApi):
+    try:
+        comment = client.issue.create_comment(
+            owner="harabat", repo="test_repo", index=1, body="Test Comment"
+        )
+        assert isinstance(comment, Comment)
+    except Exception as e:
+        assert False, f"Test failed with exception: {e}"
+
+
+def test_issue_delete_comment(client: PyforgejoApi):
+    try:
+        comments = client.issue.get_comments(owner="harabat", repo="test_repo", index=1)
+        comment = comments[0]
+        client.issue.delete_comment(owner="harabat", repo="test_repo", id=comment.id)
+        comments = client.issue.get_comments(owner="harabat", repo="test_repo", index=1)
+        assert comment.id not in [i.id for i in comments]
+    except Exception as e:
+        assert False, f"Test failed with exception: {e}"
+
+
+def test_issue_delete_issue(client: PyforgejoApi):
+    try:
+        client.issue.delete(owner="harabat", repo="test_repo", index=1)
+        issues = client.issue.list_issues(owner="harabat", repo="test_repo")
+        assert len(issues) == 0
+    except Exception as e:
+        assert False, f"Test failed with exception: {e}"
+
+
+def test_repository_repo_delete(client: PyforgejoApi):
+    try:
+        client.repository.repo_delete(owner="harabat", repo="test_repo")
+        repos = client.user.list_repos(username="harabat")
+        assert "test_repo" not in [i.name for i in repos]
     except Exception as e:
         assert False, f"Test failed with exception: {e}"
