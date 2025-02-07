@@ -32,8 +32,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # get environment variables with default values
-BASE_URL = os.getenv('BASE_URL', '')
-API_KEY = os.getenv('API_KEY', '')
+BASE_URL = os.getenv("BASE_URL", "")
+API_KEY = os.getenv("API_KEY", "")
+
 
 class PyforgejoApi:
     """
@@ -87,9 +88,13 @@ class PyforgejoApi:
         print(f"Using API_KEY: {'*' * 40 if api_key else 'Not set'}")
 
         if not base_url:
-            raise ValueError("base_url must be provided either as an .env variable or as an argument")
+            raise ValueError(
+                "base_url must be provided either as an .env variable or as an argument"
+            )
         if not api_key:
-            raise ValueError("api_key must be provided either as an .env variable or as an argument")
+            raise ValueError(
+                "api_key must be provided either as an .env variable or as an argument"
+            )
 
         _defaulted_timeout = (
             timeout if timeout is not None else 60 if httpx_client is None else None
@@ -170,9 +175,13 @@ class AsyncPyforgejoApi:
         print(f"Using API_KEY: {'*' * 40 if api_key else 'Not set'}")
 
         if not base_url:
-            raise ValueError("base_url must be provided either as an .env variable or as an argument")
+            raise ValueError(
+                "base_url must be provided either as an .env variable or as an argument"
+            )
         if not api_key:
-            raise ValueError("api_key must be provided either as an .env variable or as an argument")
+            raise ValueError(
+                "api_key must be provided either as an .env variable or as an argument"
+            )
 
         _defaulted_timeout = (
             timeout if timeout is not None else 60 if httpx_client is None else None
