@@ -36,7 +36,7 @@ load_dotenv()
 
 # get environment variables with default values
 BASE_URL = os.getenv("BASE_URL", "")
-API_KEY = os.getenv("API_KEY", "")
+API_KEY = os.getenv("PYTEST_API_KEY", "")
 
 
 @pytest.fixture
