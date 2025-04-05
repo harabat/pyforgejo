@@ -9,6 +9,7 @@ from pyforgejo.types import (
     Comment,
     Commit,
     CommitStatus,
+    ContentsResponse,
     GeneralApiSettings,
     GeneralAttachmentSettings,
     GeneralRepoSettings,
@@ -177,6 +178,21 @@ def test_repository_repo_get(client: PyforgejoApi):
         assert isinstance(repo, Repository)
     except Exception as e:
         assert False, f"Test failed with exception: {e}"
+
+
+def test_repository_repo_get_contents(client: PyforgejoApi):
+    try:
+        contents = client.repository.repo_get_contents(owner='harabat', repo='pyforgejo', filepath='README.md')
+        assert isinstance(contents, ContentsResponse)
+    except Exception as e:
+        assert False, f'Test failed with exception: {e}'
+
+    try:
+        contents = client.repository.repo_get_contents(owner='harabat', repo='pyforgejo', filepath='tests')
+        assert isinstance(contents, list)
+        assert all(isinstance(item, ContentsResponse) for item in contents)
+    except Exception as e:
+        assert False, f'Test failed with exception: {e}'
 
 
 def test_repository_repo_list_branches(client: PyforgejoApi):
