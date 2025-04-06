@@ -1,6 +1,6 @@
 [project]
 name = "pyforgejo"
-version = "2.0.0"
+version = "2.0.1"
 description = "A Python client library for accessing the Forgejo API"
 authors = [
     {name = "harabat"},
@@ -11,9 +11,9 @@ packages = [
 ]
 license = "MIT"
 dependencies = [
-    "httpx>=0.20.0",
-    "pydantic>=2.9.2",
-    "python-dotenv>=1.0.1",
+    "httpx>=0.28.1",
+    "pydantic>=2.11.2",
+    "python-dotenv>=1.1.0",
 ]
 requires-python = ">=3.10"
 
