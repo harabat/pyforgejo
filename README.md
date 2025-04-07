@@ -64,8 +64,8 @@ pip install pyforgejo
 ## Forgejo API Resources
 
 - [API Usage | Forgejo](https://forgejo.org/docs/latest/user/api-usage/): user guide for the Forgejo API
-- [Forgejo API | Codeberg](https://codeberg.org/api/swagger): API reference for Codeberg
-- [Forgejo API Swagger spec | Codeberg](https://codeberg.org/swagger.v1.json): Codeberg's Forgejo API Swagger spec
+- [Forgejo API | Codeberg](https://forgejo.org/api/swagger): API reference for Forgejo
+- [Forgejo API Swagger spec | Codeberg](https://forgejo.org/swagger.v1.json): Forgejo API Swagger spec
 - [About Swagger Specification | Documentation | Swagger](https://swagger.io/docs/specification/about/): docs for Swagger spec
 - [The OpenAPI Specification Explained | OpenAPI Documentation](https://learn.openapis.org/specification/): docs for OpenAPI spec
 
