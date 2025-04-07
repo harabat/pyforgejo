@@ -246,16 +246,21 @@ class PyforgejoApi:
 10. Create a virtual environment and install the lib.
 
 ``` shell
-conda create --name pyforgejo_dev
-conda activate pyforgejo_dev
-pip install /path/to/pyforgejo
+cd /path/to/sdks
+uv init
+uv venv
+uv pip install -e .
+uv pip install pipreqs
+uv run pipreqs ./pyforgejo --savepath requirements.txt
+uv add -r requirements.txt
+uv sync
 ```
 
 11. Use the client as shown in the [Usage](#usage) section.
 
 ``` python
-# conda install ipython
-# ipython
+# uv pip install ipython
+# uv run ipython
 
 from pyforgejo import PyforgejoApi
 
@@ -267,6 +272,6 @@ user = client.user.get_current()
 12. Run tests (tests need to be cloned from <https://codeberg.org/harabat/pyforgejo/src/branch/main/tests)>.
 
 ``` python
-conda install pytest
-pytest -v tests/test_client.py
+uv pip install pytest
+uv run pytest -v tests/test_client.py
 ```
