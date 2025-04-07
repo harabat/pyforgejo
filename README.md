@@ -106,13 +106,67 @@ fern init --openapi https://code.forgejo.org/swagger.v1.json
 ]
 ```
 
-3. Add the Python SDK generator to `fern`.
+3. Convert [Forgejo's Swagger (v2) API spec](https://code.forgejo.org/swagger.v1.json) to [OpenAPI v3](https://spec.openapis.org/oas/v3.0.1.html) via <https://converter.swagger.io/>.
+
+4. Modify endpoints with multiple return types in `fern/openapi/openapi.json`.
+
+    ``` diff
+    "/repos/{owner}/{repo}/contents/{filepath}": {
+      "get": {
+        // ...
+        "responses": {
+          "200": {
+-            "$ref": "#/components/responses/ContentsResponse"
++            "description": "A single file's contents or a directory listing",
++            "content": {
++              "application/json": {
++                "schema": {
++                  "oneOf": [
++                    {
++                      "$ref": "#/components/schemas/ContentsResponse"
++                    },
++                    {
++                      "type": "array",
++                      "items": {
++                        "$ref": "#/components/schemas/ContentsResponse"
++                      }
++                    }
++                  ]
++                }
++              },
++              "text/html": {
++                "schema": {
++                  "oneOf": [
++                    {
++                      "$ref": "#/components/schemas/ContentsResponse"
++                    },
++                    {
++                      "type": "array",
++                      "items": {
++                        "$ref": "#/components/schemas/ContentsResponse"
++                      }
++                    }
++                  ]
++                }
++              }
++            }
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          }
+        }
+      },
+// ...
+    },
+    ```
+
+5. Add the Python SDK generator to `fern`.
 
 ``` shell
 fern add fernapi/fern-python-sdk
 ```
 
-4. Remove the other generators and modify the name of the output dir to `pyforgejo`.
+6. Remove the other generators and modify the name of the output dir to `pyforgejo`.
 
    ``` diff
 # yaml-language-server: $schema=https://schema.buildwithfern.dev/generators-yml.json
@@ -133,21 +187,21 @@ groups:
 +          path: ../sdks/pyforgejo
    ```
 
-5. Generate the client (output will be in `sdks/pyforgejo`).
+7. Generate the client (output will be in `sdks/pyforgejo`).
 
 ``` shell
 fern generate
 # you'll have to login to GitHub
 ```
 
-6. Create a `.env` file in `sdks/pyforgejo` with your `BASE_URL` and `API_KEY`.
+8. Create a `.env` file in `sdks/pyforgejo` with your `BASE_URL` and `API_KEY`.
 
 ``` yml
 BASE_URL=https://codeberg.org/api/v1
 API_KEY="token your_api_key"
 ```
 
-7. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
+9. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
 
 ``` diff
 # ...
@@ -189,7 +243,7 @@ class PyforgejoApi:
 # same for AsyncPyforgejoApi
 ```
 
-8. Create a virtual environment and install the lib.
+10. Create a virtual environment and install the lib.
 
 ``` shell
 conda create --name pyforgejo_dev
@@ -197,7 +251,7 @@ conda activate pyforgejo_dev
 pip install /path/to/pyforgejo
 ```
 
-9. Use the client as shown in the [Usage](#usage) section.
+11. Use the client as shown in the [Usage](#usage) section.
 
 ``` python
 # conda install ipython
@@ -210,7 +264,7 @@ client = PyforgejoApi()
 user = client.user.get_current()
 ```
 
-10. Run tests (tests need to be cloned from <https://codeberg.org/harabat/pyforgejo/src/branch/main/tests)>.
+12. Run tests (tests need to be cloned from <https://codeberg.org/harabat/pyforgejo/src/branch/main/tests)>.
 
 ``` python
 conda install pytest
