@@ -85,7 +85,7 @@ The user experience and code architecture of the `fern`-generated client follow 
 npm install -g fern-api
 
 fern init --openapi https://code.forgejo.org/swagger.v1.json
-# Please enter your organization pyforgejo
+# Please enter your organization: pyforgejo
 ```
 
 2. Edit the `fern/openapi/openapi.json` file to keep only `AuthorizationHeaderToken` in `securityDefinitions` and `security`.
@@ -112,21 +112,42 @@ fern init --openapi https://code.forgejo.org/swagger.v1.json
 fern add fernapi/fern-python-sdk
 ```
 
-4. Generate the client (output will be in `sdks/pyforgejo`).
+4. Remove the other generators and modify the name of the output dir to `pyforgejo`.
+
+   ``` diff
+# yaml-language-server: $schema=https://schema.buildwithfern.dev/generators-yml.json
+api:
+  specs:
+    - openapi: openapi/openapi.json
+default-group: local
+groups:
+  local:
+    generators:
+-      - name: fernapi/fern-typescript-sdk
+-        # ...
+      - name: fernapi/fern-python-sdk
+        version: x.x.x
+        output:
+          location: local-file-system
+-          path: ../sdks/python
++          path: ../sdks/pyforgejo
+   ```
+
+5. Generate the client (output will be in `sdks/pyforgejo`).
 
 ``` shell
 fern generate
 # you'll have to login to GitHub
 ```
 
-5. Create a `.env` file in `sdks/pyforgejo` with your `BASE_URL` and `API_KEY`.
+6. Create a `.env` file in `sdks/pyforgejo` with your `BASE_URL` and `API_KEY`.
 
 ``` yml
 BASE_URL=https://codeberg.org/api/v1
 API_KEY="token your_api_key"
 ```
 
-6. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
+7. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
 
 ``` diff
 # ...
@@ -139,9 +160,9 @@ from .user.client import AsyncUserClient
 +BASE_URL = os.getenv('BASE_URL')
 +API_KEY = os.getenv('API_KEY')
 
- class PyforgejoApi:
+class PyforgejoApi:
 # ...
-     base_url : typing.Optional[str]
+    base_url : typing.Optional[str]
 -        The base url to use for requests from the client.
 +        The base url to use for requests from the client. Defaults to BASE_URL from .env file.
 # ...
@@ -168,7 +189,7 @@ from .user.client import AsyncUserClient
 # same for AsyncPyforgejoApi
 ```
 
-7. Create a virtual environment and install the lib.
+8. Create a virtual environment and install the lib.
 
 ``` shell
 conda create --name pyforgejo_dev
@@ -176,17 +197,22 @@ conda activate pyforgejo_dev
 pip install /path/to/pyforgejo
 ```
 
-8. Use the client as shown in the [Usage](#usage) section.
-
-``` shell
-conda install ipython
-ipython
-```
+9. Use the client as shown in the [Usage](#usage) section.
 
 ``` python
+# conda install ipython
+# ipython
+
 from pyforgejo import PyforgejoApi
 
 client = PyforgejoApi()
 
 user = client.user.get_current()
+```
+
+10. Run tests (tests need to be cloned from <https://codeberg.org/harabat/pyforgejo/src/branch/main/tests)>.
+
+``` python
+conda install pytest
+pytest -v tests/test_client.py
 ```
