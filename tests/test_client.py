@@ -1,36 +1,19 @@
-import pytest
-from pyforgejo.client import PyforgejoApi  # Replace with your actual client import
-from pyforgejo.types import (
-    Activity,
-    Attachment,
-    Branch,
-    ChangedFile,
-    CombinedStatus,
-    Comment,
-    Commit,
-    CommitStatus,
-    ContentsResponse,
-    GeneralApiSettings,
-    GeneralAttachmentSettings,
-    GeneralRepoSettings,
-    GeneralUiSettings,
-    GitignoreTemplateInfo,
-    Issue,
-    Label,
-    LabelTemplate,
-    LicenseTemplateInfo,
-    LicensesTemplateListEntry,
-    Organization,
-    PullRequest,
-    Release,
-    Repository,
-    ServerVersion,
-    User,
-    WikiPage,
-    WikiPageMetaData,
-)
 import os
+
+import pytest
 from dotenv import load_dotenv
+
+from pyforgejo.client import \
+    PyforgejoApi  # Replace with your actual client import
+from pyforgejo.types import (Activity, Attachment, Branch, ChangedFile,
+                             CombinedStatus, Comment, Commit, CommitStatus,
+                             ContentsResponse, GeneralApiSettings,
+                             GeneralAttachmentSettings, GeneralRepoSettings,
+                             GeneralUiSettings, GitignoreTemplateInfo, Issue,
+                             Label, LabelTemplate, LicensesTemplateListEntry,
+                             LicenseTemplateInfo, Organization, PullRequest,
+                             Release, Repository, ServerVersion, User,
+                             WikiPage, WikiPageMetaData)
 
 # load environment variables at the beginning
 load_dotenv()
@@ -182,17 +165,21 @@ def test_repository_repo_get(client: PyforgejoApi):
 
 def test_repository_repo_get_contents(client: PyforgejoApi):
     try:
-        contents = client.repository.repo_get_contents(owner='harabat', repo='pyforgejo', filepath='README.md')
+        contents = client.repository.repo_get_contents(
+            owner="harabat", repo="pyforgejo", filepath="README.md"
+        )
         assert isinstance(contents, ContentsResponse)
     except Exception as e:
-        assert False, f'Test failed with exception: {e}'
+        assert False, f"Test failed with exception: {e}"
 
     try:
-        contents = client.repository.repo_get_contents(owner='harabat', repo='pyforgejo', filepath='tests')
+        contents = client.repository.repo_get_contents(
+            owner="harabat", repo="pyforgejo", filepath="tests"
+        )
         assert isinstance(contents, list)
         assert all(isinstance(item, ContentsResponse) for item in contents)
     except Exception as e:
-        assert False, f'Test failed with exception: {e}'
+        assert False, f"Test failed with exception: {e}"
 
 
 def test_repository_repo_list_branches(client: PyforgejoApi):
