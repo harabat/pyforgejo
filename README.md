@@ -110,7 +110,7 @@ fern init --openapi https://code.forgejo.org/swagger.v1.json
 
 4. Modify endpoints with multiple return types in `fern/openapi/openapi.json`.
 
-    ``` diff
+``` diff
     "/repos/{owner}/{repo}/contents/{filepath}": {
       "get": {
         // ...
@@ -158,7 +158,7 @@ fern init --openapi https://code.forgejo.org/swagger.v1.json
       },
 // ...
     },
-    ```
+```
 
 5. Add the Python SDK generator to `fern`.
 
@@ -168,7 +168,7 @@ fern add fernapi/fern-python-sdk
 
 6. Remove the other generators and modify the name of the output dir to `pyforgejo`.
 
-   ``` diff
+``` diff
 # yaml-language-server: $schema=https://schema.buildwithfern.dev/generators-yml.json
 api:
   specs:
@@ -185,7 +185,7 @@ groups:
           location: local-file-system
 -          path: ../sdks/python
 +          path: ../sdks/pyforgejo
-   ```
+```
 
 7. Generate the client (output will be in `sdks/pyforgejo`).
 
