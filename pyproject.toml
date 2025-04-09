@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [project]
 name = "pyforgejo"
 version = "2.0.1"
@@ -16,10 +20,6 @@ requires-python = ">=3.10"
 
 [project.urls]
 repository = "https://codeberg.org/harabat/pyforgejo"
-
-[build-system]
-requires = ["poetry-core>=2.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [project.optional-dependencies]
 dev = [
