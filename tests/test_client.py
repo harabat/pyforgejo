@@ -2,7 +2,6 @@ import os
 
 import pytest
 from dotenv import load_dotenv
-
 from pyforgejo.client import \
     PyforgejoApi  # Replace with your actual client import
 from pyforgejo.types import (Activity, Attachment, Branch, ChangedFile,
