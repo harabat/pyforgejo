@@ -19,7 +19,7 @@
       "name": "This file is distributed under the MIT license for the purpose of interoperability",
       "url": "http://opensource.org/licenses/MIT"
     },
-    "version": "11.0.0-dev-617-1d1e0ced3e+gitea-1.22.0"
+    "version": "11.0.0+gitea-1.22.0"
   },
   "basePath": "/api/v1",
   "paths": {
@@ -23762,7 +23762,7 @@
           "x-go-name": "DefaultDeleteBranchAfterMerge"
         },
         "default_merge_style": {
-          "description": "set to a merge style to be used by this repository: \"merge\", \"rebase\", \"rebase-merge\", \"squash\", or \"fast-forward-only\".",
+          "description": "set to a merge style to be used by this repository: \"merge\", \"rebase\", \"rebase-merge\", \"squash\", \"fast-forward-only\", \"manually-merged\", or \"rebase-update-only\".",
           "type": "string",
           "x-go-name": "DefaultMergeStyle"
         },
@@ -26132,6 +26132,11 @@
           "type": "string",
           "format": "date-time",
           "x-go-name": "Deadline"
+        },
+        "flow": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Flow"
         },
         "head": {
           "$ref": "#/definitions/PRBranchInfo"
