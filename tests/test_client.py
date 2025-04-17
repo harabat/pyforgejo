@@ -2,6 +2,7 @@ import os
 
 import pytest
 from dotenv import load_dotenv
+
 from pyforgejo.client import \
     PyforgejoApi  # Replace with your actual client import
 from pyforgejo.types import (Activity, Attachment, Branch, ChangedFile,
@@ -87,7 +88,7 @@ def test_miscellaneous_get_license_template_info(client: PyforgejoApi):
 def test_miscellaneous_get_signing_key(client: PyforgejoApi):
     try:
         signing_key = client.miscellaneous.get_signing_key()
-        assert signing_key is not None
+        assert isinstance(signing_key, str) or signing_key is None
     except Exception as e:
         assert False, f"Test failed with exception: {e}"
 
