@@ -80,9 +80,7 @@ class AdminClient:
         client.admin.cron_list()
         """
         response = self._raw_client.cron_list(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -113,10 +111,7 @@ class AdminClient:
             task="task",
         )
         """
-        response = self._raw_client.cron_run(
-            task,
-            request_options=request_options,
-        )
+        response = self._raw_client.cron_run(task, request_options=request_options)
         return response.data
 
     def get_all_emails(
@@ -153,9 +148,7 @@ class AdminClient:
         client.admin.get_all_emails()
         """
         response = self._raw_client.get_all_emails(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -197,10 +190,7 @@ class AdminClient:
         client.admin.search_emails()
         """
         response = self._raw_client.search_emails(
-            q=q,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            q=q, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -238,9 +228,7 @@ class AdminClient:
         client.admin.list_hooks()
         """
         response = self._raw_client.list_hooks(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -329,10 +317,7 @@ class AdminClient:
             id=1000000,
         )
         """
-        response = self._raw_client.get_hook(
-            id,
-            request_options=request_options,
-        )
+        response = self._raw_client.get_hook(id, request_options=request_options)
         return response.data
 
     def delete_hook(
@@ -362,10 +347,7 @@ class AdminClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_hook(
-            id,
-            request_options=request_options,
-        )
+        response = self._raw_client.delete_hook(id, request_options=request_options)
         return response.data
 
     def edit_hook(
@@ -459,9 +441,7 @@ class AdminClient:
         client.admin.get_all_orgs()
         """
         response = self._raw_client.get_all_orgs(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -488,9 +468,7 @@ class AdminClient:
         )
         client.admin.list_quota_groups()
         """
-        response = self._raw_client.list_quota_groups(
-            request_options=request_options,
-        )
+        response = self._raw_client.list_quota_groups(request_options=request_options)
         return response.data
 
     def create_quota_group(
@@ -528,9 +506,7 @@ class AdminClient:
         client.admin.create_quota_group()
         """
         response = self._raw_client.create_quota_group(
-            name=name,
-            rules=rules,
-            request_options=request_options,
+            name=name, rules=rules, request_options=request_options
         )
         return response.data
 
@@ -566,8 +542,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.get_quota_group(
-            quotagroup,
-            request_options=request_options,
+            quotagroup, request_options=request_options
         )
         return response.data
 
@@ -602,8 +577,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.delete_quota_group(
-            quotagroup,
-            request_options=request_options,
+            quotagroup, request_options=request_options
         )
         return response.data
 
@@ -643,9 +617,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.add_rule_to_quota_group(
-            quotagroup,
-            quotarule,
-            request_options=request_options,
+            quotagroup, quotarule, request_options=request_options
         )
         return response.data
 
@@ -685,9 +657,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.remove_rule_from_quota_group(
-            quotagroup,
-            quotarule,
-            request_options=request_options,
+            quotagroup, quotarule, request_options=request_options
         )
         return response.data
 
@@ -723,8 +693,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.list_users_in_quota_group(
-            quotagroup,
-            request_options=request_options,
+            quotagroup, request_options=request_options
         )
         return response.data
 
@@ -764,9 +733,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.add_user_to_quota_group(
-            quotagroup,
-            username,
-            request_options=request_options,
+            quotagroup, username, request_options=request_options
         )
         return response.data
 
@@ -806,9 +773,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.remove_user_from_quota_group(
-            quotagroup,
-            username,
-            request_options=request_options,
+            quotagroup, username, request_options=request_options
         )
         return response.data
 
@@ -835,9 +800,7 @@ class AdminClient:
         )
         client.admin.list_quota_rules()
         """
-        response = self._raw_client.list_quota_rules(
-            request_options=request_options,
-        )
+        response = self._raw_client.list_quota_rules(request_options=request_options)
         return response.data
 
     def create_quota_rule(
@@ -878,10 +841,7 @@ class AdminClient:
         client.admin.create_quota_rule()
         """
         response = self._raw_client.create_quota_rule(
-            limit=limit,
-            name=name,
-            subjects=subjects,
-            request_options=request_options,
+            limit=limit, name=name, subjects=subjects, request_options=request_options
         )
         return response.data
 
@@ -914,8 +874,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.get_quota_rule(
-            quotarule,
-            request_options=request_options,
+            quotarule, request_options=request_options
         )
         return response.data
 
@@ -947,8 +906,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.admin_d_elete_quota_rule(
-            quotarule,
-            request_options=request_options,
+            quotarule, request_options=request_options
         )
         return response.data
 
@@ -992,10 +950,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.edit_quota_rule(
-            quotarule,
-            limit=limit,
-            subjects=subjects,
-            request_options=request_options,
+            quotarule, limit=limit, subjects=subjects, request_options=request_options
         )
         return response.data
 
@@ -1029,8 +984,7 @@ class AdminClient:
         client.admin.search_run_jobs()
         """
         response = self._raw_client.search_run_jobs(
-            labels=labels,
-            request_options=request_options,
+            labels=labels, request_options=request_options
         )
         return response.data
 
@@ -1057,7 +1011,7 @@ class AdminClient:
         client.admin.get_runner_registration_token()
         """
         response = self._raw_client.get_runner_registration_token(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -1099,10 +1053,7 @@ class AdminClient:
         client.admin.unadopted_list()
         """
         response = self._raw_client.unadopted_list(
-            page=page,
-            limit=limit,
-            pattern=pattern,
-            request_options=request_options,
+            page=page, limit=limit, pattern=pattern, request_options=request_options
         )
         return response.data
 
@@ -1142,9 +1093,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.adopt_repository(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -1184,9 +1133,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.delete_unadopted_repository(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -1360,9 +1307,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.delete_user(
-            username,
-            purge=purge,
-            request_options=request_options,
+            username, purge=purge, request_options=request_options
         )
         return response.data
 
@@ -1569,9 +1514,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.delete_user_public_key(
-            username,
-            id,
-            request_options=request_options,
+            username, id, request_options=request_options
         )
         return response.data
 
@@ -1675,8 +1618,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.get_user_quota(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -1716,9 +1658,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.set_user_quota_groups(
-            username,
-            groups=groups,
-            request_options=request_options,
+            username, groups=groups, request_options=request_options
         )
         return response.data
 
@@ -1758,9 +1698,7 @@ class AdminClient:
         )
         """
         response = self._raw_client.rename_user(
-            username,
-            new_username=new_username,
-            request_options=request_options,
+            username, new_username=new_username, request_options=request_options
         )
         return response.data
 
@@ -1920,9 +1858,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.cron_list(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1962,8 +1898,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.cron_run(
-            task,
-            request_options=request_options,
+            task, request_options=request_options
         )
         return response.data
 
@@ -2009,9 +1944,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_all_emails(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2061,10 +1994,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.search_emails(
-            q=q,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            q=q, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2110,9 +2040,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_hooks(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2217,10 +2145,7 @@ class AsyncAdminClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_hook(
-            id,
-            request_options=request_options,
-        )
+        response = await self._raw_client.get_hook(id, request_options=request_options)
         return response.data
 
     async def delete_hook(
@@ -2259,8 +2184,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_hook(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -2371,9 +2295,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_all_orgs(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2409,7 +2331,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_quota_groups(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -2456,9 +2378,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.create_quota_group(
-            name=name,
-            rules=rules,
-            request_options=request_options,
+            name=name, rules=rules, request_options=request_options
         )
         return response.data
 
@@ -2502,8 +2422,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_quota_group(
-            quotagroup,
-            request_options=request_options,
+            quotagroup, request_options=request_options
         )
         return response.data
 
@@ -2546,8 +2465,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_quota_group(
-            quotagroup,
-            request_options=request_options,
+            quotagroup, request_options=request_options
         )
         return response.data
 
@@ -2595,9 +2513,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.add_rule_to_quota_group(
-            quotagroup,
-            quotarule,
-            request_options=request_options,
+            quotagroup, quotarule, request_options=request_options
         )
         return response.data
 
@@ -2645,9 +2561,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.remove_rule_from_quota_group(
-            quotagroup,
-            quotarule,
-            request_options=request_options,
+            quotagroup, quotarule, request_options=request_options
         )
         return response.data
 
@@ -2691,8 +2605,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_users_in_quota_group(
-            quotagroup,
-            request_options=request_options,
+            quotagroup, request_options=request_options
         )
         return response.data
 
@@ -2740,9 +2653,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.add_user_to_quota_group(
-            quotagroup,
-            username,
-            request_options=request_options,
+            quotagroup, username, request_options=request_options
         )
         return response.data
 
@@ -2790,9 +2701,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.remove_user_from_quota_group(
-            quotagroup,
-            username,
-            request_options=request_options,
+            quotagroup, username, request_options=request_options
         )
         return response.data
 
@@ -2828,7 +2737,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_quota_rules(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -2878,10 +2787,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.create_quota_rule(
-            limit=limit,
-            name=name,
-            subjects=subjects,
-            request_options=request_options,
+            limit=limit, name=name, subjects=subjects, request_options=request_options
         )
         return response.data
 
@@ -2922,8 +2828,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_quota_rule(
-            quotarule,
-            request_options=request_options,
+            quotarule, request_options=request_options
         )
         return response.data
 
@@ -2963,8 +2868,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.admin_d_elete_quota_rule(
-            quotarule,
-            request_options=request_options,
+            quotarule, request_options=request_options
         )
         return response.data
 
@@ -3016,10 +2920,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.edit_quota_rule(
-            quotarule,
-            limit=limit,
-            subjects=subjects,
-            request_options=request_options,
+            quotarule, limit=limit, subjects=subjects, request_options=request_options
         )
         return response.data
 
@@ -3061,8 +2962,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.search_run_jobs(
-            labels=labels,
-            request_options=request_options,
+            labels=labels, request_options=request_options
         )
         return response.data
 
@@ -3097,7 +2997,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_runner_registration_token(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -3147,10 +3047,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.unadopted_list(
-            page=page,
-            limit=limit,
-            pattern=pattern,
-            request_options=request_options,
+            page=page, limit=limit, pattern=pattern, request_options=request_options
         )
         return response.data
 
@@ -3198,9 +3095,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.adopt_repository(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -3248,9 +3143,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_unadopted_repository(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -3448,9 +3341,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_user(
-            username,
-            purge=purge,
-            request_options=request_options,
+            username, purge=purge, request_options=request_options
         )
         return response.data
 
@@ -3681,9 +3572,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_user_public_key(
-            username,
-            id,
-            request_options=request_options,
+            username, id, request_options=request_options
         )
         return response.data
 
@@ -3803,8 +3692,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_user_quota(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -3852,9 +3740,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.set_user_quota_groups(
-            username,
-            groups=groups,
-            request_options=request_options,
+            username, groups=groups, request_options=request_options
         )
         return response.data
 
@@ -3902,9 +3788,7 @@ class AsyncAdminClient:
         asyncio.run(main())
         """
         response = await self._raw_client.rename_user(
-            username,
-            new_username=new_username,
-            request_options=request_options,
+            username, new_username=new_username, request_options=request_options
         )
         return response.data
 

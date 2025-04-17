@@ -128,11 +128,7 @@ class PackageClient:
         )
         """
         response = self._raw_client.link_package(
-            owner,
-            type,
-            name,
-            repo_name,
-            request_options=request_options,
+            owner, type, name, repo_name, request_options=request_options
         )
         return response.data
 
@@ -177,10 +173,7 @@ class PackageClient:
         )
         """
         response = self._raw_client.unlink_package(
-            owner,
-            type,
-            name,
-            request_options=request_options,
+            owner, type, name, request_options=request_options
         )
         return response.data
 
@@ -231,11 +224,7 @@ class PackageClient:
         )
         """
         response = self._raw_client.get_package(
-            owner,
-            type,
-            name,
-            version,
-            request_options=request_options,
+            owner, type, name, version, request_options=request_options
         )
         return response.data
 
@@ -285,11 +274,7 @@ class PackageClient:
         )
         """
         response = self._raw_client.delete_package(
-            owner,
-            type,
-            name,
-            version,
-            request_options=request_options,
+            owner, type, name, version, request_options=request_options
         )
         return response.data
 
@@ -340,11 +325,7 @@ class PackageClient:
         )
         """
         response = self._raw_client.list_package_files(
-            owner,
-            type,
-            name,
-            version,
-            request_options=request_options,
+            owner, type, name, version, request_options=request_options
         )
         return response.data
 
@@ -483,11 +464,7 @@ class AsyncPackageClient:
         asyncio.run(main())
         """
         response = await self._raw_client.link_package(
-            owner,
-            type,
-            name,
-            repo_name,
-            request_options=request_options,
+            owner, type, name, repo_name, request_options=request_options
         )
         return response.data
 
@@ -540,10 +517,7 @@ class AsyncPackageClient:
         asyncio.run(main())
         """
         response = await self._raw_client.unlink_package(
-            owner,
-            type,
-            name,
-            request_options=request_options,
+            owner, type, name, request_options=request_options
         )
         return response.data
 
@@ -602,11 +576,7 @@ class AsyncPackageClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_package(
-            owner,
-            type,
-            name,
-            version,
-            request_options=request_options,
+            owner, type, name, version, request_options=request_options
         )
         return response.data
 
@@ -664,11 +634,7 @@ class AsyncPackageClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_package(
-            owner,
-            type,
-            name,
-            version,
-            request_options=request_options,
+            owner, type, name, version, request_options=request_options
         )
         return response.data
 
@@ -727,10 +693,6 @@ class AsyncPackageClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_package_files(
-            owner,
-            type,
-            name,
-            version,
-            request_options=request_options,
+            owner, type, name, version, request_options=request_options
         )
         return response.data

@@ -172,7 +172,7 @@ class NotificationClient:
         client.notification.notify_new_available()
         """
         response = self._raw_client.notify_new_available(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -205,8 +205,7 @@ class NotificationClient:
         )
         """
         response = self._raw_client.notify_get_thread(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -245,9 +244,7 @@ class NotificationClient:
         )
         """
         response = self._raw_client.notify_read_thread(
-            id,
-            to_status=to_status,
-            request_options=request_options,
+            id, to_status=to_status, request_options=request_options
         )
         return response.data
 
@@ -579,7 +576,7 @@ class AsyncNotificationClient:
         asyncio.run(main())
         """
         response = await self._raw_client.notify_new_available(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -620,8 +617,7 @@ class AsyncNotificationClient:
         asyncio.run(main())
         """
         response = await self._raw_client.notify_get_thread(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -668,9 +664,7 @@ class AsyncNotificationClient:
         asyncio.run(main())
         """
         response = await self._raw_client.notify_read_thread(
-            id,
-            to_status=to_status,
-            request_options=request_options,
+            id, to_status=to_status, request_options=request_options
         )
         return response.data
 

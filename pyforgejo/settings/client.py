@@ -50,7 +50,7 @@ class SettingsClient:
         client.settings.get_general_api_settings()
         """
         response = self._raw_client.get_general_api_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -78,7 +78,7 @@ class SettingsClient:
         client.settings.get_general_attachment_settings()
         """
         response = self._raw_client.get_general_attachment_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -106,7 +106,7 @@ class SettingsClient:
         client.settings.get_general_repository_settings()
         """
         response = self._raw_client.get_general_repository_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -134,7 +134,7 @@ class SettingsClient:
         client.settings.get_general_ui_settings()
         """
         response = self._raw_client.get_general_ui_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -186,7 +186,7 @@ class AsyncSettingsClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_general_api_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -222,7 +222,7 @@ class AsyncSettingsClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_general_attachment_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -258,7 +258,7 @@ class AsyncSettingsClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_general_repository_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -294,6 +294,6 @@ class AsyncSettingsClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_general_ui_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data

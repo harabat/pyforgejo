@@ -75,9 +75,7 @@ class UserClient:
         )
         client.user.get_current()
         """
-        response = self._raw_client.get_current(
-            request_options=request_options,
-        )
+        response = self._raw_client.get_current(request_options=request_options)
         return response.data
 
     def search_run_jobs(
@@ -110,8 +108,7 @@ class UserClient:
         client.user.search_run_jobs()
         """
         response = self._raw_client.search_run_jobs(
-            labels=labels,
-            request_options=request_options,
+            labels=labels, request_options=request_options
         )
         return response.data
 
@@ -138,7 +135,7 @@ class UserClient:
         client.user.get_runner_registration_token()
         """
         response = self._raw_client.get_runner_registration_token(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -178,9 +175,7 @@ class UserClient:
         )
         """
         response = self._raw_client.update_user_secret(
-            secretname,
-            data=data,
-            request_options=request_options,
+            secretname, data=data, request_options=request_options
         )
         return response.data
 
@@ -215,8 +210,7 @@ class UserClient:
         )
         """
         response = self._raw_client.delete_user_secret(
-            secretname,
-            request_options=request_options,
+            secretname, request_options=request_options
         )
         return response.data
 
@@ -254,9 +248,7 @@ class UserClient:
         client.user.get_user_variables_list()
         """
         response = self._raw_client.get_user_variables_list(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -292,8 +284,7 @@ class UserClient:
         )
         """
         response = self._raw_client.get_user_variable(
-            variablename,
-            request_options=request_options,
+            variablename, request_options=request_options
         )
         return response.data
 
@@ -333,9 +324,7 @@ class UserClient:
         )
         """
         response = self._raw_client.create_user_variable(
-            variablename,
-            value=value,
-            request_options=request_options,
+            variablename, value=value, request_options=request_options
         )
         return response.data
 
@@ -379,10 +368,7 @@ class UserClient:
         )
         """
         response = self._raw_client.update_user_variable(
-            variablename,
-            value=value,
-            name=name,
-            request_options=request_options,
+            variablename, value=value, name=name, request_options=request_options
         )
         return response.data
 
@@ -417,8 +403,7 @@ class UserClient:
         )
         """
         response = self._raw_client.delete_user_variable(
-            variablename,
-            request_options=request_options,
+            variablename, request_options=request_options
         )
         return response.data
 
@@ -456,9 +441,7 @@ class UserClient:
         client.user.user_get_o_auth_2_applications()
         """
         response = self._raw_client.user_get_o_auth_2_applications(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -533,8 +516,7 @@ class UserClient:
         )
         """
         response = self._raw_client.user_get_o_auth_2_application(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -566,8 +548,7 @@ class UserClient:
         )
         """
         response = self._raw_client.user_delete_o_auth_2_application(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -649,8 +630,7 @@ class UserClient:
         client.user.update_avatar()
         """
         response = self._raw_client.update_avatar(
-            image=image,
-            request_options=request_options,
+            image=image, request_options=request_options
         )
         return response.data
 
@@ -676,9 +656,7 @@ class UserClient:
         )
         client.user.delete_avatar()
         """
-        response = self._raw_client.delete_avatar(
-            request_options=request_options,
-        )
+        response = self._raw_client.delete_avatar(request_options=request_options)
         return response.data
 
     def block_user(
@@ -709,8 +687,7 @@ class UserClient:
         )
         """
         response = self._raw_client.block_user(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -737,9 +714,7 @@ class UserClient:
         )
         client.user.list_emails()
         """
-        response = self._raw_client.list_emails(
-            request_options=request_options,
-        )
+        response = self._raw_client.list_emails(request_options=request_options)
         return response.data
 
     def add_email(
@@ -772,8 +747,7 @@ class UserClient:
         client.user.add_email()
         """
         response = self._raw_client.add_email(
-            emails=emails,
-            request_options=request_options,
+            emails=emails, request_options=request_options
         )
         return response.data
 
@@ -806,8 +780,7 @@ class UserClient:
         client.user.delete_email()
         """
         response = self._raw_client.delete_email(
-            emails=emails,
-            request_options=request_options,
+            emails=emails, request_options=request_options
         )
         return response.data
 
@@ -845,9 +818,7 @@ class UserClient:
         client.user.current_list_followers()
         """
         response = self._raw_client.current_list_followers(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -885,9 +856,7 @@ class UserClient:
         client.user.current_list_following()
         """
         response = self._raw_client.current_list_following(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -919,8 +888,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_check_following(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -952,8 +920,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_put_follow(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -985,8 +952,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_delete_follow(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -1014,7 +980,7 @@ class UserClient:
         client.user.get_verification_token()
         """
         response = self._raw_client.get_verification_token(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -1041,9 +1007,7 @@ class UserClient:
         )
         client.user.user_verify_gpg_key()
         """
-        response = self._raw_client.user_verify_gpg_key(
-            request_options=request_options,
-        )
+        response = self._raw_client.user_verify_gpg_key(request_options=request_options)
         return response.data
 
     def user_current_list_gpg_keys(
@@ -1080,9 +1044,7 @@ class UserClient:
         client.user.user_current_list_gpg_keys()
         """
         response = self._raw_client.user_current_list_gpg_keys(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1156,8 +1118,7 @@ class UserClient:
         )
         """
         response = self._raw_client.user_current_get_gpg_key(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -1189,8 +1150,7 @@ class UserClient:
         )
         """
         response = self._raw_client.user_current_delete_gpg_key(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -1228,9 +1188,7 @@ class UserClient:
         client.user.list_hooks()
         """
         response = self._raw_client.list_hooks(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1319,10 +1277,7 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.get_hook(
-            id,
-            request_options=request_options,
-        )
+        response = self._raw_client.get_hook(id, request_options=request_options)
         return response.data
 
     def delete_hook(
@@ -1352,10 +1307,7 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_hook(
-            id,
-            request_options=request_options,
-        )
+        response = self._raw_client.delete_hook(id, request_options=request_options)
         return response.data
 
     def edit_hook(
@@ -1501,10 +1453,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_post_key(
-            key=key,
-            title=title,
-            read_only=read_only,
-            request_options=request_options,
+            key=key, title=title, read_only=read_only, request_options=request_options
         )
         return response.data
 
@@ -1536,10 +1485,7 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.current_get_key(
-            id,
-            request_options=request_options,
-        )
+        response = self._raw_client.current_get_key(id, request_options=request_options)
         return response.data
 
     def current_delete_key(
@@ -1570,8 +1516,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_delete_key(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -1609,9 +1554,7 @@ class UserClient:
         client.user.list_blocked_users()
         """
         response = self._raw_client.list_blocked_users(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1638,9 +1581,7 @@ class UserClient:
         )
         client.user.get_quota()
         """
-        response = self._raw_client.get_quota(
-            request_options=request_options,
-        )
+        response = self._raw_client.get_quota(request_options=request_options)
         return response.data
 
     def list_quota_artifacts(
@@ -1677,9 +1618,7 @@ class UserClient:
         client.user.list_quota_artifacts()
         """
         response = self._raw_client.list_quota_artifacts(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1717,9 +1656,7 @@ class UserClient:
         client.user.list_quota_attachments()
         """
         response = self._raw_client.list_quota_attachments(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1745,9 +1682,7 @@ class UserClient:
         )
         client.user.check_quota()
         """
-        response = self._raw_client.check_quota(
-            request_options=request_options,
-        )
+        response = self._raw_client.check_quota(request_options=request_options)
         return response.data
 
     def list_quota_packages(
@@ -1784,9 +1719,7 @@ class UserClient:
         client.user.list_quota_packages()
         """
         response = self._raw_client.list_quota_packages(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1828,10 +1761,7 @@ class UserClient:
         client.user.current_list_repos()
         """
         response = self._raw_client.current_list_repos(
-            page=page,
-            limit=limit,
-            order_by=order_by,
-            request_options=request_options,
+            page=page, limit=limit, order_by=order_by, request_options=request_options
         )
         return response.data
 
@@ -1858,9 +1788,7 @@ class UserClient:
         )
         client.user.get_user_settings()
         """
-        response = self._raw_client.get_user_settings(
-            request_options=request_options,
-        )
+        response = self._raw_client.get_user_settings(request_options=request_options)
         return response.data
 
     def update_user_settings(
@@ -1976,9 +1904,7 @@ class UserClient:
         client.user.current_list_starred()
         """
         response = self._raw_client.current_list_starred(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2018,9 +1944,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_check_starring(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -2060,9 +1984,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_put_star(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -2102,9 +2024,7 @@ class UserClient:
         )
         """
         response = self._raw_client.current_delete_star(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -2142,9 +2062,7 @@ class UserClient:
         client.user.get_stop_watches()
         """
         response = self._raw_client.get_stop_watches(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2182,9 +2100,7 @@ class UserClient:
         client.user.current_list_subscriptions()
         """
         response = self._raw_client.current_list_subscriptions(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2222,9 +2138,7 @@ class UserClient:
         client.user.list_teams()
         """
         response = self._raw_client.list_teams(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2306,8 +2220,7 @@ class UserClient:
         )
         """
         response = self._raw_client.unblock_user(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -2353,11 +2266,7 @@ class UserClient:
         client.user.search()
         """
         response = self._raw_client.search(
-            q=q,
-            uid=uid,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            q=q, uid=uid, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2389,10 +2298,7 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.get(
-            username,
-            request_options=request_options,
-        )
+        response = self._raw_client.get(username, request_options=request_options)
         return response.data
 
     def list_activity_feeds(
@@ -2492,10 +2398,7 @@ class UserClient:
         )
         """
         response = self._raw_client.list_followers(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2539,10 +2442,7 @@ class UserClient:
         )
         """
         response = self._raw_client.list_following(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2582,9 +2482,7 @@ class UserClient:
         )
         """
         response = self._raw_client.check_following(
-            username,
-            target,
-            request_options=request_options,
+            username, target, request_options=request_options
         )
         return response.data
 
@@ -2628,10 +2526,7 @@ class UserClient:
         )
         """
         response = self._raw_client.user_list_gpg_keys(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2664,8 +2559,7 @@ class UserClient:
         )
         """
         response = self._raw_client.get_heatmap_data(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -2761,10 +2655,7 @@ class UserClient:
         )
         """
         response = self._raw_client.list_repos(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2808,10 +2699,7 @@ class UserClient:
         )
         """
         response = self._raw_client.list_starred(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2855,10 +2743,7 @@ class UserClient:
         )
         """
         response = self._raw_client.list_subscriptions(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2902,10 +2787,7 @@ class UserClient:
         )
         """
         response = self._raw_client.get_tokens(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2948,10 +2830,7 @@ class UserClient:
         )
         """
         response = self._raw_client.create_token(
-            username,
-            name=name,
-            scopes=scopes,
-            request_options=request_options,
+            username, name=name, scopes=scopes, request_options=request_options
         )
         return response.data
 
@@ -2991,9 +2870,7 @@ class UserClient:
         )
         """
         response = self._raw_client.delete_access_token(
-            username,
-            token,
-            request_options=request_options,
+            username, token, request_options=request_options
         )
         return response.data
 
@@ -3044,9 +2921,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_current(
-            request_options=request_options,
-        )
+        response = await self._raw_client.get_current(request_options=request_options)
         return response.data
 
     async def search_run_jobs(
@@ -3087,8 +2962,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.search_run_jobs(
-            labels=labels,
-            request_options=request_options,
+            labels=labels, request_options=request_options
         )
         return response.data
 
@@ -3123,7 +2997,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_runner_registration_token(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -3171,9 +3045,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.update_user_secret(
-            secretname,
-            data=data,
-            request_options=request_options,
+            secretname, data=data, request_options=request_options
         )
         return response.data
 
@@ -3216,8 +3088,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_user_secret(
-            secretname,
-            request_options=request_options,
+            secretname, request_options=request_options
         )
         return response.data
 
@@ -3263,9 +3134,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_user_variables_list(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -3309,8 +3178,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_user_variable(
-            variablename,
-            request_options=request_options,
+            variablename, request_options=request_options
         )
         return response.data
 
@@ -3358,9 +3226,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.create_user_variable(
-            variablename,
-            value=value,
-            request_options=request_options,
+            variablename, value=value, request_options=request_options
         )
         return response.data
 
@@ -3412,10 +3278,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.update_user_variable(
-            variablename,
-            value=value,
-            name=name,
-            request_options=request_options,
+            variablename, value=value, name=name, request_options=request_options
         )
         return response.data
 
@@ -3458,8 +3321,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_user_variable(
-            variablename,
-            request_options=request_options,
+            variablename, request_options=request_options
         )
         return response.data
 
@@ -3505,9 +3367,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_get_o_auth_2_applications(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -3598,8 +3458,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_get_o_auth_2_application(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -3639,8 +3498,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_delete_o_auth_2_application(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -3738,8 +3596,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.update_avatar(
-            image=image,
-            request_options=request_options,
+            image=image, request_options=request_options
         )
         return response.data
 
@@ -3773,9 +3630,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_avatar(
-            request_options=request_options,
-        )
+        response = await self._raw_client.delete_avatar(request_options=request_options)
         return response.data
 
     async def block_user(
@@ -3814,8 +3669,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.block_user(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -3850,9 +3704,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_emails(
-            request_options=request_options,
-        )
+        response = await self._raw_client.list_emails(request_options=request_options)
         return response.data
 
     async def add_email(
@@ -3893,8 +3745,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.add_email(
-            emails=emails,
-            request_options=request_options,
+            emails=emails, request_options=request_options
         )
         return response.data
 
@@ -3935,8 +3786,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_email(
-            emails=emails,
-            request_options=request_options,
+            emails=emails, request_options=request_options
         )
         return response.data
 
@@ -3982,9 +3832,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_list_followers(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -4030,9 +3878,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_list_following(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -4072,8 +3918,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_check_following(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -4113,8 +3958,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_put_follow(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -4154,8 +3998,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_delete_follow(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -4191,7 +4034,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_verification_token(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -4227,7 +4070,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_verify_gpg_key(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -4273,9 +4116,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_current_list_gpg_keys(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -4365,8 +4206,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_current_get_gpg_key(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -4406,8 +4246,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_current_delete_gpg_key(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -4453,9 +4292,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_hooks(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -4560,10 +4397,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_hook(
-            id,
-            request_options=request_options,
-        )
+        response = await self._raw_client.get_hook(id, request_options=request_options)
         return response.data
 
     async def delete_hook(
@@ -4602,8 +4436,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_hook(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -4774,10 +4607,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_post_key(
-            key=key,
-            title=title,
-            read_only=read_only,
-            request_options=request_options,
+            key=key, title=title, read_only=read_only, request_options=request_options
         )
         return response.data
 
@@ -4818,8 +4648,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_get_key(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -4859,8 +4688,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_delete_key(
-            id,
-            request_options=request_options,
+            id, request_options=request_options
         )
         return response.data
 
@@ -4906,9 +4734,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_blocked_users(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -4943,9 +4769,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_quota(
-            request_options=request_options,
-        )
+        response = await self._raw_client.get_quota(request_options=request_options)
         return response.data
 
     async def list_quota_artifacts(
@@ -4990,9 +4814,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_quota_artifacts(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5038,9 +4860,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_quota_attachments(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5074,9 +4894,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.check_quota(
-            request_options=request_options,
-        )
+        response = await self._raw_client.check_quota(request_options=request_options)
         return response.data
 
     async def list_quota_packages(
@@ -5121,9 +4939,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_quota_packages(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5173,10 +4989,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_list_repos(
-            page=page,
-            limit=limit,
-            order_by=order_by,
-            request_options=request_options,
+            page=page, limit=limit, order_by=order_by, request_options=request_options
         )
         return response.data
 
@@ -5212,7 +5025,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_user_settings(
-            request_options=request_options,
+            request_options=request_options
         )
         return response.data
 
@@ -5345,9 +5158,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_list_starred(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5395,9 +5206,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_check_starring(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -5445,9 +5254,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_put_star(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -5495,9 +5302,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_delete_star(
-            owner,
-            repo,
-            request_options=request_options,
+            owner, repo, request_options=request_options
         )
         return response.data
 
@@ -5543,9 +5348,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_stop_watches(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5591,9 +5394,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.current_list_subscriptions(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5639,9 +5440,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_teams(
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5739,8 +5538,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.unblock_user(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -5794,11 +5592,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.search(
-            q=q,
-            uid=uid,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            q=q, uid=uid, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5838,10 +5632,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get(
-            username,
-            request_options=request_options,
-        )
+        response = await self._raw_client.get(username, request_options=request_options)
         return response.data
 
     async def list_activity_feeds(
@@ -5957,10 +5748,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_followers(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6012,10 +5800,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_following(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6063,9 +5848,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.check_following(
-            username,
-            target,
-            request_options=request_options,
+            username, target, request_options=request_options
         )
         return response.data
 
@@ -6117,10 +5900,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.user_list_gpg_keys(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6161,8 +5941,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_heatmap_data(
-            username,
-            request_options=request_options,
+            username, request_options=request_options
         )
         return response.data
 
@@ -6274,10 +6053,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_repos(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6329,10 +6105,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_starred(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6384,10 +6157,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_subscriptions(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6439,10 +6209,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_tokens(
-            username,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            username, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6493,10 +6260,7 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.create_token(
-            username,
-            name=name,
-            scopes=scopes,
-            request_options=request_options,
+            username, name=name, scopes=scopes, request_options=request_options
         )
         return response.data
 
@@ -6544,8 +6308,6 @@ class AsyncUserClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_access_token(
-            username,
-            token,
-            request_options=request_options,
+            username, token, request_options=request_options
         )
         return response.data

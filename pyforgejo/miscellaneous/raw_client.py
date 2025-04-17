@@ -523,7 +523,7 @@ class RawMiscellaneousClient:
 
     def get_signing_key(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[str]:
+    ) -> HttpResponse[None]:
         """
         Parameters
         ----------
@@ -532,8 +532,7 @@ class RawMiscellaneousClient:
 
         Returns
         -------
-        HttpResponse[str]
-            GPG armored public key
+        HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
             "signing-key.gpg",
@@ -542,7 +541,7 @@ class RawMiscellaneousClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return _response.text  # type: ignore
+                return HttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, body=_response.text)
@@ -1084,7 +1083,7 @@ class AsyncRawMiscellaneousClient:
 
     async def get_signing_key(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[str]:
+    ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
@@ -1093,8 +1092,7 @@ class AsyncRawMiscellaneousClient:
 
         Returns
         -------
-        AsyncHttpResponse[str]
-            GPG armored public key
+        AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
             "signing-key.gpg",
@@ -1103,7 +1101,7 @@ class AsyncRawMiscellaneousClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return _response.text  # type: ignore
+                return AsyncHttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, body=_response.text)

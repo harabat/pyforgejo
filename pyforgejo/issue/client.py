@@ -457,10 +457,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_comment(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -505,10 +502,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_comment(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -612,10 +606,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.list_issue_comment_attachments(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -730,11 +721,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_issue_comment_attachment(
-            owner,
-            repo,
-            id,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, id, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -784,11 +771,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_issue_comment_attachment(
-            owner,
-            repo,
-            id,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, id, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -898,10 +881,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_comment_reactions(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -950,11 +930,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.post_comment_reaction(
-            owner,
-            repo,
-            id,
-            content=content,
-            request_options=request_options,
+            owner, repo, id, content=content, request_options=request_options
         )
         return response.data
 
@@ -1002,11 +978,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_comment_reaction(
-            owner,
-            repo,
-            id,
-            content=content,
-            request_options=request_options,
+            owner, repo, id, content=content, request_options=request_options
         )
         return response.data
 
@@ -1052,10 +1024,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_issue(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -1100,10 +1069,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -1239,10 +1205,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.list_issue_attachments(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -1357,11 +1320,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_issue_attachment(
-            owner,
-            repo,
-            index,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, index, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -1411,11 +1370,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_issue_attachment(
-            owner,
-            repo,
-            index,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, index, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -1533,12 +1488,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.list_blocks(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -1827,11 +1777,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_comment_deprecated(
-            owner,
-            repo,
-            index,
-            id,
-            request_options=request_options,
+            owner, repo, index, id, request_options=request_options
         )
         return response.data
 
@@ -1949,11 +1895,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.edit_issue_deadline(
-            owner,
-            repo,
-            index,
-            due_date=due_date,
-            request_options=request_options,
+            owner, repo, index, due_date=due_date, request_options=request_options
         )
         return response.data
 
@@ -2007,12 +1949,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.list_issue_dependencies(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2180,10 +2117,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_labels(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -2353,11 +2287,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.clear_labels(
-            owner,
-            repo,
-            index,
-            updated_at=updated_at,
-            request_options=request_options,
+            owner, repo, index, updated_at=updated_at, request_options=request_options
         )
         return response.data
 
@@ -2460,10 +2390,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.pin_issue(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -2508,10 +2435,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.unpin_issue(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -2561,11 +2485,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.move_issue_pin(
-            owner,
-            repo,
-            index,
-            position,
-            request_options=request_options,
+            owner, repo, index, position, request_options=request_options
         )
         return response.data
 
@@ -2619,12 +2539,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_issue_reactions(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2673,11 +2588,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.post_issue_reaction(
-            owner,
-            repo,
-            index,
-            content=content,
-            request_options=request_options,
+            owner, repo, index, content=content, request_options=request_options
         )
         return response.data
 
@@ -2725,11 +2636,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_issue_reaction(
-            owner,
-            repo,
-            index,
-            content=content,
-            request_options=request_options,
+            owner, repo, index, content=content, request_options=request_options
         )
         return response.data
 
@@ -2774,10 +2681,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_stop_watch(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -2822,10 +2726,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.start_stop_watch(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -2870,10 +2771,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.stop_stop_watch(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -2927,12 +2825,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.subscriptions(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -2978,10 +2871,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.check_subscription(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -3031,11 +2921,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.add_subscription(
-            owner,
-            repo,
-            index,
-            user,
-            request_options=request_options,
+            owner, repo, index, user, request_options=request_options
         )
         return response.data
 
@@ -3085,11 +2971,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_subscription(
-            owner,
-            repo,
-            index,
-            user,
-            request_options=request_options,
+            owner, repo, index, user, request_options=request_options
         )
         return response.data
 
@@ -3341,10 +3223,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.reset_time(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -3394,11 +3273,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_time(
-            owner,
-            repo,
-            index,
-            id,
-            request_options=request_options,
+            owner, repo, index, id, request_options=request_options
         )
         return response.data
 
@@ -3447,11 +3322,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.list_labels(
-            owner,
-            repo,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -3562,10 +3433,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_label(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -3610,10 +3478,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_label(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -3850,10 +3715,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.get_milestone(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -3898,10 +3760,7 @@ class IssueClient:
         )
         """
         response = self._raw_client.delete_milestone(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -4437,10 +4296,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_comment(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -4493,10 +4349,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_comment(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -4616,10 +4469,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_issue_comment_attachments(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -4750,11 +4600,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_issue_comment_attachment(
-            owner,
-            repo,
-            id,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, id, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -4812,11 +4658,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_issue_comment_attachment(
-            owner,
-            repo,
-            id,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, id, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -4942,10 +4784,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_comment_reactions(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -5002,11 +4841,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.post_comment_reaction(
-            owner,
-            repo,
-            id,
-            content=content,
-            request_options=request_options,
+            owner, repo, id, content=content, request_options=request_options
         )
         return response.data
 
@@ -5062,11 +4897,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_comment_reaction(
-            owner,
-            repo,
-            id,
-            content=content,
-            request_options=request_options,
+            owner, repo, id, content=content, request_options=request_options
         )
         return response.data
 
@@ -5120,10 +4951,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_issue(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -5176,10 +5004,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -5331,10 +5156,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_issue_attachments(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -5465,11 +5287,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_issue_attachment(
-            owner,
-            repo,
-            index,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, index, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -5527,11 +5345,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_issue_attachment(
-            owner,
-            repo,
-            index,
-            attachment_id,
-            request_options=request_options,
+            owner, repo, index, attachment_id, request_options=request_options
         )
         return response.data
 
@@ -5665,12 +5479,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_blocks(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -5999,11 +5808,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_comment_deprecated(
-            owner,
-            repo,
-            index,
-            id,
-            request_options=request_options,
+            owner, repo, index, id, request_options=request_options
         )
         return response.data
 
@@ -6136,11 +5941,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.edit_issue_deadline(
-            owner,
-            repo,
-            index,
-            due_date=due_date,
-            request_options=request_options,
+            owner, repo, index, due_date=due_date, request_options=request_options
         )
         return response.data
 
@@ -6202,12 +6003,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_issue_dependencies(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6399,10 +6195,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_labels(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -6596,11 +6389,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.clear_labels(
-            owner,
-            repo,
-            index,
-            updated_at=updated_at,
-            request_options=request_options,
+            owner, repo, index, updated_at=updated_at, request_options=request_options
         )
         return response.data
 
@@ -6719,10 +6508,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.pin_issue(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -6775,10 +6561,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.unpin_issue(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -6836,11 +6619,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.move_issue_pin(
-            owner,
-            repo,
-            index,
-            position,
-            request_options=request_options,
+            owner, repo, index, position, request_options=request_options
         )
         return response.data
 
@@ -6902,12 +6681,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_issue_reactions(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -6964,11 +6738,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.post_issue_reaction(
-            owner,
-            repo,
-            index,
-            content=content,
-            request_options=request_options,
+            owner, repo, index, content=content, request_options=request_options
         )
         return response.data
 
@@ -7024,11 +6794,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_issue_reaction(
-            owner,
-            repo,
-            index,
-            content=content,
-            request_options=request_options,
+            owner, repo, index, content=content, request_options=request_options
         )
         return response.data
 
@@ -7081,10 +6847,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_stop_watch(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -7137,10 +6900,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.start_stop_watch(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -7193,10 +6953,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.stop_stop_watch(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -7258,12 +7015,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.subscriptions(
-            owner,
-            repo,
-            index,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, index, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -7317,10 +7069,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.check_subscription(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -7378,11 +7127,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.add_subscription(
-            owner,
-            repo,
-            index,
-            user,
-            request_options=request_options,
+            owner, repo, index, user, request_options=request_options
         )
         return response.data
 
@@ -7440,11 +7185,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_subscription(
-            owner,
-            repo,
-            index,
-            user,
-            request_options=request_options,
+            owner, repo, index, user, request_options=request_options
         )
         return response.data
 
@@ -7728,10 +7469,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.reset_time(
-            owner,
-            repo,
-            index,
-            request_options=request_options,
+            owner, repo, index, request_options=request_options
         )
         return response.data
 
@@ -7789,11 +7527,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_time(
-            owner,
-            repo,
-            index,
-            id,
-            request_options=request_options,
+            owner, repo, index, id, request_options=request_options
         )
         return response.data
 
@@ -7850,11 +7584,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.list_labels(
-            owner,
-            repo,
-            page=page,
-            limit=limit,
-            request_options=request_options,
+            owner, repo, page=page, limit=limit, request_options=request_options
         )
         return response.data
 
@@ -7981,10 +7711,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_label(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -8037,10 +7764,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_label(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -8309,10 +8033,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.get_milestone(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
@@ -8365,10 +8086,7 @@ class AsyncIssueClient:
         asyncio.run(main())
         """
         response = await self._raw_client.delete_milestone(
-            owner,
-            repo,
-            id,
-            request_options=request_options,
+            owner, repo, id, request_options=request_options
         )
         return response.data
 
