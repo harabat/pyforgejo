@@ -243,7 +243,19 @@ class PyforgejoApi:
 # same for AsyncPyforgejoApi
 ```
 
-10. Create a virtual environment and install the lib.
+10. Update handling of `api_key` in `core/client_wrapper.py`.
+
+``` diff
+    def get_headers(self) -> typing.Dict[str, str]:
+        headers: typing.Dict[str, str] = {
+            "X-Fern-Language": "Python",
+        }
+-        headers["Authorization"] = self.api_key
++        headers["Authorization"] = f"token {self.api_key.replace('token ', '')}"
+        return headers
+```
+
+11. Create a virtual environment and install the lib.
 
 ``` shell
 cd /path/to/sdks
@@ -256,7 +268,7 @@ uv add -r requirements.txt
 uv sync
 ```
 
-11. Use the client as shown in the [Usage](#usage) section.
+12. Use the client as shown in the [Usage](#usage) section.
 
 ``` python
 # uv pip install ipython
@@ -269,7 +281,7 @@ client = PyforgejoApi()
 user = client.user.get_current()
 ```
 
-12. Run tests (tests need to be cloned from <https://codeberg.org/harabat/pyforgejo/src/branch/main/tests)>.
+13. Run tests (tests need to be cloned from <https://codeberg.org/harabat/pyforgejo/src/branch/main/tests)>.
 
 ``` python
 uv pip install pytest
