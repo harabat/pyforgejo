@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "pyforgejo"
-version = "2.0.2"
+version = "2.0.3"
 description = "A Python client library for accessing the Forgejo API"
 authors = [
     {name = "harabat"},
