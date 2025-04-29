@@ -19,7 +19,7 @@ class BaseClientWrapper:
         headers: typing.Dict[str, str] = {
             "X-Fern-Language": "Python",
         }
-        headers["Authorization"] = f"token {self.api_key}"
+        headers["Authorization"] = f"token {self.api_key.replace('token ', '')}"
         return headers
 
     def get_base_url(self) -> str:
