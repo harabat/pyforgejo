@@ -75,9 +75,6 @@ class PyforgejoApi:
         base_url = base_url or BASE_URL
         api_key = api_key or API_KEY
 
-        print(f"Using BASE_URL: {base_url if base_url else 'Not set'}")
-        print(f"Using API_KEY: {'*' * 40 if api_key else 'Not set'}")
-
         if not base_url:
             raise ValueError(
                 "base_url must be provided either as an .env variable or as an argument"
