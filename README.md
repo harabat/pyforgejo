@@ -2,6 +2,8 @@
 
 A Python client library for accessing the [Forgejo](https://forgejo.org/) API.
 
+[![](https://img.shields.io/pypi/v/pyforgejo.svg)](https://pypi.org/project/pyforgejo/)
+
 **:warning: pyforgejo `2.0` introduces significant changes.** If you're using `1.0`, you can view docs on the [`1.0` branch](https://codeberg.org/harabat/pyforgejo/src/branch/1.0).
 
 ## Usage
