@@ -7,7 +7,7 @@
       "name": "This file is distributed under the MIT license for the purpose of interoperability",
       "url": "http://opensource.org/licenses/MIT"
     },
-    "version": "11.0.0+gitea-1.22.0"
+    "version": "13.0.0-dev-525-8e5f0d1e82+gitea-1.22.0"
   },
   "servers": [
     {
@@ -62,7 +62,8 @@
             "description": "repository ID of the repo",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -87,7 +88,8 @@
             "description": "repository ID of the repo",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -128,6 +130,75 @@
             "description": "user ID of the user",
             "required": true,
             "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActivityPub"
+          }
+        }
+      }
+    },
+    "/activitypub/user-id/{user-id}/activities/{activity-id}": {
+      "get": {
+        "tags": [
+          "activitypub"
+        ],
+        "summary": "Get a specific activity object of the user",
+        "operationId": "activitypubPersonActivityNote",
+        "parameters": [
+          {
+            "name": "user-id",
+            "in": "path",
+            "description": "user ID of the user",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "activity-id",
+            "in": "path",
+            "description": "activity ID of the sought activity",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActivityPub"
+          }
+        }
+      }
+    },
+    "/activitypub/user-id/{user-id}/activities/{activity-id}/activity": {
+      "get": {
+        "tags": [
+          "activitypub"
+        ],
+        "summary": "Get a specific activity of the user",
+        "operationId": "activitypubPersonActivity",
+        "parameters": [
+          {
+            "name": "user-id",
+            "in": "path",
+            "description": "user ID of the user",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "activity-id",
+            "in": "path",
+            "description": "activity ID of the sought activity",
+            "required": true,
+            "schema": {
               "type": "integer"
             }
           }
@@ -153,13 +224,42 @@
             "description": "user ID of the user",
             "required": true,
             "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/empty"
+          }
+        }
+      }
+    },
+    "/activitypub/user-id/{user-id}/outbox": {
+      "get": {
+        "tags": [
+          "activitypub"
+        ],
+        "summary": "List the user's recorded activity",
+        "operationId": "activitypubPersonFeed",
+        "parameters": [
+          {
+            "name": "user-id",
+            "in": "path",
+            "description": "user ID of the user",
+            "required": true,
+            "schema": {
               "type": "integer"
             }
           }
         ],
         "responses": {
-          "204": {
-            "$ref": "#/components/responses/empty"
+          "200": {
+            "$ref": "#/components/responses/PersonFeed"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
           }
         }
       }
@@ -232,7 +332,7 @@
         "tags": [
           "admin"
         ],
-        "summary": "List all emails",
+        "summary": "List all users' email addresses",
         "operationId": "adminGetAllEmails",
         "parameters": [
           {
@@ -267,7 +367,7 @@
         "tags": [
           "admin"
         ],
-        "summary": "Search all emails",
+        "summary": "Search users' email addresses",
         "operationId": "adminSearchEmails",
         "parameters": [
           {
@@ -310,7 +410,7 @@
         "tags": [
           "admin"
         ],
-        "summary": "List system's webhooks",
+        "summary": "List global (system) webhooks",
         "operationId": "adminListHooks",
         "parameters": [
           {
@@ -1223,7 +1323,7 @@
         "tags": [
           "admin"
         ],
-        "summary": "Create a user",
+        "summary": "Create a user account",
         "operationId": "adminCreateUser",
         "requestBody": {
           "content": {
@@ -1257,7 +1357,7 @@
         "tags": [
           "admin"
         ],
-        "summary": "Delete a user",
+        "summary": "Delete user account",
         "operationId": "adminDeleteUser",
         "parameters": [
           {
@@ -1342,7 +1442,7 @@
         "tags": [
           "admin"
         ],
-        "summary": "Add a public key on behalf of a user",
+        "summary": "Add an SSH public key to user's account",
         "operationId": "adminCreatePublicKey",
         "parameters": [
           {
@@ -1384,7 +1484,7 @@
         "tags": [
           "admin"
         ],
-        "summary": "Delete a user's public key",
+        "summary": "Remove a public key from user's account",
         "operationId": "adminDeleteUserPublicKey",
         "parameters": [
           {
@@ -1986,7 +2086,7 @@
             "in": "query",
             "description": "If true, mark all notifications on this repo. Default value is false",
             "schema": {
-              "type": "string"
+              "type": "boolean"
             }
           },
           {
@@ -2046,7 +2146,8 @@
             "description": "id of notification thread",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -2075,7 +2176,8 @@
             "description": "id of notification thread",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           },
           {
@@ -2152,7 +2254,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Get list of organizations",
+        "summary": "List all organizations",
         "operationId": "orgGetAll",
         "parameters": [
           {
@@ -2368,7 +2470,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "List an organization's actions secrets",
+        "summary": "List actions secrets of an organization",
         "operationId": "orgListActionsSecrets",
         "parameters": [
           {
@@ -2507,7 +2609,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Get an org-level variables list",
+        "summary": "List variables of an organization",
         "operationId": "getOrgVariablesList",
         "parameters": [
           {
@@ -2554,7 +2656,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Get an org-level variable",
+        "summary": "Get organization's variable by name",
         "operationId": "getOrgVariable",
         "parameters": [
           {
@@ -2592,7 +2694,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Update an org-level variable",
+        "summary": "Update variable in organization",
         "operationId": "updateOrgVariable",
         "parameters": [
           {
@@ -2646,7 +2748,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Create an org-level variable",
+        "summary": "Create a new variable in organization",
         "operationId": "createOrgVariable",
         "parameters": [
           {
@@ -2700,7 +2802,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Delete an org-level variable",
+        "summary": "Delete organization's variable by name",
         "operationId": "deleteOrgVariable",
         "parameters": [
           {
@@ -2723,13 +2825,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "$ref": "#/components/responses/ActionVariable"
-          },
-          "201": {
-            "description": "response when deleting a variable",
-            "content": {}
-          },
           "204": {
             "description": "response when deleting a variable",
             "content": {}
@@ -2801,7 +2896,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Update Avatar",
+        "summary": "Update an organization's avatar",
         "operationId": "orgUpdateAvatar",
         "parameters": [
           {
@@ -2843,7 +2938,7 @@
         "tags": [
           "organization"
         ],
-        "summary": "Delete Avatar",
+        "summary": "Delete an organization's avatar. It will be replaced by a default one",
         "operationId": "orgDeleteAvatar",
         "parameters": [
           {
@@ -3123,6 +3218,19 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Specifies the sorting method: mostissues, leastissues, or reversealphabetically.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mostissues",
+                "leastissues",
+                "reversealphabetically"
+              ]
             }
           },
           {
@@ -3781,11 +3889,27 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "subject",
+            "in": "query",
+            "description": "subject of the quota",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/components/responses/boolean"
+            "description": "Returns true if the action is accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           },
           "403": {
             "$ref": "#/components/responses/forbidden"
@@ -4120,6 +4244,7 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "title": "TeamSearchResults",
                   "type": "object",
                   "properties": {
                     "data": {
@@ -4693,6 +4818,26 @@
               "minimum": 0,
               "type": "integer"
             }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Type of sort",
+            "schema": {
+              "type": "string",
+              "default": "latest",
+              "enum": [
+                "relevance",
+                "latest",
+                "oldest",
+                "recentupdate",
+                "leastupdate",
+                "mostcomment",
+                "leastcomment",
+                "nearduedate",
+                "farduedate"
+              ]
+            }
           }
         ],
         "responses": {
@@ -4867,7 +5012,18 @@
             "in": "query",
             "description": "sort repos by attribute. Supported values are \"alpha\", \"created\", \"updated\", \"size\", \"git_size\", \"lfs_size\", \"stars\", \"forks\" and \"id\". Default is \"alpha\"",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "alpha",
+                "created",
+                "updated",
+                "size",
+                "git_size",
+                "lfs_size",
+                "id",
+                "stars",
+                "forks"
+              ]
             }
           },
           {
@@ -4875,7 +5031,11 @@
             "in": "query",
             "description": "sort order, either \"asc\" (ascending) or \"desc\" (descending). Default is \"asc\", ignored if \"sort\" is not specified.",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             }
           },
           {
@@ -5113,6 +5273,168 @@
         "responses": {
           "200": {
             "$ref": "#/components/responses/RegistrationToken"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/actions/runs": {
+      "get": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "List a repository's action runs",
+        "operationId": "ListActionRuns",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page number of results to return (1-based)",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "page size of results, default maximum page size is 50",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "event",
+            "in": "query",
+            "description": "Returns workflow run triggered by the specified events. For example, `push`, `pull_request` or `workflow_dispatch`.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Returns workflow runs with the check run status or conclusion that is specified. For example, a conclusion can be success or a status can be in_progress. Only Forgejo Actions can set a status of waiting, pending, or requested.\n",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "unknown",
+                  "waiting",
+                  "running",
+                  "success",
+                  "failure",
+                  "cancelled",
+                  "skipped",
+                  "blocked"
+                ]
+              }
+            }
+          },
+          {
+            "name": "run_number",
+            "in": "query",
+            "description": "Returns the workflow run associated with the run number.\n",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "head_sha",
+            "in": "query",
+            "description": "Only returns workflow runs that are associated with the specified head_sha.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionRunList"
+          },
+          "400": {
+            "$ref": "#/components/responses/error"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/actions/runs/{run_id}": {
+      "get": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Get an action run",
+        "operationId": "ActionRun",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "description": "id of the action run",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ActionRun"
+          },
+          "400": {
+            "$ref": "#/components/responses/error"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
           }
         }
       }
@@ -5624,13 +5946,6 @@
           }
         ],
         "responses": {
-          "200": {
-            "$ref": "#/components/responses/ActionVariable"
-          },
-          "201": {
-            "description": "response when deleting a variable",
-            "content": {}
-          },
           "204": {
             "description": "response when deleting a variable",
             "content": {}
@@ -5644,7 +5959,7 @@
         }
       }
     },
-    "/repos/{owner}/{repo}/actions/workflows/{workflowname}/dispatches": {
+    "/repos/{owner}/{repo}/actions/workflows/{workflowfilename}/dispatches": {
       "post": {
         "tags": [
           "repository"
@@ -5671,7 +5986,7 @@
             }
           },
           {
-            "name": "workflowname",
+            "name": "workflowfilename",
             "in": "path",
             "description": "name of the workflow",
             "required": true,
@@ -5855,7 +6170,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "Update avatar",
+        "summary": "Update a repository's avatar",
         "operationId": "repoUpdateAvatar",
         "parameters": [
           {
@@ -5906,7 +6221,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "Delete avatar",
+        "summary": "Delete a repository's avatar",
         "operationId": "repoDeleteAvatar",
         "parameters": [
           {
@@ -7157,6 +7472,9 @@
           "404": {
             "$ref": "#/components/responses/notFound"
           },
+          "409": {
+            "$ref": "#/components/responses/conflict"
+          },
           "413": {
             "$ref": "#/components/responses/quotaExceeded"
           },
@@ -7216,9 +7534,24 @@
         ],
         "responses": {
           "200": {
-            "description": "A file's contents or a directory listing",
+            "description": "A single file's contents or a directory listing",
             "content": {
               "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ContentsResponse"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ContentsResponse"
+                      }
+                    }
+                  ]
+                }
+              },
+              "text/html": {
                 "schema": {
                   "oneOf": [
                     {
@@ -7295,6 +7628,9 @@
           "404": {
             "$ref": "#/components/responses/notFound"
           },
+          "409": {
+            "$ref": "#/components/responses/conflict"
+          },
           "413": {
             "$ref": "#/components/responses/quotaExceeded"
           },
@@ -7361,6 +7697,9 @@
           },
           "404": {
             "$ref": "#/components/responses/notFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/conflict"
           },
           "413": {
             "$ref": "#/components/responses/quotaExceeded"
@@ -7440,6 +7779,49 @@
           }
         },
         "x-codegen-request-body-name": "body"
+      }
+    },
+    "/repos/{owner}/{repo}/convert": {
+      "post": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Convert a mirror repo to a normal repo.",
+        "operationId": "repoConvert",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo to convert",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo to convert",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Repository"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/validationError"
+          }
+        }
       }
     },
     "/repos/{owner}/{repo}/diffpatch": {
@@ -7542,8 +7924,17 @@
         ],
         "responses": {
           "200": {
-            "description": "success",
-            "content": {}
+            "description": "definitions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
           },
           "404": {
             "$ref": "#/components/responses/notFound"
@@ -7943,6 +8334,52 @@
         "x-codegen-request-body-name": "body"
       }
     },
+    "/repos/{owner}/{repo}/git/blobs": {
+      "get": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Gets multiplbe blobs of a repository.",
+        "operationId": "GetBlobs",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "shas",
+            "in": "query",
+            "description": "a comma separated list of blob-sha (mind the overall URL-length limit of ~2,083 chars)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GitBlobList"
+          },
+          "400": {
+            "$ref": "#/components/responses/error"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/git/blobs/{sha}": {
       "get": {
         "tags": [
@@ -7972,7 +8409,7 @@
           {
             "name": "sha",
             "in": "path",
-            "description": "sha of the commit",
+            "description": "sha of the blob to retrieve",
             "required": true,
             "schema": {
               "type": "string"
@@ -7981,7 +8418,7 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/components/responses/GitBlobResponse"
+            "$ref": "#/components/responses/GitBlob"
           },
           "400": {
             "$ref": "#/components/responses/error"
@@ -10633,7 +11070,8 @@
             "description": "index of the issue",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           },
           {
@@ -10693,7 +11131,8 @@
             "description": "index of the issue",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -10754,7 +11193,8 @@
             "description": "index of the issue",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -11148,7 +11588,8 @@
             "description": "index of the issue",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           },
           {
@@ -11208,7 +11649,8 @@
             "description": "index of the issue",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -11272,7 +11714,8 @@
             "description": "index of the issue",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -11534,7 +11977,7 @@
         "x-codegen-request-body-name": "body"
       }
     },
-    "/repos/{owner}/{repo}/issues/{index}/labels/{id}": {
+    "/repos/{owner}/{repo}/issues/{index}/labels/{identifier}": {
       "delete": {
         "tags": [
           "issue"
@@ -11571,13 +12014,12 @@
             }
           },
           {
-            "name": "id",
+            "name": "identifier",
             "in": "path",
-            "description": "id of the label to remove",
+            "description": "name or id of the label to remove",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
@@ -12953,6 +13395,19 @@
             }
           },
           {
+            "name": "sort",
+            "in": "query",
+            "description": "Specifies the sorting method: mostissues, leastissues, or reversealphabetically.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "mostissues",
+                "leastissues",
+                "reversealphabetically"
+              ]
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "description": "page number of results to return (1-based)",
@@ -13425,7 +13880,8 @@
             "description": "the milestone to get, identified by ID and if not available by name",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -13469,7 +13925,8 @@
             "description": "the milestone to delete, identified by ID and if not available by name",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -13513,7 +13970,8 @@
             "description": "the milestone to edit, identified by ID and if not available by name",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -13755,7 +14213,7 @@
             "in": "query",
             "description": "If true, mark all notifications on this repo. Default value is false",
             "schema": {
-              "type": "string"
+              "type": "boolean"
             }
           },
           {
@@ -13801,7 +14259,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "List a repo's pull requests",
+        "summary": "List a repo's pull requests. If a pull request is selected but fails to be retrieved for any reason, it will be a null value in the list of results.",
         "operationId": "repoListPullRequests",
         "parameters": [
           {
@@ -13845,6 +14303,7 @@
               "enum": [
                 "oldest",
                 "recentupdate",
+                "recentclose",
                 "leastupdate",
                 "mostcomment",
                 "leastcomment",
@@ -14591,7 +15050,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "create review requests for a pull request",
+        "summary": "Create review requests for a pull request",
         "operationId": "repoCreatePullReviewRequests",
         "parameters": [
           {
@@ -14655,7 +15114,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "cancel review requests for a pull request",
+        "summary": "Cancel review requests for a pull request",
         "operationId": "repoDeletePullReviewRequests",
         "parameters": [
           {
@@ -15579,7 +16038,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "add a push mirror to the repository",
+        "summary": "Set up a new push mirror in a repository",
         "operationId": "repoAddPushMirror",
         "parameters": [
           {
@@ -15732,7 +16191,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "deletes a push mirror from a repository by remoteName",
+        "summary": "Remove a push mirror from a repository by remoteName",
         "operationId": "repoDeletePushMirror",
         "parameters": [
           {
@@ -17021,6 +17480,180 @@
         }
       }
     },
+    "/repos/{owner}/{repo}/sync_fork": {
+      "get": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Gets information about syncing the fork default branch with the base branch",
+        "operationId": "repoSyncForkDefaultInfo",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SyncForkInfo"
+          },
+          "400": {
+            "$ref": "#/components/responses/error"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Syncs the default branch of a fork with the base branch",
+        "operationId": "repoSyncForkDefault",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/empty"
+          },
+          "400": {
+            "$ref": "#/components/responses/error"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          }
+        }
+      }
+    },
+    "/repos/{owner}/{repo}/sync_fork/{branch}": {
+      "get": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Gets information about syncing a fork branch with the base branch",
+        "operationId": "repoSyncForkBranchInfo",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "path",
+            "description": "The branch",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SyncForkInfo"
+          },
+          "400": {
+            "$ref": "#/components/responses/error"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "repository"
+        ],
+        "summary": "Syncs a fork branch with the base branch",
+        "operationId": "repoSyncForkBranch",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "description": "owner of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "description": "name of the repo",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "path",
+            "description": "The branch",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/empty"
+          },
+          "400": {
+            "$ref": "#/components/responses/error"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          }
+        }
+      }
+    },
     "/repos/{owner}/{repo}/tag_protections": {
       "get": {
         "tags": [
@@ -17142,7 +17775,8 @@
             "description": "id of the tag protect to get",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -17186,7 +17820,8 @@
             "description": "id of protected tag",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -17230,7 +17865,8 @@
             "description": "id of protected tag",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -18652,6 +19288,30 @@
         }
       }
     },
+    "/signing-key.ssh": {
+      "get": {
+        "tags": [
+          "miscellaneous"
+        ],
+        "summary": "Get default signing-key.ssh",
+        "operationId": "getSSHSigningKey",
+        "responses": {
+          "200": {
+            "description": "SSH public key in OpenSSH authorized key format",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          }
+        }
+      }
+    },
     "/teams/{id}": {
       "get": {
         "tags": [
@@ -18721,7 +19381,8 @@
             "description": "id of the team to edit",
             "required": true,
             "schema": {
-              "type": "integer"
+              "type": "integer",
+              "format": "int64"
             }
           }
         ],
@@ -19149,13 +19810,13 @@
         "tags": [
           "repository"
         ],
-        "summary": "search topics via keyword",
+        "summary": "Search for topics by keyword",
         "operationId": "topicSearch",
         "parameters": [
           {
             "name": "q",
             "in": "query",
-            "description": "keywords to search",
+            "description": "keyword to search for",
             "required": true,
             "schema": {
               "type": "string"
@@ -19180,7 +19841,23 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/components/responses/TopicListResponse"
+            "description": "SearchResults of a successful search",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "TopicSearchResults",
+                  "type": "object",
+                  "properties": {
+                    "topics": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TopicResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
           },
           "403": {
             "$ref": "#/components/responses/forbidden"
@@ -19614,7 +20291,7 @@
         "tags": [
           "user"
         ],
-        "summary": "creates a new OAuth2 application",
+        "summary": "Creates a new OAuth2 application",
         "operationId": "userCreateOAuth2Application",
         "requestBody": {
           "content": {
@@ -19653,7 +20330,7 @@
         "tags": [
           "user"
         ],
-        "summary": "get an OAuth2 Application",
+        "summary": "Get an OAuth2 application",
         "operationId": "userGetOAuth2Application",
         "parameters": [
           {
@@ -19686,7 +20363,7 @@
         "tags": [
           "user"
         ],
-        "summary": "delete an OAuth2 Application",
+        "summary": "Delete an OAuth2 application",
         "operationId": "userDeleteOAuth2Application",
         "parameters": [
           {
@@ -19719,7 +20396,7 @@
         "tags": [
           "user"
         ],
-        "summary": "update an OAuth2 Application, this includes regenerating the client secret",
+        "summary": "Update an OAuth2 application, this includes regenerating the client secret",
         "operationId": "userUpdateOAuth2Application",
         "parameters": [
           {
@@ -19770,7 +20447,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Update Avatar",
+        "summary": "Update avatar of the current user",
         "operationId": "userUpdateAvatar",
         "requestBody": {
           "content": {
@@ -19804,7 +20481,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Delete Avatar",
+        "summary": "Delete avatar of the current user. It will be replaced by a default one",
         "operationId": "userDeleteAvatar",
         "responses": {
           "204": {
@@ -19824,7 +20501,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Blocks a user from the doer.",
+        "summary": "Blocks a user from the doer",
         "operationId": "userBlockUser",
         "parameters": [
           {
@@ -19861,7 +20538,7 @@
         "tags": [
           "user"
         ],
-        "summary": "List the authenticated user's email addresses",
+        "summary": "List all email addresses of the current user",
         "operationId": "userListEmails",
         "responses": {
           "200": {
@@ -19879,7 +20556,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Add email addresses",
+        "summary": "Add an email addresses to the current user's account",
         "operationId": "userAddEmail",
         "requestBody": {
           "content": {
@@ -19916,7 +20593,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Delete email addresses",
+        "summary": "Delete email addresses from the current user's account",
         "operationId": "userDeleteEmail",
         "requestBody": {
           "content": {
@@ -20154,6 +20831,16 @@
         ],
         "summary": "Verify a GPG key",
         "operationId": "userVerifyGPGKey",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyGPGKeyOption"
+              }
+            }
+          },
+          "required": false
+        },
         "responses": {
           "201": {
             "$ref": "#/components/responses/GPGKey"
@@ -20170,7 +20857,8 @@
           "422": {
             "$ref": "#/components/responses/validationError"
           }
-        }
+        },
+        "x-codegen-request-body-name": "body"
       }
     },
     "/user/gpg_keys": {
@@ -20214,7 +20902,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Create a GPG key",
+        "summary": "Add a GPG public key to current user's account",
         "operationId": "userCurrentPostGPGKey",
         "requestBody": {
           "content": {
@@ -20284,7 +20972,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Remove a GPG key",
+        "summary": "Remove a GPG public key from current user's account",
         "operationId": "userCurrentDeleteGPGKey",
         "parameters": [
           {
@@ -20812,9 +21500,27 @@
         ],
         "summary": "Check if the authenticated user is over quota for a given subject",
         "operationId": "userCheckQuota",
+        "parameters": [
+          {
+            "name": "subject",
+            "in": "query",
+            "description": "subject of the quota",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "$ref": "#/components/responses/boolean"
+            "description": "Returns true if the action is accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/unauthorized"
@@ -20983,7 +21689,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Get user settings",
+        "summary": "Get current user's account settings",
         "operationId": "getUserSettings",
         "responses": {
           "200": {
@@ -21001,7 +21707,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Update user settings",
+        "summary": "Update settings in current user's account",
         "operationId": "updateUserSettings",
         "requestBody": {
           "content": {
@@ -21370,7 +22076,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Unblocks a user from the doer.",
+        "summary": "Unblocks a user from the doer",
         "operationId": "userUnblockUser",
         "parameters": [
           {
@@ -21428,6 +22134,22 @@
             }
           },
           {
+            "name": "sort",
+            "in": "query",
+            "description": "sort order of results",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "oldest",
+                "newest",
+                "alphabetically",
+                "reversealphabetically",
+                "recentupdate",
+                "leastupdate"
+              ]
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "description": "page number of results to return (1-based)",
@@ -21450,6 +22172,7 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "title": "UserSearchResults",
                   "type": "object",
                   "properties": {
                     "data": {
@@ -22073,7 +22796,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Create an access token",
+        "summary": "Generate an access token for the current user",
         "operationId": "userCreateToken",
         "parameters": [
           {
@@ -22118,7 +22841,7 @@
         "tags": [
           "user"
         ],
-        "summary": "delete an access token",
+        "summary": "Delete an access token from current user's account",
         "operationId": "userDeleteAccessToken",
         "parameters": [
           {
@@ -22296,6 +23019,28 @@
         },
         "x-go-package": "forgejo.org/services/context"
       },
+      "APPersonFollowItem": {
+        "type": "object",
+        "properties": {
+          "actor_id": {
+            "type": "string",
+            "x-go-name": "ActorID"
+          },
+          "note": {
+            "type": "string",
+            "x-go-name": "Note"
+          },
+          "original_item": {
+            "type": "string",
+            "x-go-name": "OriginalItem"
+          },
+          "original_url": {
+            "type": "string",
+            "x-go-name": "OriginalURL"
+          }
+        },
+        "x-go-package": "forgejo.org/modules/structs"
+      },
       "AccessToken": {
         "title": "AccessToken represents an API access token.",
         "type": "object",
@@ -22325,6 +23070,129 @@
             "x-go-name": "TokenLastEight"
           }
         },
+        "x-go-package": "forgejo.org/modules/structs"
+      },
+      "ActionRun": {
+        "type": "object",
+        "properties": {
+          "ScheduleID": {
+            "type": "integer",
+            "description": "the cron id for the schedule trigger",
+            "format": "int64"
+          },
+          "approved_by": {
+            "type": "integer",
+            "description": "who approved this action run",
+            "format": "int64",
+            "x-go-name": "ApprovedBy"
+          },
+          "commit_sha": {
+            "type": "string",
+            "description": "the commit sha the action run ran on",
+            "x-go-name": "CommitSHA"
+          },
+          "created": {
+            "type": "string",
+            "description": "when the action run was created",
+            "format": "date-time",
+            "x-go-name": "Created"
+          },
+          "duration": {
+            "$ref": "#/components/schemas/Duration"
+          },
+          "event": {
+            "type": "string",
+            "description": "the webhook event that causes the workflow to run",
+            "x-go-name": "Event"
+          },
+          "event_payload": {
+            "type": "string",
+            "description": "the payload of the webhook event that causes the workflow to run",
+            "x-go-name": "EventPayload"
+          },
+          "html_url": {
+            "type": "string",
+            "description": "the url of this action run",
+            "x-go-name": "HTMLURL"
+          },
+          "id": {
+            "type": "integer",
+            "description": "the action run id",
+            "format": "int64",
+            "x-go-name": "ID"
+          },
+          "index_in_repo": {
+            "type": "integer",
+            "description": "a unique number for each run of a repository",
+            "format": "int64",
+            "x-go-name": "Index"
+          },
+          "is_fork_pull_request": {
+            "type": "boolean",
+            "description": "If this is triggered by a PR from a forked repository or an untrusted user, we need to check if it is approved and limit permissions when running the workflow.",
+            "x-go-name": "IsForkPullRequest"
+          },
+          "is_ref_deleted": {
+            "type": "boolean",
+            "description": "has the commit/tag/… the action run ran on been deleted",
+            "x-go-name": "IsRefDeleted"
+          },
+          "need_approval": {
+            "type": "boolean",
+            "description": "may need approval if it's a fork pull request",
+            "x-go-name": "NeedApproval"
+          },
+          "prettyref": {
+            "type": "string",
+            "description": "the commit/tag/… the action run ran on",
+            "x-go-name": "PrettyRef"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/Repository"
+          },
+          "started": {
+            "type": "string",
+            "description": "when the action run was started",
+            "format": "date-time",
+            "x-go-name": "Started"
+          },
+          "status": {
+            "type": "string",
+            "description": "the current status of this run",
+            "x-go-name": "Status"
+          },
+          "stopped": {
+            "type": "string",
+            "description": "when the action run was stopped",
+            "format": "date-time",
+            "x-go-name": "Stopped"
+          },
+          "title": {
+            "type": "string",
+            "description": "the action run's title",
+            "x-go-name": "Title"
+          },
+          "trigger_event": {
+            "type": "string",
+            "description": "the trigger event defined in the `on` configuration of the triggered workflow",
+            "x-go-name": "TriggerEvent"
+          },
+          "trigger_user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "updated": {
+            "type": "string",
+            "description": "when the action run was last updated",
+            "format": "date-time",
+            "x-go-name": "Updated"
+          },
+          "workflow_id": {
+            "type": "string",
+            "description": "the name of workflow file",
+            "x-go-name": "WorkflowID"
+          }
+        },
+        "description": "ActionRun represents an action run",
         "x-go-package": "forgejo.org/modules/structs"
       },
       "ActionRunJob": {
@@ -23423,6 +24291,11 @@
             "type": "string",
             "x-go-name": "LastCommitSHA"
           },
+          "last_commit_when": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-name": "LastCommitWhen"
+          },
           "name": {
             "type": "string",
             "x-go-name": "Name"
@@ -23475,6 +24348,17 @@
           },
           "scopes": {
             "type": "array",
+            "example": [
+              "all",
+              "read:activitypub",
+              "read:issue",
+              "write:misc",
+              "read:notification",
+              "read:organization",
+              "read:package",
+              "read:repository",
+              "read:user"
+            ],
             "items": {
               "type": "string"
             },
@@ -24155,6 +25039,10 @@
         "title": "CreatePushMirrorOption represents need information to create a push mirror of a repository.",
         "type": "object",
         "properties": {
+          "branch_filter": {
+            "type": "string",
+            "x-go-name": "BranchFilter"
+          },
           "interval": {
             "type": "string",
             "x-go-name": "Interval"
@@ -24789,6 +25677,12 @@
         },
         "description": "DispatchWorkflowRun represents a workflow run",
         "x-go-package": "forgejo.org/modules/structs"
+      },
+      "Duration": {
+        "type": "integer",
+        "description": "A Duration represents the elapsed time between two instants\nas an int64 nanosecond count. The representation limits the\nlargest representable duration to approximately 290 years.",
+        "format": "int64",
+        "x-go-package": "time"
       },
       "EditAttachmentOptions": {
         "type": "object",
@@ -26087,7 +26981,7 @@
         "description": "GenerateRepoOption options when creating repository using a template",
         "x-go-package": "forgejo.org/modules/structs"
       },
-      "GitBlobResponse": {
+      "GitBlob": {
         "type": "object",
         "properties": {
           "content": {
@@ -26112,7 +27006,7 @@
             "x-go-name": "URL"
           }
         },
-        "description": "GitBlobResponse represents a git blob",
+        "description": "GitBlob represents a git blob",
         "x-go-package": "forgejo.org/modules/structs"
       },
       "GitEntry": {
@@ -26760,6 +27654,25 @@
           }
         },
         "description": "LicensesListEntry is used for the API",
+        "x-go-package": "forgejo.org/modules/structs"
+      },
+      "ListActionRunResponse": {
+        "type": "object",
+        "properties": {
+          "total_count": {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "TotalCount"
+          },
+          "workflow_runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionRun"
+            },
+            "x-go-name": "Entries"
+          }
+        },
+        "description": "ListActionRunResponse return a list of ActionRun",
         "x-go-package": "forgejo.org/modules/structs"
       },
       "MarkdownOption": {
@@ -28018,6 +28931,10 @@
       "PushMirror": {
         "type": "object",
         "properties": {
+          "branch_filter": {
+            "type": "string",
+            "x-go-name": "BranchFilter"
+          },
           "created": {
             "type": "string",
             "format": "date-time",
@@ -28391,6 +29308,17 @@
           }
         },
         "x-go-package": "forgejo.org/modules/structs"
+      },
+      "RegistrationToken": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "x-go-name": "Token"
+          }
+        },
+        "description": "RegistrationToken is a string used to register a runner with a server",
+        "x-go-package": "forgejo.org/routers/api/v1/shared"
       },
       "Release": {
         "type": "object",
@@ -29019,6 +29947,30 @@
           }
         },
         "description": "SubmitPullReviewOptions are options to submit a pending pull review",
+        "x-go-package": "forgejo.org/modules/structs"
+      },
+      "SyncForkInfo": {
+        "type": "object",
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "x-go-name": "Allowed"
+          },
+          "base_commit": {
+            "type": "string",
+            "x-go-name": "BaseCommit"
+          },
+          "commits_behind": {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "CommitsBehind"
+          },
+          "fork_commit": {
+            "type": "string",
+            "x-go-name": "ForkCommit"
+          }
+        },
+        "description": "SyncForkInfo information about syncing a fork",
         "x-go-package": "forgejo.org/modules/structs"
       },
       "Tag": {
@@ -29790,6 +30742,25 @@
         "description": "UserSettingsOptions represents options to change user settings",
         "x-go-package": "forgejo.org/modules/structs"
       },
+      "VerifyGPGKeyOption": {
+        "required": [
+          "key_id"
+        ],
+        "type": "object",
+        "properties": {
+          "armored_signature": {
+            "type": "string",
+            "x-go-name": "Signature"
+          },
+          "key_id": {
+            "type": "string",
+            "description": "An Signature for a GPG key token",
+            "x-go-name": "KeyID"
+          }
+        },
+        "description": "VerifyGPGKeyOption options verifies user GPG key",
+        "x-go-package": "forgejo.org/modules/structs"
+      },
       "WatchInfo": {
         "type": "object",
         "properties": {
@@ -29958,6 +30929,36 @@
               "items": {
                 "$ref": "#/components/schemas/AccessToken"
               }
+            }
+          }
+        }
+      },
+      "ActionRun": {
+        "description": "ActionRun",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ActionRun"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/ActionRun"
+            }
+          }
+        }
+      },
+      "ActionRunList": {
+        "description": "ActionRunList",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ListActionRunResponse"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/ListActionRunResponse"
             }
           }
         }
@@ -30673,17 +31674,38 @@
           }
         }
       },
-      "GitBlobResponse": {
-        "description": "GitBlobResponse",
+      "GitBlob": {
+        "description": "GitBlob",
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/GitBlobResponse"
+              "$ref": "#/components/schemas/GitBlob"
             }
           },
           "text/html": {
             "schema": {
-              "$ref": "#/components/schemas/GitBlobResponse"
+              "$ref": "#/components/schemas/GitBlob"
+            }
+          }
+        }
+      },
+      "GitBlobList": {
+        "description": "GitBlobList",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GitBlob"
+              }
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GitBlob"
+              }
             }
           }
         }
@@ -31311,6 +32333,27 @@
           }
         }
       },
+      "PersonFeed": {
+        "description": "Personfeed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/APPersonFollowItem"
+              }
+            }
+          },
+          "text/html": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/APPersonFollowItem"
+              }
+            }
+          }
+        }
+      },
       "PublicKey": {
         "description": "PublicKey",
         "content": {
@@ -31691,14 +32734,18 @@
       },
       "RegistrationToken": {
         "description": "RegistrationToken is a string used to register a runner with a server",
-        "headers": {
-          "token": {
+        "content": {
+          "application/json": {
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/RegistrationToken"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/RegistrationToken"
             }
           }
-        },
-        "content": {}
+        }
       },
       "Release": {
         "description": "Release",
@@ -31972,6 +33019,21 @@
               "items": {
                 "type": "string"
               }
+            }
+          }
+        }
+      },
+      "SyncForkInfo": {
+        "description": "SyncForkInfo",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SyncForkInfo"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/SyncForkInfo"
             }
           }
         }
