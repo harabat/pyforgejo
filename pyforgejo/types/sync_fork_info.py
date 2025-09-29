@@ -7,16 +7,15 @@ import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
-class GitBlobResponse(UniversalBaseModel):
+class SyncForkInfo(UniversalBaseModel):
     """
-    GitBlobResponse represents a git blob
+    SyncForkInfo information about syncing a fork
     """
 
-    content: typing.Optional[str] = None
-    encoding: typing.Optional[str] = None
-    sha: typing.Optional[str] = None
-    size: typing.Optional[int] = None
-    url: typing.Optional[str] = None
+    allowed: typing.Optional[bool] = None
+    base_commit: typing.Optional[str] = None
+    commits_behind: typing.Optional[int] = None
+    fork_commit: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(

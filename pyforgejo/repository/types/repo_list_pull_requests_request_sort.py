@@ -6,6 +6,7 @@ RepoListPullRequestsRequestSort = typing.Union[
     typing.Literal[
         "oldest",
         "recentupdate",
+        "recentclose",
         "leastupdate",
         "mostcomment",
         "leastcomment",

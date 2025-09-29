@@ -5,6 +5,7 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from ..types.activity_pub import ActivityPub
+from ..types.ap_person_follow_item import ApPersonFollowItem
 from ..types.forge_like import ForgeLike
 from .raw_client import AsyncRawActivitypubClient, RawActivitypubClient
 
@@ -50,10 +51,8 @@ class ActivitypubClient:
         )
         client.activitypub.instance_actor()
         """
-        response = self._raw_client.instance_actor(
-            request_options=request_options,
-        )
-        return response.data
+        _response = self._raw_client.instance_actor(request_options=request_options)
+        return _response.data
 
     def instance_actor_inbox(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -77,10 +76,10 @@ class ActivitypubClient:
         )
         client.activitypub.instance_actor_inbox()
         """
-        response = self._raw_client.instance_actor_inbox(
-            request_options=request_options,
+        _response = self._raw_client.instance_actor_inbox(
+            request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repository(
         self,
@@ -110,14 +109,13 @@ class ActivitypubClient:
             api_key="YOUR_API_KEY",
         )
         client.activitypub.repository(
-            repository_id=1,
+            repository_id=1000000,
         )
         """
-        response = self._raw_client.repository(
-            repository_id,
-            request_options=request_options,
+        _response = self._raw_client.repository(
+            repository_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repository_inbox(
         self,
@@ -149,16 +147,14 @@ class ActivitypubClient:
             api_key="YOUR_API_KEY",
         )
         client.activitypub.repository_inbox(
-            repository_id=1,
+            repository_id=1000000,
             request={"key": "value"},
         )
         """
-        response = self._raw_client.repository_inbox(
-            repository_id,
-            request=request,
-            request_options=request_options,
+        _response = self._raw_client.repository_inbox(
+            repository_id, request=request, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def person(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -185,14 +181,93 @@ class ActivitypubClient:
             api_key="YOUR_API_KEY",
         )
         client.activitypub.person(
-            user_id=1,
+            user_id=1000000,
         )
         """
-        response = self._raw_client.person(
-            user_id,
-            request_options=request_options,
+        _response = self._raw_client.person(user_id, request_options=request_options)
+        return _response.data
+
+    def person_activity_note(
+        self,
+        user_id: int,
+        activity_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActivityPub:
+        """
+        Parameters
+        ----------
+        user_id : int
+            user ID of the user
+
+        activity_id : int
+            activity ID of the sought activity
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActivityPub
+            ActivityPub
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
         )
-        return response.data
+        client.activitypub.person_activity_note(
+            user_id=1,
+            activity_id=1,
+        )
+        """
+        _response = self._raw_client.person_activity_note(
+            user_id, activity_id, request_options=request_options
+        )
+        return _response.data
+
+    def person_activity(
+        self,
+        user_id: int,
+        activity_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActivityPub:
+        """
+        Parameters
+        ----------
+        user_id : int
+            user ID of the user
+
+        activity_id : int
+            activity ID of the sought activity
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActivityPub
+            ActivityPub
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.activitypub.person_activity(
+            user_id=1,
+            activity_id=1,
+        )
+        """
+        _response = self._raw_client.person_activity(
+            user_id, activity_id, request_options=request_options
+        )
+        return _response.data
 
     def person_inbox(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -218,14 +293,46 @@ class ActivitypubClient:
             api_key="YOUR_API_KEY",
         )
         client.activitypub.person_inbox(
+            user_id=1000000,
+        )
+        """
+        _response = self._raw_client.person_inbox(
+            user_id, request_options=request_options
+        )
+        return _response.data
+
+    def person_feed(
+        self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.List[ApPersonFollowItem]:
+        """
+        Parameters
+        ----------
+        user_id : int
+            user ID of the user
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[ApPersonFollowItem]
+            Personfeed
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.activitypub.person_feed(
             user_id=1,
         )
         """
-        response = self._raw_client.person_inbox(
-            user_id,
-            request_options=request_options,
+        _response = self._raw_client.person_feed(
+            user_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
 
 class AsyncActivitypubClient:
@@ -274,10 +381,10 @@ class AsyncActivitypubClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.instance_actor(
-            request_options=request_options,
+        _response = await self._raw_client.instance_actor(
+            request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def instance_actor_inbox(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -309,10 +416,10 @@ class AsyncActivitypubClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.instance_actor_inbox(
-            request_options=request_options,
+        _response = await self._raw_client.instance_actor_inbox(
+            request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repository(
         self,
@@ -347,17 +454,16 @@ class AsyncActivitypubClient:
 
         async def main() -> None:
             await client.activitypub.repository(
-                repository_id=1,
+                repository_id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repository(
-            repository_id,
-            request_options=request_options,
+        _response = await self._raw_client.repository(
+            repository_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repository_inbox(
         self,
@@ -394,19 +500,17 @@ class AsyncActivitypubClient:
 
         async def main() -> None:
             await client.activitypub.repository_inbox(
-                repository_id=1,
+                repository_id=1000000,
                 request={"key": "value"},
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repository_inbox(
-            repository_id,
-            request=request,
-            request_options=request_options,
+        _response = await self._raw_client.repository_inbox(
+            repository_id, request=request, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def person(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -438,17 +542,114 @@ class AsyncActivitypubClient:
 
         async def main() -> None:
             await client.activitypub.person(
-                user_id=1,
+                user_id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.person(
-            user_id,
-            request_options=request_options,
+        _response = await self._raw_client.person(
+            user_id, request_options=request_options
         )
-        return response.data
+        return _response.data
+
+    async def person_activity_note(
+        self,
+        user_id: int,
+        activity_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActivityPub:
+        """
+        Parameters
+        ----------
+        user_id : int
+            user ID of the user
+
+        activity_id : int
+            activity ID of the sought activity
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActivityPub
+            ActivityPub
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.activitypub.person_activity_note(
+                user_id=1,
+                activity_id=1,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.person_activity_note(
+            user_id, activity_id, request_options=request_options
+        )
+        return _response.data
+
+    async def person_activity(
+        self,
+        user_id: int,
+        activity_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActivityPub:
+        """
+        Parameters
+        ----------
+        user_id : int
+            user ID of the user
+
+        activity_id : int
+            activity ID of the sought activity
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActivityPub
+            ActivityPub
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.activitypub.person_activity(
+                user_id=1,
+                activity_id=1,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.person_activity(
+            user_id, activity_id, request_options=request_options
+        )
+        return _response.data
 
     async def person_inbox(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -479,14 +680,54 @@ class AsyncActivitypubClient:
 
         async def main() -> None:
             await client.activitypub.person_inbox(
+                user_id=1000000,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.person_inbox(
+            user_id, request_options=request_options
+        )
+        return _response.data
+
+    async def person_feed(
+        self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.List[ApPersonFollowItem]:
+        """
+        Parameters
+        ----------
+        user_id : int
+            user ID of the user
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[ApPersonFollowItem]
+            Personfeed
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.activitypub.person_feed(
                 user_id=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.person_inbox(
-            user_id,
-            request_options=request_options,
+        _response = await self._raw_client.person_feed(
+            user_id, request_options=request_options
         )
-        return response.data
+        return _response.data

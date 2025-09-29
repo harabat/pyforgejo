@@ -24,6 +24,7 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.precondition_failed_error import PreconditionFailedError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
+from ..types.action_run import ActionRun
 from ..types.action_run_job import ActionRunJob
 from ..types.action_task_response import ActionTaskResponse
 from ..types.action_variable import ActionVariable
@@ -57,7 +58,7 @@ from ..types.external_wiki import ExternalWiki
 from ..types.file_delete_response import FileDeleteResponse
 from ..types.file_response import FileResponse
 from ..types.files_response import FilesResponse
-from ..types.git_blob_response import GitBlobResponse
+from ..types.git_blob import GitBlob
 from ..types.git_hook import GitHook
 from ..types.git_tree_response import GitTreeResponse
 from ..types.hook import Hook
@@ -67,6 +68,7 @@ from ..types.issue import Issue
 from ..types.issue_config import IssueConfig
 from ..types.issue_config_validation import IssueConfigValidation
 from ..types.issue_template import IssueTemplate
+from ..types.list_action_run_response import ListActionRunResponse
 from ..types.new_issue_pins_allowed import NewIssuePinsAllowed
 from ..types.note import Note
 from ..types.pull_request import PullRequest
@@ -74,17 +76,18 @@ from ..types.pull_review import PullReview
 from ..types.pull_review_comment import PullReviewComment
 from ..types.push_mirror import PushMirror
 from ..types.reference import Reference
+from ..types.registration_token import RegistrationToken
 from ..types.release import Release
 from ..types.repo_collaborator_permission import RepoCollaboratorPermission
 from ..types.repository import Repository
 from ..types.review_state_type import ReviewStateType
 from ..types.search_results import SearchResults
 from ..types.secret import Secret
+from ..types.sync_fork_info import SyncForkInfo
 from ..types.tag import Tag
 from ..types.tag_protection import TagProtection
 from ..types.team import Team
 from ..types.topic_name import TopicName
-from ..types.topic_response import TopicResponse
 from ..types.tracked_time import TrackedTime
 from ..types.user import User
 from ..types.watch_info import WatchInfo
@@ -93,6 +96,8 @@ from ..types.wiki_page import WikiPage
 from ..types.wiki_page_meta_data import WikiPageMetaData
 from .types.add_collaborator_option_permission import \
     AddCollaboratorOptionPermission
+from .types.list_action_runs_request_status_item import \
+    ListActionRunsRequestStatusItem
 from .types.merge_pull_request_option_do import MergePullRequestOptionDo
 from .types.migrate_repo_options_service import MigrateRepoOptionsService
 from .types.repo_download_commit_diff_or_patch_request_diff_type import \
@@ -113,8 +118,11 @@ from .types.repo_list_statuses_by_ref_request_state import \
 from .types.repo_list_statuses_request_sort import RepoListStatusesRequestSort
 from .types.repo_list_statuses_request_state import \
     RepoListStatusesRequestState
+from .types.repo_search_request_order import RepoSearchRequestOrder
+from .types.repo_search_request_sort import RepoSearchRequestSort
 from .types.repo_update_pull_request_request_style import \
     RepoUpdatePullRequestRequestStyle
+from .types.topic_search_results import TopicSearchResults
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -245,51 +253,59 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_search(
@@ -308,8 +324,8 @@ class RawRepositoryClient:
         archived: typing.Optional[bool] = None,
         mode: typing.Optional[str] = None,
         exclusive: typing.Optional[bool] = None,
-        sort: typing.Optional[str] = None,
-        order: typing.Optional[str] = None,
+        sort: typing.Optional[RepoSearchRequestSort] = None,
+        order: typing.Optional[RepoSearchRequestOrder] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -356,10 +372,10 @@ class RawRepositoryClient:
         exclusive : typing.Optional[bool]
             if `uid` is given, search only for repos that the user owns
 
-        sort : typing.Optional[str]
+        sort : typing.Optional[RepoSearchRequestSort]
             sort repos by attribute. Supported values are "alpha", "created", "updated", "size", "git_size", "lfs_size", "stars", "forks" and "id". Default is "alpha"
 
-        order : typing.Optional[str]
+        order : typing.Optional[RepoSearchRequestOrder]
             sort order, either "asc" (ascending) or "desc" (descending). Default is "asc", ignored if "sort" is not specified.
 
         page : typing.Optional[int]
@@ -412,21 +428,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get(
@@ -470,21 +491,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete(
@@ -520,31 +546,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit(
@@ -634,7 +666,7 @@ class RawRepositoryClient:
             set to `true` to delete pr branch after merge by default
 
         default_merge_style : typing.Optional[str]
-            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
+            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", "fast-forward-only", "manually-merged", or "rebase-update-only".
 
         default_update_style : typing.Optional[str]
             set to a update style to be used by this repository: "rebase" or "merge"
@@ -773,41 +805,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_search_run_jobs(
@@ -858,21 +897,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_runner_registration_token(
@@ -881,7 +925,7 @@ class RawRepositoryClient:
         repo: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[None]:
+    ) -> HttpResponse[RegistrationToken]:
         """
         Parameters
         ----------
@@ -896,7 +940,8 @@ class RawRepositoryClient:
 
         Returns
         -------
-        HttpResponse[None]
+        HttpResponse[RegistrationToken]
+            RegistrationToken is a string used to register a runner with a server
         """
         _response = self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/runners/registration-token",
@@ -905,14 +950,225 @@ class RawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return HttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    RegistrationToken,
+                    parse_obj_as(
+                        type_=RegistrationToken,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def list_action_runs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        page: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        event: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        status: typing.Optional[
+            typing.Union[
+                ListActionRunsRequestStatusItem,
+                typing.Sequence[ListActionRunsRequestStatusItem],
+            ]
+        ] = None,
+        run_number: typing.Optional[int] = None,
+        head_sha: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ListActionRunResponse]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        page : typing.Optional[int]
+            page number of results to return (1-based)
+
+        limit : typing.Optional[int]
+            page size of results, default maximum page size is 50
+
+        event : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Returns workflow run triggered by the specified events. For example, `push`, `pull_request` or `workflow_dispatch`.
+
+        status : typing.Optional[typing.Union[ListActionRunsRequestStatusItem, typing.Sequence[ListActionRunsRequestStatusItem]]]
+            Returns workflow runs with the check run status or conclusion that is specified. For example, a conclusion can be success or a status can be in_progress. Only Forgejo Actions can set a status of waiting, pending, or requested.
+
+        run_number : typing.Optional[int]
+            Returns the workflow run associated with the run number.
+
+        head_sha : typing.Optional[str]
+            Only returns workflow runs that are associated with the specified head_sha.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ListActionRunResponse]
+            ActionRunList
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/runs",
+            method="GET",
+            params={
+                "page": page,
+                "limit": limit,
+                "event": event,
+                "status": status,
+                "run_number": run_number,
+                "head_sha": head_sha,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListActionRunResponse,
+                    parse_obj_as(
+                        type_=ListActionRunResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def action_run(
+        self,
+        owner: str,
+        repo: str,
+        run_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ActionRun]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        run_id : int
+            id of the action run
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ActionRun]
+            ActionRun
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/runs/{jsonable_encoder(run_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ActionRun,
+                    parse_obj_as(
+                        type_=ActionRun,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_actions_secrets(
@@ -968,21 +1224,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def update_repo_secret(
@@ -1022,6 +1283,9 @@ class RawRepositoryClient:
             json={
                 "data": data,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1030,31 +1294,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_repo_secret(
@@ -1094,31 +1364,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def list_action_tasks(
@@ -1174,61 +1450,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_repo_variables_list(
@@ -1284,31 +1569,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_repo_variable(
@@ -1356,31 +1647,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_repo_variable(
@@ -1420,6 +1717,9 @@ class RawRepositoryClient:
             json={
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1428,31 +1728,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def update_repo_variable(
@@ -1497,6 +1803,9 @@ class RawRepositoryClient:
                 "name": name,
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1505,31 +1814,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_repo_variable(
@@ -1539,7 +1854,7 @@ class RawRepositoryClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ActionVariable]:
+    ) -> HttpResponse[None]:
         """
         Parameters
         ----------
@@ -1557,8 +1872,7 @@ class RawRepositoryClient:
 
         Returns
         -------
-        HttpResponse[ActionVariable]
-            ActionVariable
+        HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/variables/{jsonable_encoder(variablename)}",
@@ -1567,48 +1881,47 @@ class RawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    ActionVariable,
-                    parse_obj_as(
-                        type_=ActionVariable,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return HttpResponse(response=_response, data=_data)
+                return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def dispatch_workflow(
         self,
         owner: str,
         repo: str,
-        workflowname: str,
+        workflowfilename: str,
         *,
         ref: str,
         inputs: typing.Optional[typing.Dict[str, str]] = OMIT,
@@ -1624,7 +1937,7 @@ class RawRepositoryClient:
         repo : str
             name of the repo
 
-        workflowname : str
+        workflowfilename : str
             name of the workflow
 
         ref : str
@@ -1645,7 +1958,7 @@ class RawRepositoryClient:
             DispatchWorkflowRun is a Workflow Run after dispatching
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/workflows/{jsonable_encoder(workflowname)}/dispatches",
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/workflows/{jsonable_encoder(workflowfilename)}/dispatches",
             method="POST",
             json={
                 "inputs": inputs,
@@ -1670,21 +1983,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_activity_feeds(
@@ -1745,21 +2063,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_archive(
@@ -1799,21 +2122,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_assignees(
@@ -1857,21 +2185,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_update_avatar(
@@ -1918,21 +2251,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_avatar(
@@ -1968,21 +2306,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_branch_protection(
@@ -2027,10 +2370,14 @@ class RawRepositoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_branch_protection(
@@ -2181,51 +2528,59 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_branch_protection(
@@ -2273,21 +2628,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_branch_protection(
@@ -2327,21 +2687,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_branch_protection(
@@ -2487,41 +2852,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_branches(
@@ -2578,10 +2950,14 @@ class RawRepositoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_branch(
@@ -2647,61 +3023,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_branch(
@@ -2749,21 +3134,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_branch(
@@ -2803,41 +3193,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_update_branch(
@@ -2888,41 +3285,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_collaborators(
@@ -2978,21 +3382,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_check_collaborator(
@@ -3034,31 +3443,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_add_collaborator(
@@ -3108,41 +3523,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_collaborator(
@@ -3182,31 +3604,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_repo_permissions(
@@ -3254,31 +3682,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_all_commits(
@@ -3364,31 +3798,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_combined_status_by_ref(
@@ -3448,31 +3888,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_statuses_by_ref(
@@ -3542,31 +3988,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_commit_pull_request(
@@ -3614,21 +4066,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_compare_diff(
@@ -3676,21 +4133,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_contents_list(
@@ -3741,21 +4203,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_change_files(
@@ -3852,61 +4319,81 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_contents(
@@ -3939,7 +4426,7 @@ class RawRepositoryClient:
         Returns
         -------
         HttpResponse[RepoGetContentsResponse]
-            A file's contents or a directory listing
+            A single file's contents or a directory listing
         """
         _response = self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/contents/{jsonable_encoder(filepath)}",
@@ -3961,21 +4448,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_file(
@@ -4072,61 +4564,81 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_update_file(
@@ -4215,6 +4727,9 @@ class RawRepositoryClient:
                 "sha": sha,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4230,61 +4745,81 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_file(
@@ -4381,61 +4916,155 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def repo_convert(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[Repository]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo to convert
+
+        repo : str
+            name of the repo to convert
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[Repository]
+            Repository
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/convert",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Repository,
+                    parse_obj_as(
+                        type_=Repository,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_apply_diff_patch(
@@ -4520,6 +5149,9 @@ class RawRepositoryClient:
                 "sha": sha,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4535,41 +5167,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_editor_config(
@@ -4580,7 +5219,7 @@ class RawRepositoryClient:
         *,
         ref: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[None]:
+    ) -> HttpResponse[typing.Dict[str, str]]:
         """
         Parameters
         ----------
@@ -4601,7 +5240,8 @@ class RawRepositoryClient:
 
         Returns
         -------
-        HttpResponse[None]
+        HttpResponse[typing.Dict[str, str]]
+            definitions
         """
         _response = self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/editorconfig/{jsonable_encoder(filepath)}",
@@ -4613,24 +5253,36 @@ class RawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return HttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    typing.Dict[str, str],
+                    parse_obj_as(
+                        type_=typing.Dict[str, str],  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_flags(
@@ -4674,31 +5326,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_replace_all_flags(
@@ -4744,31 +5402,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_all_flags(
@@ -4804,31 +5468,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_check_flag(
@@ -4868,31 +5538,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_add_flag(
@@ -4932,31 +5608,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_flag(
@@ -4996,31 +5678,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def list_forks(
@@ -5076,21 +5764,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_fork(
@@ -5150,61 +5843,140 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def get_blobs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        shas: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[typing.List[GitBlob]]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        shas : str
+            a comma separated list of blob-sha (mind the overall URL-length limit of ~2,083 chars)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[typing.List[GitBlob]]
+            GitBlobList
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/blobs",
+            method="GET",
+            params={
+                "shas": shas,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[GitBlob],
+                    parse_obj_as(
+                        type_=typing.List[GitBlob],  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_blob(
@@ -5214,7 +5986,7 @@ class RawRepositoryClient:
         sha: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[GitBlobResponse]:
+    ) -> HttpResponse[GitBlob]:
         """
         Parameters
         ----------
@@ -5225,15 +5997,15 @@ class RawRepositoryClient:
             name of the repo
 
         sha : str
-            sha of the commit
+            sha of the blob to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[GitBlobResponse]
-            GitBlobResponse
+        HttpResponse[GitBlob]
+            GitBlob
         """
         _response = self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/blobs/{jsonable_encoder(sha)}",
@@ -5243,40 +6015,46 @@ class RawRepositoryClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GitBlobResponse,
+                    GitBlob,
                     parse_obj_as(
-                        type_=GitBlobResponse,  # type: ignore
+                        type_=GitBlob,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_single_commit(
@@ -5341,31 +6119,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_download_commit_diff_or_patch(
@@ -5417,21 +6201,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_note(
@@ -5491,31 +6280,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_set_note(
@@ -5573,31 +6368,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_remove_note(
@@ -5637,31 +6438,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_all_git_refs(
@@ -5705,21 +6512,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_git_refs(
@@ -5767,21 +6579,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_annotated_tag(
@@ -5829,31 +6646,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_tree(
@@ -5918,31 +6741,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_hooks(
@@ -5998,21 +6827,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_hook(
@@ -6068,6 +6902,9 @@ class RawRepositoryClient:
                 "events": events,
                 "type": type,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6083,21 +6920,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_git_hooks(
@@ -6141,21 +6983,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_git_hook(
@@ -6203,21 +7050,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_git_hook(
@@ -6257,21 +7109,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_git_hook(
@@ -6329,21 +7186,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_hook(
@@ -6391,21 +7253,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_hook(
@@ -6445,21 +7312,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_hook(
@@ -6515,6 +7387,9 @@ class RawRepositoryClient:
                 "config": config,
                 "events": events,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6530,21 +7405,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_test_hook(
@@ -6591,21 +7471,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_issue_config(
@@ -6649,21 +7534,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_validate_issue_config(
@@ -6707,21 +7597,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_issue_templates(
@@ -6765,21 +7660,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_pinned_issues(
@@ -6823,21 +7723,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_keys(
@@ -6903,21 +7808,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_key(
@@ -6964,6 +7874,9 @@ class RawRepositoryClient:
                 "read_only": read_only,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6979,31 +7892,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_key(
@@ -7051,21 +7970,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_key(
@@ -7105,31 +8029,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_languages(
@@ -7173,21 +8103,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     @contextlib.contextmanager
@@ -7232,7 +8167,7 @@ class RawRepositoryClient:
             request_options=request_options,
         ) as _response:
 
-            def stream() -> HttpResponse[typing.Iterator[bytes]]:
+            def _stream() -> HttpResponse[typing.Iterator[bytes]]:
                 try:
                     if 200 <= _response.status_code < 300:
                         _chunk_size = (
@@ -7252,24 +8187,29 @@ class RawRepositoryClient:
                     _response.read()
                     if _response.status_code == 404:
                         raise NotFoundError(
-                            typing.cast(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
                                 typing.Optional[typing.Any],
                                 parse_obj_as(
                                     type_=typing.Optional[typing.Any],  # type: ignore
                                     object_=_response.json(),
                                 ),
-                            )
+                            ),
                         )
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise core_api_error_ApiError(
-                        status_code=_response.status_code, body=_response.text
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.text,
                     )
                 raise core_api_error_ApiError(
-                    status_code=_response.status_code, body=_response_json
+                    status_code=_response.status_code,
+                    headers=dict(_response.headers),
+                    body=_response_json,
                 )
 
-            yield stream()
+            yield _stream()
 
     def repo_mirror_sync(
         self,
@@ -7304,41 +8244,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_new_pin_allowed(
@@ -7382,21 +8329,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_pull_requests(
@@ -7477,31 +8429,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 500:
                 raise InternalServerError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_pull_request(
@@ -7587,61 +8545,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_pinned_pull_requests(
@@ -7685,21 +8652,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_pull_request_by_base_head(
@@ -7751,21 +8723,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_pull_request(
@@ -7813,21 +8790,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_pull_request(
@@ -7925,61 +8907,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 412:
                 raise PreconditionFailedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_download_pull_diff_or_patch(
@@ -8038,21 +9029,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_pull_request_commits(
@@ -8122,21 +9118,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_pull_request_files(
@@ -8206,21 +9207,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_pull_request_is_merged(
@@ -8260,21 +9266,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_merge_pull_request(
@@ -8352,61 +9363,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_cancel_scheduled_auto_merge(
@@ -8446,41 +9466,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_pull_review_requests(
@@ -8524,6 +9551,9 @@ class RawRepositoryClient:
                 "reviewers": reviewers,
                 "team_reviewers": team_reviewers,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -8539,31 +9569,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_pull_review_requests(
@@ -8606,6 +9642,9 @@ class RawRepositoryClient:
                 "reviewers": reviewers,
                 "team_reviewers": team_reviewers,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -8614,41 +9653,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_pull_reviews(
@@ -8708,21 +9754,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_pull_review(
@@ -8796,31 +9847,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_pull_review(
@@ -8872,21 +9929,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_submit_pull_review(
@@ -8952,31 +10014,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_pull_review(
@@ -9020,31 +10088,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_pull_review_comments(
@@ -9096,21 +10170,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_pull_review_comment(
@@ -9169,6 +10248,9 @@ class RawRepositoryClient:
                 "old_position": old_position,
                 "path": path,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -9184,31 +10266,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_pull_review_comment(
@@ -9264,31 +10352,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_pull_review_comment(
@@ -9336,31 +10430,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_dismiss_pull_review(
@@ -9426,41 +10526,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_un_dismiss_pull_review(
@@ -9512,41 +10619,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_update_pull_request(
@@ -9593,61 +10707,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_push_mirrors(
@@ -9703,41 +10826,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_add_push_mirror(
@@ -9745,6 +10875,7 @@ class RawRepositoryClient:
         owner: str,
         repo: str,
         *,
+        branch_filter: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         remote_address: typing.Optional[str] = OMIT,
         remote_password: typing.Optional[str] = OMIT,
@@ -9761,6 +10892,8 @@ class RawRepositoryClient:
 
         repo : str
             name of the repo
+
+        branch_filter : typing.Optional[str]
 
         interval : typing.Optional[str]
 
@@ -9786,6 +10919,7 @@ class RawRepositoryClient:
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/push_mirrors",
             method="POST",
             json={
+                "branch_filter": branch_filter,
                 "interval": interval,
                 "remote_address": remote_address,
                 "remote_password": remote_password,
@@ -9811,51 +10945,59 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_push_mirror_sync(
@@ -9891,51 +11033,59 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_push_mirror_by_remote_name(
@@ -9983,41 +11133,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_push_mirror(
@@ -10057,31 +11214,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     @contextlib.contextmanager
@@ -10126,7 +11289,7 @@ class RawRepositoryClient:
             request_options=request_options,
         ) as _response:
 
-            def stream() -> HttpResponse[typing.Iterator[bytes]]:
+            def _stream() -> HttpResponse[typing.Iterator[bytes]]:
                 try:
                     if 200 <= _response.status_code < 300:
                         _chunk_size = (
@@ -10146,24 +11309,29 @@ class RawRepositoryClient:
                     _response.read()
                     if _response.status_code == 404:
                         raise NotFoundError(
-                            typing.cast(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
                                 typing.Optional[typing.Any],
                                 parse_obj_as(
                                     type_=typing.Optional[typing.Any],  # type: ignore
                                     object_=_response.json(),
                                 ),
-                            )
+                            ),
                         )
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise core_api_error_ApiError(
-                        status_code=_response.status_code, body=_response.text
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.text,
                     )
                 raise core_api_error_ApiError(
-                    status_code=_response.status_code, body=_response_json
+                    status_code=_response.status_code,
+                    headers=dict(_response.headers),
+                    body=_response_json,
                 )
 
-            yield stream()
+            yield _stream()
 
     def repo_list_releases(
         self,
@@ -10233,21 +11401,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_release(
@@ -10325,41 +11498,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_latest_release(
@@ -10403,21 +11583,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_release_by_tag(
@@ -10465,21 +11650,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_release_by_tag(
@@ -10519,31 +11709,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_release(
@@ -10591,21 +11787,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_release(
@@ -10645,31 +11846,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_release(
@@ -10751,21 +11958,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_release_attachments(
@@ -10813,21 +12025,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_release_attachment(
@@ -10839,6 +12056,7 @@ class RawRepositoryClient:
         request: typing.Union[
             bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]
         ],
+        name: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Attachment]:
         """
@@ -10855,6 +12073,9 @@ class RawRepositoryClient:
 
         request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
 
+        name : typing.Optional[str]
+            name of the attachment
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -10866,7 +12087,13 @@ class RawRepositoryClient:
         _response = self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/releases/{jsonable_encoder(id)}/assets",
             method="POST",
+            params={
+                "name": name,
+            },
             content=request,
+            headers={
+                "content-type": "application/octet-stream",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -10882,41 +12109,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_release_attachment(
@@ -10968,21 +12202,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_release_attachment(
@@ -11026,21 +12265,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_release_attachment(
@@ -11089,6 +12333,9 @@ class RawRepositoryClient:
                 "browser_download_url": browser_download_url,
                 "name": name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -11104,31 +12351,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_reviewers(
@@ -11172,21 +12425,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_signing_key(
@@ -11220,14 +12478,18 @@ class RawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return _response.text  # type: ignore
+                return HttpResponse(response=_response, data=_response.text)  # type: ignore
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_stargazers(
@@ -11283,21 +12545,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_statuses(
@@ -11367,31 +12634,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_status(
@@ -11461,31 +12734,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_subscribers(
@@ -11541,21 +12820,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def user_current_check_subscription(
@@ -11599,21 +12883,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def user_current_put_subscription(
@@ -11657,21 +12946,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def user_current_delete_subscription(
@@ -11707,21 +13001,314 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def repo_sync_fork_default_info(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[SyncForkInfo]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[SyncForkInfo]
+            SyncForkInfo
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SyncForkInfo,
+                    parse_obj_as(
+                        type_=SyncForkInfo,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def repo_sync_fork_default(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[None]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[None]
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def repo_sync_fork_branch_info(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[SyncForkInfo]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[SyncForkInfo]
+            SyncForkInfo
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork/{jsonable_encoder(branch)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SyncForkInfo,
+                    parse_obj_as(
+                        type_=SyncForkInfo,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def repo_sync_fork_branch(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[None]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[None]
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork/{jsonable_encoder(branch)}",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_tag_protection(
@@ -11766,10 +13353,14 @@ class RawRepositoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_tag_protection(
@@ -11831,51 +13422,59 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_tag_protection(
@@ -11923,21 +13522,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_tag_protection(
@@ -11977,21 +13581,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_tag_protection(
@@ -12057,41 +13666,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_tags(
@@ -12147,21 +13763,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_tag(
@@ -12223,71 +13844,81 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_tag(
@@ -12335,21 +13966,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_tag(
@@ -12389,61 +14025,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_teams(
@@ -12487,21 +14132,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_check_team(
@@ -12549,31 +14199,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_add_team(
@@ -12613,41 +14269,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_team(
@@ -12687,41 +14350,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_tracked_times(
@@ -12792,41 +14462,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def user_tracked_times(
@@ -12874,41 +14551,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_list_topics(
@@ -12964,21 +14648,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_update_topics(
@@ -13025,31 +14714,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_add_topic(
@@ -13089,31 +14784,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_topic(
@@ -13153,31 +14854,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_transfer(
@@ -13236,51 +14943,59 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def accept_repo_transfer(
@@ -13324,41 +15039,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def reject_repo_transfer(
@@ -13402,31 +15124,37 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_create_wiki_page(
@@ -13473,6 +15201,9 @@ class RawRepositoryClient:
                 "message": message,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -13488,61 +15219,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_wiki_page(
@@ -13590,21 +15330,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_delete_wiki_page(
@@ -13644,41 +15389,48 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_edit_wiki_page(
@@ -13729,6 +15481,9 @@ class RawRepositoryClient:
                 "message": message,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -13744,61 +15499,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_wiki_pages(
@@ -13854,21 +15618,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_wiki_page_revisions(
@@ -13923,21 +15692,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def generate_repo(
@@ -14047,61 +15821,70 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def repo_get_by_id(
@@ -14138,21 +15921,26 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def topic_search(
@@ -14162,12 +15950,12 @@ class RawRepositoryClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[typing.List[TopicResponse]]:
+    ) -> HttpResponse[TopicSearchResults]:
         """
         Parameters
         ----------
         q : str
-            keywords to search
+            keyword to search for
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -14180,8 +15968,8 @@ class RawRepositoryClient:
 
         Returns
         -------
-        HttpResponse[typing.List[TopicResponse]]
-            TopicListResponse
+        HttpResponse[TopicSearchResults]
+            SearchResults of a successful search
         """
         _response = self._client_wrapper.httpx_client.request(
             "topics/search",
@@ -14196,40 +15984,46 @@ class RawRepositoryClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.List[TopicResponse],
+                    TopicSearchResults,
                     parse_obj_as(
-                        type_=typing.List[TopicResponse],  # type: ignore
+                        type_=TopicSearchResults,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_current_user_repo(
@@ -14313,6 +16107,9 @@ class RawRepositoryClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -14328,71 +16125,81 @@ class RawRepositoryClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiUnauthorizedError,
                         parse_obj_as(
                             type_=ApiUnauthorizedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
 
@@ -14521,51 +16328,59 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_search(
@@ -14584,8 +16399,8 @@ class AsyncRawRepositoryClient:
         archived: typing.Optional[bool] = None,
         mode: typing.Optional[str] = None,
         exclusive: typing.Optional[bool] = None,
-        sort: typing.Optional[str] = None,
-        order: typing.Optional[str] = None,
+        sort: typing.Optional[RepoSearchRequestSort] = None,
+        order: typing.Optional[RepoSearchRequestOrder] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -14632,10 +16447,10 @@ class AsyncRawRepositoryClient:
         exclusive : typing.Optional[bool]
             if `uid` is given, search only for repos that the user owns
 
-        sort : typing.Optional[str]
+        sort : typing.Optional[RepoSearchRequestSort]
             sort repos by attribute. Supported values are "alpha", "created", "updated", "size", "git_size", "lfs_size", "stars", "forks" and "id". Default is "alpha"
 
-        order : typing.Optional[str]
+        order : typing.Optional[RepoSearchRequestOrder]
             sort order, either "asc" (ascending) or "desc" (descending). Default is "asc", ignored if "sort" is not specified.
 
         page : typing.Optional[int]
@@ -14688,21 +16503,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get(
@@ -14746,21 +16566,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete(
@@ -14796,31 +16621,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit(
@@ -14910,7 +16741,7 @@ class AsyncRawRepositoryClient:
             set to `true` to delete pr branch after merge by default
 
         default_merge_style : typing.Optional[str]
-            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
+            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", "fast-forward-only", "manually-merged", or "rebase-update-only".
 
         default_update_style : typing.Optional[str]
             set to a update style to be used by this repository: "rebase" or "merge"
@@ -15049,41 +16880,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_search_run_jobs(
@@ -15134,21 +16972,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_runner_registration_token(
@@ -15157,7 +17000,7 @@ class AsyncRawRepositoryClient:
         repo: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[None]:
+    ) -> AsyncHttpResponse[RegistrationToken]:
         """
         Parameters
         ----------
@@ -15172,7 +17015,8 @@ class AsyncRawRepositoryClient:
 
         Returns
         -------
-        AsyncHttpResponse[None]
+        AsyncHttpResponse[RegistrationToken]
+            RegistrationToken is a string used to register a runner with a server
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/runners/registration-token",
@@ -15181,14 +17025,225 @@ class AsyncRawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return AsyncHttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    RegistrationToken,
+                    parse_obj_as(
+                        type_=RegistrationToken,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def list_action_runs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        page: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        event: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        status: typing.Optional[
+            typing.Union[
+                ListActionRunsRequestStatusItem,
+                typing.Sequence[ListActionRunsRequestStatusItem],
+            ]
+        ] = None,
+        run_number: typing.Optional[int] = None,
+        head_sha: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ListActionRunResponse]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        page : typing.Optional[int]
+            page number of results to return (1-based)
+
+        limit : typing.Optional[int]
+            page size of results, default maximum page size is 50
+
+        event : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Returns workflow run triggered by the specified events. For example, `push`, `pull_request` or `workflow_dispatch`.
+
+        status : typing.Optional[typing.Union[ListActionRunsRequestStatusItem, typing.Sequence[ListActionRunsRequestStatusItem]]]
+            Returns workflow runs with the check run status or conclusion that is specified. For example, a conclusion can be success or a status can be in_progress. Only Forgejo Actions can set a status of waiting, pending, or requested.
+
+        run_number : typing.Optional[int]
+            Returns the workflow run associated with the run number.
+
+        head_sha : typing.Optional[str]
+            Only returns workflow runs that are associated with the specified head_sha.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ListActionRunResponse]
+            ActionRunList
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/runs",
+            method="GET",
+            params={
+                "page": page,
+                "limit": limit,
+                "event": event,
+                "status": status,
+                "run_number": run_number,
+                "head_sha": head_sha,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ListActionRunResponse,
+                    parse_obj_as(
+                        type_=ListActionRunResponse,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def action_run(
+        self,
+        owner: str,
+        repo: str,
+        run_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ActionRun]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        run_id : int
+            id of the action run
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ActionRun]
+            ActionRun
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/runs/{jsonable_encoder(run_id)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ActionRun,
+                    parse_obj_as(
+                        type_=ActionRun,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_actions_secrets(
@@ -15244,21 +17299,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def update_repo_secret(
@@ -15298,6 +17358,9 @@ class AsyncRawRepositoryClient:
             json={
                 "data": data,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -15306,31 +17369,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_repo_secret(
@@ -15370,31 +17439,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def list_action_tasks(
@@ -15450,61 +17525,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_repo_variables_list(
@@ -15560,31 +17644,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_repo_variable(
@@ -15632,31 +17722,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_repo_variable(
@@ -15696,6 +17792,9 @@ class AsyncRawRepositoryClient:
             json={
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -15704,31 +17803,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def update_repo_variable(
@@ -15773,6 +17878,9 @@ class AsyncRawRepositoryClient:
                 "name": name,
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -15781,31 +17889,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_repo_variable(
@@ -15815,7 +17929,7 @@ class AsyncRawRepositoryClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ActionVariable]:
+    ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
@@ -15833,8 +17947,7 @@ class AsyncRawRepositoryClient:
 
         Returns
         -------
-        AsyncHttpResponse[ActionVariable]
-            ActionVariable
+        AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/variables/{jsonable_encoder(variablename)}",
@@ -15843,48 +17956,47 @@ class AsyncRawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    ActionVariable,
-                    parse_obj_as(
-                        type_=ActionVariable,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return AsyncHttpResponse(response=_response, data=_data)
+                return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def dispatch_workflow(
         self,
         owner: str,
         repo: str,
-        workflowname: str,
+        workflowfilename: str,
         *,
         ref: str,
         inputs: typing.Optional[typing.Dict[str, str]] = OMIT,
@@ -15900,7 +18012,7 @@ class AsyncRawRepositoryClient:
         repo : str
             name of the repo
 
-        workflowname : str
+        workflowfilename : str
             name of the workflow
 
         ref : str
@@ -15921,7 +18033,7 @@ class AsyncRawRepositoryClient:
             DispatchWorkflowRun is a Workflow Run after dispatching
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/workflows/{jsonable_encoder(workflowname)}/dispatches",
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/actions/workflows/{jsonable_encoder(workflowfilename)}/dispatches",
             method="POST",
             json={
                 "inputs": inputs,
@@ -15946,21 +18058,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_activity_feeds(
@@ -16021,21 +18138,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_archive(
@@ -16075,21 +18197,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_assignees(
@@ -16133,21 +18260,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_update_avatar(
@@ -16194,21 +18326,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_avatar(
@@ -16244,21 +18381,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_branch_protection(
@@ -16303,10 +18445,14 @@ class AsyncRawRepositoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_branch_protection(
@@ -16457,51 +18603,59 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_branch_protection(
@@ -16549,21 +18703,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_branch_protection(
@@ -16603,21 +18762,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_branch_protection(
@@ -16763,41 +18927,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_branches(
@@ -16854,10 +19025,14 @@ class AsyncRawRepositoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_branch(
@@ -16923,61 +19098,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_branch(
@@ -17025,21 +19209,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_branch(
@@ -17079,41 +19268,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_update_branch(
@@ -17164,41 +19360,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_collaborators(
@@ -17254,21 +19457,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_check_collaborator(
@@ -17310,31 +19518,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_add_collaborator(
@@ -17384,41 +19598,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_collaborator(
@@ -17458,31 +19679,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_repo_permissions(
@@ -17530,31 +19757,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_all_commits(
@@ -17640,31 +19873,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_combined_status_by_ref(
@@ -17724,31 +19963,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_statuses_by_ref(
@@ -17818,31 +20063,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_commit_pull_request(
@@ -17890,21 +20141,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_compare_diff(
@@ -17952,21 +20208,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_contents_list(
@@ -18017,21 +20278,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_change_files(
@@ -18128,61 +20394,81 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_contents(
@@ -18215,7 +20501,7 @@ class AsyncRawRepositoryClient:
         Returns
         -------
         AsyncHttpResponse[RepoGetContentsResponse]
-            A file's contents or a directory listing
+            A single file's contents or a directory listing
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/contents/{jsonable_encoder(filepath)}",
@@ -18237,21 +20523,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_file(
@@ -18348,61 +20639,81 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_update_file(
@@ -18491,6 +20802,9 @@ class AsyncRawRepositoryClient:
                 "sha": sha,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -18506,61 +20820,81 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
+                )
+            if _response.status_code == 409:
+                raise ConflictError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_file(
@@ -18657,61 +20991,155 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def repo_convert(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[Repository]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo to convert
+
+        repo : str
+            name of the repo to convert
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[Repository]
+            Repository
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/convert",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    Repository,
+                    parse_obj_as(
+                        type_=Repository,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 403:
+                raise ForbiddenError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 422:
+                raise UnprocessableEntityError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_apply_diff_patch(
@@ -18796,6 +21224,9 @@ class AsyncRawRepositoryClient:
                 "sha": sha,
                 "signoff": signoff,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -18811,41 +21242,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_editor_config(
@@ -18856,7 +21294,7 @@ class AsyncRawRepositoryClient:
         *,
         ref: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[None]:
+    ) -> AsyncHttpResponse[typing.Dict[str, str]]:
         """
         Parameters
         ----------
@@ -18877,7 +21315,8 @@ class AsyncRawRepositoryClient:
 
         Returns
         -------
-        AsyncHttpResponse[None]
+        AsyncHttpResponse[typing.Dict[str, str]]
+            definitions
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/editorconfig/{jsonable_encoder(filepath)}",
@@ -18889,24 +21328,36 @@ class AsyncRawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return AsyncHttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    typing.Dict[str, str],
+                    parse_obj_as(
+                        type_=typing.Dict[str, str],  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_flags(
@@ -18950,31 +21401,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_replace_all_flags(
@@ -19020,31 +21477,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_all_flags(
@@ -19080,31 +21543,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_check_flag(
@@ -19144,31 +21613,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_add_flag(
@@ -19208,31 +21683,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_flag(
@@ -19272,31 +21753,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def list_forks(
@@ -19352,21 +21839,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_fork(
@@ -19426,61 +21918,140 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def get_blobs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        shas: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[typing.List[GitBlob]]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        shas : str
+            a comma separated list of blob-sha (mind the overall URL-length limit of ~2,083 chars)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[typing.List[GitBlob]]
+            GitBlobList
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/blobs",
+            method="GET",
+            params={
+                "shas": shas,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[GitBlob],
+                    parse_obj_as(
+                        type_=typing.List[GitBlob],  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_blob(
@@ -19490,7 +22061,7 @@ class AsyncRawRepositoryClient:
         sha: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[GitBlobResponse]:
+    ) -> AsyncHttpResponse[GitBlob]:
         """
         Parameters
         ----------
@@ -19501,15 +22072,15 @@ class AsyncRawRepositoryClient:
             name of the repo
 
         sha : str
-            sha of the commit
+            sha of the blob to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[GitBlobResponse]
-            GitBlobResponse
+        AsyncHttpResponse[GitBlob]
+            GitBlob
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/git/blobs/{jsonable_encoder(sha)}",
@@ -19519,40 +22090,46 @@ class AsyncRawRepositoryClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    GitBlobResponse,
+                    GitBlob,
                     parse_obj_as(
-                        type_=GitBlobResponse,  # type: ignore
+                        type_=GitBlob,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_single_commit(
@@ -19617,31 +22194,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_download_commit_diff_or_patch(
@@ -19693,21 +22276,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_note(
@@ -19767,31 +22355,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_set_note(
@@ -19849,31 +22443,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_remove_note(
@@ -19913,31 +22513,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_all_git_refs(
@@ -19981,21 +22587,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_git_refs(
@@ -20043,21 +22654,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_annotated_tag(
@@ -20105,31 +22721,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_tree(
@@ -20194,31 +22816,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_hooks(
@@ -20274,21 +22902,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_hook(
@@ -20344,6 +22977,9 @@ class AsyncRawRepositoryClient:
                 "events": events,
                 "type": type,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -20359,21 +22995,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_git_hooks(
@@ -20417,21 +23058,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_git_hook(
@@ -20479,21 +23125,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_git_hook(
@@ -20533,21 +23184,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_git_hook(
@@ -20605,21 +23261,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_hook(
@@ -20667,21 +23328,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_hook(
@@ -20721,21 +23387,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_hook(
@@ -20791,6 +23462,9 @@ class AsyncRawRepositoryClient:
                 "config": config,
                 "events": events,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -20806,21 +23480,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_test_hook(
@@ -20867,21 +23546,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_issue_config(
@@ -20925,21 +23609,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_validate_issue_config(
@@ -20983,21 +23672,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_issue_templates(
@@ -21041,21 +23735,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_pinned_issues(
@@ -21099,21 +23798,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_keys(
@@ -21179,21 +23883,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_key(
@@ -21240,6 +23949,9 @@ class AsyncRawRepositoryClient:
                 "read_only": read_only,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -21255,31 +23967,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_key(
@@ -21327,21 +24045,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_key(
@@ -21381,31 +24104,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_languages(
@@ -21449,21 +24178,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     @contextlib.asynccontextmanager
@@ -21508,7 +24242,7 @@ class AsyncRawRepositoryClient:
             request_options=request_options,
         ) as _response:
 
-            async def stream() -> AsyncHttpResponse[typing.AsyncIterator[bytes]]:
+            async def _stream() -> AsyncHttpResponse[typing.AsyncIterator[bytes]]:
                 try:
                     if 200 <= _response.status_code < 300:
                         _chunk_size = (
@@ -21528,24 +24262,29 @@ class AsyncRawRepositoryClient:
                     await _response.aread()
                     if _response.status_code == 404:
                         raise NotFoundError(
-                            typing.cast(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
                                 typing.Optional[typing.Any],
                                 parse_obj_as(
                                     type_=typing.Optional[typing.Any],  # type: ignore
                                     object_=_response.json(),
                                 ),
-                            )
+                            ),
                         )
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise core_api_error_ApiError(
-                        status_code=_response.status_code, body=_response.text
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.text,
                     )
                 raise core_api_error_ApiError(
-                    status_code=_response.status_code, body=_response_json
+                    status_code=_response.status_code,
+                    headers=dict(_response.headers),
+                    body=_response_json,
                 )
 
-            yield await stream()
+            yield await _stream()
 
     async def repo_mirror_sync(
         self,
@@ -21580,41 +24319,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_new_pin_allowed(
@@ -21658,21 +24404,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_pull_requests(
@@ -21753,31 +24504,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 500:
                 raise InternalServerError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_pull_request(
@@ -21863,61 +24620,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_pinned_pull_requests(
@@ -21961,21 +24727,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_pull_request_by_base_head(
@@ -22027,21 +24798,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_pull_request(
@@ -22089,21 +24865,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_pull_request(
@@ -22201,61 +24982,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 412:
                 raise PreconditionFailedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_download_pull_diff_or_patch(
@@ -22314,21 +25104,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_pull_request_commits(
@@ -22398,21 +25193,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_pull_request_files(
@@ -22482,21 +25282,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_pull_request_is_merged(
@@ -22536,21 +25341,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_merge_pull_request(
@@ -22628,61 +25438,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_cancel_scheduled_auto_merge(
@@ -22722,41 +25541,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_pull_review_requests(
@@ -22800,6 +25626,9 @@ class AsyncRawRepositoryClient:
                 "reviewers": reviewers,
                 "team_reviewers": team_reviewers,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -22815,31 +25644,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_pull_review_requests(
@@ -22882,6 +25717,9 @@ class AsyncRawRepositoryClient:
                 "reviewers": reviewers,
                 "team_reviewers": team_reviewers,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -22890,41 +25728,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_pull_reviews(
@@ -22984,21 +25829,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_pull_review(
@@ -23072,31 +25922,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_pull_review(
@@ -23148,21 +26004,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_submit_pull_review(
@@ -23228,31 +26089,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_pull_review(
@@ -23296,31 +26163,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_pull_review_comments(
@@ -23372,21 +26245,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_pull_review_comment(
@@ -23445,6 +26323,9 @@ class AsyncRawRepositoryClient:
                 "old_position": old_position,
                 "path": path,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -23460,31 +26341,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_pull_review_comment(
@@ -23540,31 +26427,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_pull_review_comment(
@@ -23612,31 +26505,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_dismiss_pull_review(
@@ -23702,41 +26601,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_un_dismiss_pull_review(
@@ -23788,41 +26694,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_update_pull_request(
@@ -23869,61 +26782,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_push_mirrors(
@@ -23979,41 +26901,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_add_push_mirror(
@@ -24021,6 +26950,7 @@ class AsyncRawRepositoryClient:
         owner: str,
         repo: str,
         *,
+        branch_filter: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         remote_address: typing.Optional[str] = OMIT,
         remote_password: typing.Optional[str] = OMIT,
@@ -24037,6 +26967,8 @@ class AsyncRawRepositoryClient:
 
         repo : str
             name of the repo
+
+        branch_filter : typing.Optional[str]
 
         interval : typing.Optional[str]
 
@@ -24062,6 +26994,7 @@ class AsyncRawRepositoryClient:
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/push_mirrors",
             method="POST",
             json={
+                "branch_filter": branch_filter,
                 "interval": interval,
                 "remote_address": remote_address,
                 "remote_password": remote_password,
@@ -24087,51 +27020,59 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_push_mirror_sync(
@@ -24167,51 +27108,59 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_push_mirror_by_remote_name(
@@ -24259,41 +27208,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_push_mirror(
@@ -24333,31 +27289,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     @contextlib.asynccontextmanager
@@ -24402,7 +27364,7 @@ class AsyncRawRepositoryClient:
             request_options=request_options,
         ) as _response:
 
-            async def stream() -> AsyncHttpResponse[typing.AsyncIterator[bytes]]:
+            async def _stream() -> AsyncHttpResponse[typing.AsyncIterator[bytes]]:
                 try:
                     if 200 <= _response.status_code < 300:
                         _chunk_size = (
@@ -24422,24 +27384,29 @@ class AsyncRawRepositoryClient:
                     await _response.aread()
                     if _response.status_code == 404:
                         raise NotFoundError(
-                            typing.cast(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
                                 typing.Optional[typing.Any],
                                 parse_obj_as(
                                     type_=typing.Optional[typing.Any],  # type: ignore
                                     object_=_response.json(),
                                 ),
-                            )
+                            ),
                         )
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise core_api_error_ApiError(
-                        status_code=_response.status_code, body=_response.text
+                        status_code=_response.status_code,
+                        headers=dict(_response.headers),
+                        body=_response.text,
                     )
                 raise core_api_error_ApiError(
-                    status_code=_response.status_code, body=_response_json
+                    status_code=_response.status_code,
+                    headers=dict(_response.headers),
+                    body=_response_json,
                 )
 
-            yield await stream()
+            yield await _stream()
 
     async def repo_list_releases(
         self,
@@ -24509,21 +27476,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_release(
@@ -24601,41 +27573,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_latest_release(
@@ -24679,21 +27658,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_release_by_tag(
@@ -24741,21 +27725,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_release_by_tag(
@@ -24795,31 +27784,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_release(
@@ -24867,21 +27862,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_release(
@@ -24921,31 +27921,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_release(
@@ -25027,21 +28033,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_release_attachments(
@@ -25089,21 +28100,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_release_attachment(
@@ -25115,6 +28131,7 @@ class AsyncRawRepositoryClient:
         request: typing.Union[
             bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]
         ],
+        name: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Attachment]:
         """
@@ -25131,6 +28148,9 @@ class AsyncRawRepositoryClient:
 
         request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
 
+        name : typing.Optional[str]
+            name of the attachment
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -25142,7 +28162,13 @@ class AsyncRawRepositoryClient:
         _response = await self._client_wrapper.httpx_client.request(
             f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/releases/{jsonable_encoder(id)}/assets",
             method="POST",
+            params={
+                "name": name,
+            },
             content=request,
+            headers={
+                "content-type": "application/octet-stream",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -25158,41 +28184,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_release_attachment(
@@ -25244,21 +28277,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_release_attachment(
@@ -25302,21 +28340,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_release_attachment(
@@ -25365,6 +28408,9 @@ class AsyncRawRepositoryClient:
                 "browser_download_url": browser_download_url,
                 "name": name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -25380,31 +28426,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_reviewers(
@@ -25448,21 +28500,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_signing_key(
@@ -25496,14 +28553,18 @@ class AsyncRawRepositoryClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return _response.text  # type: ignore
+                return AsyncHttpResponse(response=_response, data=_response.text)  # type: ignore
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_stargazers(
@@ -25559,21 +28620,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_statuses(
@@ -25643,31 +28709,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_status(
@@ -25737,31 +28809,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_subscribers(
@@ -25817,21 +28895,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def user_current_check_subscription(
@@ -25875,21 +28958,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def user_current_put_subscription(
@@ -25933,21 +29021,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def user_current_delete_subscription(
@@ -25983,21 +29076,314 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def repo_sync_fork_default_info(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[SyncForkInfo]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[SyncForkInfo]
+            SyncForkInfo
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SyncForkInfo,
+                    parse_obj_as(
+                        type_=SyncForkInfo,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def repo_sync_fork_default(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[None]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[None]
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def repo_sync_fork_branch_info(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[SyncForkInfo]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[SyncForkInfo]
+            SyncForkInfo
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork/{jsonable_encoder(branch)}",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    SyncForkInfo,
+                    parse_obj_as(
+                        type_=SyncForkInfo,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def repo_sync_fork_branch(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[None]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[None]
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"repos/{jsonable_encoder(owner)}/{jsonable_encoder(repo)}/sync_fork/{jsonable_encoder(branch)}",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        types_api_error_ApiError,
+                        parse_obj_as(
+                            type_=types_api_error_ApiError,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Optional[typing.Any],
+                        parse_obj_as(
+                            type_=typing.Optional[typing.Any],  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise core_api_error_ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise core_api_error_ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_tag_protection(
@@ -26042,10 +29428,14 @@ class AsyncRawRepositoryClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_tag_protection(
@@ -26107,51 +29497,59 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_tag_protection(
@@ -26199,21 +29597,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_tag_protection(
@@ -26253,21 +29656,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_tag_protection(
@@ -26333,41 +29741,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_tags(
@@ -26423,21 +29838,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_tag(
@@ -26499,71 +29919,81 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_tag(
@@ -26611,21 +30041,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_tag(
@@ -26665,61 +30100,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_teams(
@@ -26763,21 +30207,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_check_team(
@@ -26825,31 +30274,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_add_team(
@@ -26889,41 +30344,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_team(
@@ -26963,41 +30425,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 405:
                 raise MethodNotAllowedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_tracked_times(
@@ -27068,41 +30537,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def user_tracked_times(
@@ -27150,41 +30626,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_list_topics(
@@ -27240,21 +30723,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_update_topics(
@@ -27301,31 +30789,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_add_topic(
@@ -27365,31 +30859,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_topic(
@@ -27429,31 +30929,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_transfer(
@@ -27512,51 +31018,59 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def accept_repo_transfer(
@@ -27600,41 +31114,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def reject_repo_transfer(
@@ -27678,31 +31199,37 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_create_wiki_page(
@@ -27749,6 +31276,9 @@ class AsyncRawRepositoryClient:
                 "message": message,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -27764,61 +31294,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_wiki_page(
@@ -27866,21 +31405,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_delete_wiki_page(
@@ -27920,41 +31464,48 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_edit_wiki_page(
@@ -28005,6 +31556,9 @@ class AsyncRawRepositoryClient:
                 "message": message,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -28020,61 +31574,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 423:
                 raise LockedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiRepoArchivedError,
                         parse_obj_as(
                             type_=ApiRepoArchivedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_wiki_pages(
@@ -28130,21 +31693,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_wiki_page_revisions(
@@ -28199,21 +31767,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def generate_repo(
@@ -28323,61 +31896,70 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def repo_get_by_id(
@@ -28414,21 +31996,26 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def topic_search(
@@ -28438,12 +32025,12 @@ class AsyncRawRepositoryClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[typing.List[TopicResponse]]:
+    ) -> AsyncHttpResponse[TopicSearchResults]:
         """
         Parameters
         ----------
         q : str
-            keywords to search
+            keyword to search for
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -28456,8 +32043,8 @@ class AsyncRawRepositoryClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.List[TopicResponse]]
-            TopicListResponse
+        AsyncHttpResponse[TopicSearchResults]
+            SearchResults of a successful search
         """
         _response = await self._client_wrapper.httpx_client.request(
             "topics/search",
@@ -28472,40 +32059,46 @@ class AsyncRawRepositoryClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.List[TopicResponse],
+                    TopicSearchResults,
                     parse_obj_as(
-                        type_=typing.List[TopicResponse],  # type: ignore
+                        type_=TopicSearchResults,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_current_user_repo(
@@ -28589,6 +32182,9 @@ class AsyncRawRepositoryClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -28604,69 +32200,79 @@ class AsyncRawRepositoryClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 401:
                 raise UnauthorizedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiUnauthorizedError,
                         parse_obj_as(
                             type_=ApiUnauthorizedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 413:
                 raise ContentTooLargeError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )

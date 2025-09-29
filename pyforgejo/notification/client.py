@@ -80,14 +80,26 @@ class NotificationClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.notification.notify_get_list()
+        client.notification.notify_get_list(
+            all_=True,
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.notify_get_list(
+        _response = self._raw_client.notify_get_list(
             all_=all_,
             status_types=status_types,
             subject_type=subject_type,
@@ -97,13 +109,13 @@ class NotificationClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def notify_read_list(
         self,
         *,
         last_read_at: typing.Optional[dt.datetime] = None,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -114,7 +126,7 @@ class NotificationClient:
         last_read_at : typing.Optional[dt.datetime]
             Describes the last point that notifications were checked. Anything updated since this time will not be updated.
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -132,21 +144,29 @@ class NotificationClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.notification.notify_read_list()
+        client.notification.notify_read_list(
+            last_read_at=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            all_=True,
+            to_status="to-status",
+        )
         """
-        response = self._raw_client.notify_read_list(
+        _response = self._raw_client.notify_read_list(
             last_read_at=last_read_at,
             all_=all_,
             status_types=status_types,
             to_status=to_status,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def notify_new_available(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -171,18 +191,18 @@ class NotificationClient:
         )
         client.notification.notify_new_available()
         """
-        response = self._raw_client.notify_new_available(
+        _response = self._raw_client.notify_new_available(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def notify_get_thread(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> NotificationThread:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         request_options : typing.Optional[RequestOptions]
@@ -201,17 +221,17 @@ class NotificationClient:
             api_key="YOUR_API_KEY",
         )
         client.notification.notify_get_thread(
-            id="id",
+            id=1000000,
         )
         """
-        response = self._raw_client.notify_get_thread(
+        _response = self._raw_client.notify_get_thread(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def notify_read_thread(
         self,
-        id: str,
+        id: int,
         *,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -219,7 +239,7 @@ class NotificationClient:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         to_status : typing.Optional[str]
@@ -240,13 +260,14 @@ class NotificationClient:
             api_key="YOUR_API_KEY",
         )
         client.notification.notify_read_thread(
-            id="id",
+            id=1000000,
+            to_status="to-status",
         )
         """
-        response = self._raw_client.notify_read_thread(
+        _response = self._raw_client.notify_read_thread(
             id, to_status=to_status, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def notify_get_repo_list(
         self,
@@ -307,6 +328,8 @@ class NotificationClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -315,9 +338,18 @@ class NotificationClient:
         client.notification.notify_get_repo_list(
             owner="owner",
             repo="repo",
+            all_=True,
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.notify_get_repo_list(
+        _response = self._raw_client.notify_get_repo_list(
             owner,
             repo,
             all_=all_,
@@ -329,14 +361,14 @@ class NotificationClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def notify_read_repo_list(
         self,
         owner: str,
         repo: str,
         *,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         last_read_at: typing.Optional[dt.datetime] = None,
@@ -351,7 +383,7 @@ class NotificationClient:
         repo : str
             name of the repo
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -372,6 +404,8 @@ class NotificationClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -380,9 +414,14 @@ class NotificationClient:
         client.notification.notify_read_repo_list(
             owner="owner",
             repo="repo",
+            all_=True,
+            to_status="to-status",
+            last_read_at=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
         )
         """
-        response = self._raw_client.notify_read_repo_list(
+        _response = self._raw_client.notify_read_repo_list(
             owner,
             repo,
             all_=all_,
@@ -391,7 +430,7 @@ class NotificationClient:
             last_read_at=last_read_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
 
 class AsyncNotificationClient:
@@ -461,6 +500,7 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -470,12 +510,22 @@ class AsyncNotificationClient:
 
 
         async def main() -> None:
-            await client.notification.notify_get_list()
+            await client.notification.notify_get_list(
+                all_=True,
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.notify_get_list(
+        _response = await self._raw_client.notify_get_list(
             all_=all_,
             status_types=status_types,
             subject_type=subject_type,
@@ -485,13 +535,13 @@ class AsyncNotificationClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def notify_read_list(
         self,
         *,
         last_read_at: typing.Optional[dt.datetime] = None,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -502,7 +552,7 @@ class AsyncNotificationClient:
         last_read_at : typing.Optional[dt.datetime]
             Describes the last point that notifications were checked. Anything updated since this time will not be updated.
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -521,6 +571,7 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -530,19 +581,25 @@ class AsyncNotificationClient:
 
 
         async def main() -> None:
-            await client.notification.notify_read_list()
+            await client.notification.notify_read_list(
+                last_read_at=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                all_=True,
+                to_status="to-status",
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.notify_read_list(
+        _response = await self._raw_client.notify_read_list(
             last_read_at=last_read_at,
             all_=all_,
             status_types=status_types,
             to_status=to_status,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def notify_new_available(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -575,18 +632,18 @@ class AsyncNotificationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.notify_new_available(
+        _response = await self._raw_client.notify_new_available(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def notify_get_thread(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> NotificationThread:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         request_options : typing.Optional[RequestOptions]
@@ -610,20 +667,20 @@ class AsyncNotificationClient:
 
         async def main() -> None:
             await client.notification.notify_get_thread(
-                id="id",
+                id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.notify_get_thread(
+        _response = await self._raw_client.notify_get_thread(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def notify_read_thread(
         self,
-        id: str,
+        id: int,
         *,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -631,7 +688,7 @@ class AsyncNotificationClient:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         to_status : typing.Optional[str]
@@ -657,16 +714,17 @@ class AsyncNotificationClient:
 
         async def main() -> None:
             await client.notification.notify_read_thread(
-                id="id",
+                id=1000000,
+                to_status="to-status",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.notify_read_thread(
+        _response = await self._raw_client.notify_read_thread(
             id, to_status=to_status, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def notify_get_repo_list(
         self,
@@ -728,6 +786,7 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -740,12 +799,21 @@ class AsyncNotificationClient:
             await client.notification.notify_get_repo_list(
                 owner="owner",
                 repo="repo",
+                all_=True,
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.notify_get_repo_list(
+        _response = await self._raw_client.notify_get_repo_list(
             owner,
             repo,
             all_=all_,
@@ -757,14 +825,14 @@ class AsyncNotificationClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def notify_read_repo_list(
         self,
         owner: str,
         repo: str,
         *,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         last_read_at: typing.Optional[dt.datetime] = None,
@@ -779,7 +847,7 @@ class AsyncNotificationClient:
         repo : str
             name of the repo
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -801,6 +869,7 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -813,12 +882,17 @@ class AsyncNotificationClient:
             await client.notification.notify_read_repo_list(
                 owner="owner",
                 repo="repo",
+                all_=True,
+                to_status="to-status",
+                last_read_at=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.notify_read_repo_list(
+        _response = await self._raw_client.notify_read_repo_list(
             owner,
             repo,
             all_=all_,
@@ -827,4 +901,4 @@ class AsyncNotificationClient:
             last_read_at=last_read_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data

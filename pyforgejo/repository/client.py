@@ -5,6 +5,7 @@ import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
+from ..types.action_run import ActionRun
 from ..types.action_run_job import ActionRunJob
 from ..types.action_task_response import ActionTaskResponse
 from ..types.action_variable import ActionVariable
@@ -35,7 +36,7 @@ from ..types.external_wiki import ExternalWiki
 from ..types.file_delete_response import FileDeleteResponse
 from ..types.file_response import FileResponse
 from ..types.files_response import FilesResponse
-from ..types.git_blob_response import GitBlobResponse
+from ..types.git_blob import GitBlob
 from ..types.git_hook import GitHook
 from ..types.git_tree_response import GitTreeResponse
 from ..types.hook import Hook
@@ -45,6 +46,7 @@ from ..types.issue import Issue
 from ..types.issue_config import IssueConfig
 from ..types.issue_config_validation import IssueConfigValidation
 from ..types.issue_template import IssueTemplate
+from ..types.list_action_run_response import ListActionRunResponse
 from ..types.new_issue_pins_allowed import NewIssuePinsAllowed
 from ..types.note import Note
 from ..types.pull_request import PullRequest
@@ -52,17 +54,18 @@ from ..types.pull_review import PullReview
 from ..types.pull_review_comment import PullReviewComment
 from ..types.push_mirror import PushMirror
 from ..types.reference import Reference
+from ..types.registration_token import RegistrationToken
 from ..types.release import Release
 from ..types.repo_collaborator_permission import RepoCollaboratorPermission
 from ..types.repository import Repository
 from ..types.review_state_type import ReviewStateType
 from ..types.search_results import SearchResults
 from ..types.secret import Secret
+from ..types.sync_fork_info import SyncForkInfo
 from ..types.tag import Tag
 from ..types.tag_protection import TagProtection
 from ..types.team import Team
 from ..types.topic_name import TopicName
-from ..types.topic_response import TopicResponse
 from ..types.tracked_time import TrackedTime
 from ..types.user import User
 from ..types.watch_info import WatchInfo
@@ -72,6 +75,8 @@ from ..types.wiki_page_meta_data import WikiPageMetaData
 from .raw_client import AsyncRawRepositoryClient, RawRepositoryClient
 from .types.add_collaborator_option_permission import \
     AddCollaboratorOptionPermission
+from .types.list_action_runs_request_status_item import \
+    ListActionRunsRequestStatusItem
 from .types.merge_pull_request_option_do import MergePullRequestOptionDo
 from .types.migrate_repo_options_service import MigrateRepoOptionsService
 from .types.repo_download_commit_diff_or_patch_request_diff_type import \
@@ -92,8 +97,11 @@ from .types.repo_list_statuses_by_ref_request_state import \
 from .types.repo_list_statuses_request_sort import RepoListStatusesRequestSort
 from .types.repo_list_statuses_request_state import \
     RepoListStatusesRequestState
+from .types.repo_search_request_order import RepoSearchRequestOrder
+from .types.repo_search_request_sort import RepoSearchRequestSort
 from .types.repo_update_pull_request_request_style import \
     RepoUpdatePullRequestRequestStyle
+from .types.topic_search_results import TopicSearchResults
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -204,7 +212,7 @@ class RepositoryClient:
             repo_name="repo_name",
         )
         """
-        response = self._raw_client.repo_migrate(
+        _response = self._raw_client.repo_migrate(
             clone_addr=clone_addr,
             repo_name=repo_name,
             auth_password=auth_password,
@@ -227,7 +235,7 @@ class RepositoryClient:
             wiki=wiki,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_search(
         self,
@@ -245,8 +253,8 @@ class RepositoryClient:
         archived: typing.Optional[bool] = None,
         mode: typing.Optional[str] = None,
         exclusive: typing.Optional[bool] = None,
-        sort: typing.Optional[str] = None,
-        order: typing.Optional[str] = None,
+        sort: typing.Optional[RepoSearchRequestSort] = None,
+        order: typing.Optional[RepoSearchRequestOrder] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -293,10 +301,10 @@ class RepositoryClient:
         exclusive : typing.Optional[bool]
             if `uid` is given, search only for repos that the user owns
 
-        sort : typing.Optional[str]
+        sort : typing.Optional[RepoSearchRequestSort]
             sort repos by attribute. Supported values are "alpha", "created", "updated", "size", "git_size", "lfs_size", "stars", "forks" and "id". Default is "alpha"
 
-        order : typing.Optional[str]
+        order : typing.Optional[RepoSearchRequestOrder]
             sort order, either "asc" (ascending) or "desc" (descending). Default is "asc", ignored if "sort" is not specified.
 
         page : typing.Optional[int]
@@ -320,9 +328,27 @@ class RepositoryClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.repository.repo_search()
+        client.repository.repo_search(
+            q="q",
+            topic=True,
+            include_desc=True,
+            uid=1000000,
+            priority_owner_id=1000000,
+            team_id=1000000,
+            starred_by=1000000,
+            private=True,
+            is_private=True,
+            template=True,
+            archived=True,
+            mode="mode",
+            exclusive=True,
+            sort="alpha",
+            order="asc",
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.repo_search(
+        _response = self._raw_client.repo_search(
             q=q,
             topic=topic,
             include_desc=include_desc,
@@ -342,7 +368,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get(
         self,
@@ -380,10 +406,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get(
+        _response = self._raw_client.repo_get(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete(
         self,
@@ -420,10 +446,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_delete(
+        _response = self._raw_client.repo_delete(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit(
         self,
@@ -512,7 +538,7 @@ class RepositoryClient:
             set to `true` to delete pr branch after merge by default
 
         default_merge_style : typing.Optional[str]
-            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
+            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", "fast-forward-only", "manually-merged", or "rebase-update-only".
 
         default_update_style : typing.Optional[str]
             set to a update style to be used by this repository: "rebase" or "merge"
@@ -596,7 +622,7 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_edit(
+        _response = self._raw_client.repo_edit(
             owner,
             repo,
             allow_fast_forward_only_merge=allow_fast_forward_only_merge,
@@ -635,7 +661,7 @@ class RepositoryClient:
             wiki_branch=wiki_branch,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_search_run_jobs(
         self,
@@ -675,12 +701,13 @@ class RepositoryClient:
         client.repository.repo_search_run_jobs(
             owner="owner",
             repo="repo",
+            labels="labels",
         )
         """
-        response = self._raw_client.repo_search_run_jobs(
+        _response = self._raw_client.repo_search_run_jobs(
             owner, repo, labels=labels, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_runner_registration_token(
         self,
@@ -688,7 +715,7 @@ class RepositoryClient:
         repo: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> None:
+    ) -> RegistrationToken:
         """
         Parameters
         ----------
@@ -703,7 +730,8 @@ class RepositoryClient:
 
         Returns
         -------
-        None
+        RegistrationToken
+            RegistrationToken is a string used to register a runner with a server
 
         Examples
         --------
@@ -717,10 +745,138 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get_runner_registration_token(
+        _response = self._raw_client.repo_get_runner_registration_token(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
+
+    def list_action_runs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        page: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        event: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        status: typing.Optional[
+            typing.Union[
+                ListActionRunsRequestStatusItem,
+                typing.Sequence[ListActionRunsRequestStatusItem],
+            ]
+        ] = None,
+        run_number: typing.Optional[int] = None,
+        head_sha: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListActionRunResponse:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        page : typing.Optional[int]
+            page number of results to return (1-based)
+
+        limit : typing.Optional[int]
+            page size of results, default maximum page size is 50
+
+        event : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Returns workflow run triggered by the specified events. For example, `push`, `pull_request` or `workflow_dispatch`.
+
+        status : typing.Optional[typing.Union[ListActionRunsRequestStatusItem, typing.Sequence[ListActionRunsRequestStatusItem]]]
+            Returns workflow runs with the check run status or conclusion that is specified. For example, a conclusion can be success or a status can be in_progress. Only Forgejo Actions can set a status of waiting, pending, or requested.
+
+        run_number : typing.Optional[int]
+            Returns the workflow run associated with the run number.
+
+        head_sha : typing.Optional[str]
+            Only returns workflow runs that are associated with the specified head_sha.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListActionRunResponse
+            ActionRunList
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.list_action_runs(
+            owner="owner",
+            repo="repo",
+            page=1,
+            limit=1,
+            run_number=1000000,
+            head_sha="head_sha",
+        )
+        """
+        _response = self._raw_client.list_action_runs(
+            owner,
+            repo,
+            page=page,
+            limit=limit,
+            event=event,
+            status=status,
+            run_number=run_number,
+            head_sha=head_sha,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def action_run(
+        self,
+        owner: str,
+        repo: str,
+        run_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionRun:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        run_id : int
+            id of the action run
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionRun
+            ActionRun
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.action_run(
+            owner="owner",
+            repo="repo",
+            run_id=1000000,
+        )
+        """
+        _response = self._raw_client.action_run(
+            owner, repo, run_id, request_options=request_options
+        )
+        return _response.data
 
     def repo_list_actions_secrets(
         self,
@@ -764,12 +920,14 @@ class RepositoryClient:
         client.repository.repo_list_actions_secrets(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_actions_secrets(
+        _response = self._raw_client.repo_list_actions_secrets(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def update_repo_secret(
         self,
@@ -816,10 +974,10 @@ class RepositoryClient:
             data="data",
         )
         """
-        response = self._raw_client.update_repo_secret(
+        _response = self._raw_client.update_repo_secret(
             owner, repo, secretname, data=data, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_repo_secret(
         self,
@@ -861,10 +1019,10 @@ class RepositoryClient:
             secretname="secretname",
         )
         """
-        response = self._raw_client.delete_repo_secret(
+        _response = self._raw_client.delete_repo_secret(
             owner, repo, secretname, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_action_tasks(
         self,
@@ -908,12 +1066,14 @@ class RepositoryClient:
         client.repository.list_action_tasks(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_action_tasks(
+        _response = self._raw_client.list_action_tasks(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_repo_variables_list(
         self,
@@ -957,12 +1117,14 @@ class RepositoryClient:
         client.repository.get_repo_variables_list(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.get_repo_variables_list(
+        _response = self._raw_client.get_repo_variables_list(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_repo_variable(
         self,
@@ -1005,10 +1167,10 @@ class RepositoryClient:
             variablename="variablename",
         )
         """
-        response = self._raw_client.get_repo_variable(
+        _response = self._raw_client.get_repo_variable(
             owner, repo, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_repo_variable(
         self,
@@ -1055,10 +1217,10 @@ class RepositoryClient:
             value="value",
         )
         """
-        response = self._raw_client.create_repo_variable(
+        _response = self._raw_client.create_repo_variable(
             owner, repo, variablename, value=value, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def update_repo_variable(
         self,
@@ -1109,7 +1271,7 @@ class RepositoryClient:
             value="value",
         )
         """
-        response = self._raw_client.update_repo_variable(
+        _response = self._raw_client.update_repo_variable(
             owner,
             repo,
             variablename,
@@ -1117,7 +1279,7 @@ class RepositoryClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def delete_repo_variable(
         self,
@@ -1126,7 +1288,7 @@ class RepositoryClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ActionVariable:
+    ) -> None:
         """
         Parameters
         ----------
@@ -1144,8 +1306,7 @@ class RepositoryClient:
 
         Returns
         -------
-        ActionVariable
-            ActionVariable
+        None
 
         Examples
         --------
@@ -1160,16 +1321,16 @@ class RepositoryClient:
             variablename="variablename",
         )
         """
-        response = self._raw_client.delete_repo_variable(
+        _response = self._raw_client.delete_repo_variable(
             owner, repo, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def dispatch_workflow(
         self,
         owner: str,
         repo: str,
-        workflowname: str,
+        workflowfilename: str,
         *,
         ref: str,
         inputs: typing.Optional[typing.Dict[str, str]] = OMIT,
@@ -1185,7 +1346,7 @@ class RepositoryClient:
         repo : str
             name of the repo
 
-        workflowname : str
+        workflowfilename : str
             name of the workflow
 
         ref : str
@@ -1215,20 +1376,20 @@ class RepositoryClient:
         client.repository.dispatch_workflow(
             owner="owner",
             repo="repo",
-            workflowname="workflowname",
+            workflowfilename="workflowfilename",
             ref="ref",
         )
         """
-        response = self._raw_client.dispatch_workflow(
+        _response = self._raw_client.dispatch_workflow(
             owner,
             repo,
-            workflowname,
+            workflowfilename,
             ref=ref,
             inputs=inputs,
             return_run_info=return_run_info,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_activity_feeds(
         self,
@@ -1276,9 +1437,12 @@ class RepositoryClient:
         client.repository.repo_list_activity_feeds(
             owner="owner",
             repo="repo",
+            date="date",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_activity_feeds(
+        _response = self._raw_client.repo_list_activity_feeds(
             owner,
             repo,
             date=date,
@@ -1286,7 +1450,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_archive(
         self,
@@ -1328,10 +1492,10 @@ class RepositoryClient:
             archive="archive",
         )
         """
-        response = self._raw_client.repo_get_archive(
+        _response = self._raw_client.repo_get_archive(
             owner, repo, archive, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_assignees(
         self,
@@ -1369,10 +1533,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get_assignees(
+        _response = self._raw_client.repo_get_assignees(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_update_avatar(
         self,
@@ -1413,10 +1577,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_update_avatar(
+        _response = self._raw_client.repo_update_avatar(
             owner, repo, image=image, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_avatar(
         self,
@@ -1453,10 +1617,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_delete_avatar(
+        _response = self._raw_client.repo_delete_avatar(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_branch_protection(
         self,
@@ -1494,10 +1658,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_branch_protection(
+        _response = self._raw_client.repo_list_branch_protection(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_branch_protection(
         self,
@@ -1611,7 +1775,7 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_create_branch_protection(
+        _response = self._raw_client.repo_create_branch_protection(
             owner,
             repo,
             apply_to_admins=apply_to_admins,
@@ -1641,7 +1805,7 @@ class RepositoryClient:
             unprotected_file_patterns=unprotected_file_patterns,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_branch_protection(
         self,
@@ -1684,10 +1848,10 @@ class RepositoryClient:
             name="name",
         )
         """
-        response = self._raw_client.repo_get_branch_protection(
+        _response = self._raw_client.repo_get_branch_protection(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_branch_protection(
         self,
@@ -1729,10 +1893,10 @@ class RepositoryClient:
             name="name",
         )
         """
-        response = self._raw_client.repo_delete_branch_protection(
+        _response = self._raw_client.repo_delete_branch_protection(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_branch_protection(
         self,
@@ -1844,7 +2008,7 @@ class RepositoryClient:
             name="name",
         )
         """
-        response = self._raw_client.repo_edit_branch_protection(
+        _response = self._raw_client.repo_edit_branch_protection(
             owner,
             repo,
             name,
@@ -1873,7 +2037,7 @@ class RepositoryClient:
             unprotected_file_patterns=unprotected_file_patterns,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_branches(
         self,
@@ -1917,12 +2081,14 @@ class RepositoryClient:
         client.repository.repo_list_branches(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_branches(
+        _response = self._raw_client.repo_list_branches(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_branch(
         self,
@@ -1974,7 +2140,7 @@ class RepositoryClient:
             new_branch_name="new_branch_name",
         )
         """
-        response = self._raw_client.repo_create_branch(
+        _response = self._raw_client.repo_create_branch(
             owner,
             repo,
             new_branch_name=new_branch_name,
@@ -1982,7 +2148,7 @@ class RepositoryClient:
             old_ref_name=old_ref_name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_branch(
         self,
@@ -2025,10 +2191,10 @@ class RepositoryClient:
             branch="branch",
         )
         """
-        response = self._raw_client.repo_get_branch(
+        _response = self._raw_client.repo_get_branch(
             owner, repo, branch, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_branch(
         self,
@@ -2070,10 +2236,10 @@ class RepositoryClient:
             branch="branch",
         )
         """
-        response = self._raw_client.repo_delete_branch(
+        _response = self._raw_client.repo_delete_branch(
             owner, repo, branch, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_update_branch(
         self,
@@ -2120,10 +2286,10 @@ class RepositoryClient:
             name="name",
         )
         """
-        response = self._raw_client.repo_update_branch(
+        _response = self._raw_client.repo_update_branch(
             owner, repo, branch, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_collaborators(
         self,
@@ -2167,12 +2333,14 @@ class RepositoryClient:
         client.repository.repo_list_collaborators(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_collaborators(
+        _response = self._raw_client.repo_list_collaborators(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_check_collaborator(
         self,
@@ -2216,10 +2384,10 @@ class RepositoryClient:
             collaborator="collaborator",
         )
         """
-        response = self._raw_client.repo_check_collaborator(
+        _response = self._raw_client.repo_check_collaborator(
             owner, repo, collaborator, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_add_collaborator(
         self,
@@ -2264,14 +2432,14 @@ class RepositoryClient:
             collaborator="collaborator",
         )
         """
-        response = self._raw_client.repo_add_collaborator(
+        _response = self._raw_client.repo_add_collaborator(
             owner,
             repo,
             collaborator,
             permission=permission,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_delete_collaborator(
         self,
@@ -2313,10 +2481,10 @@ class RepositoryClient:
             collaborator="collaborator",
         )
         """
-        response = self._raw_client.repo_delete_collaborator(
+        _response = self._raw_client.repo_delete_collaborator(
             owner, repo, collaborator, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_repo_permissions(
         self,
@@ -2359,10 +2527,10 @@ class RepositoryClient:
             collaborator="collaborator",
         )
         """
-        response = self._raw_client.repo_get_repo_permissions(
+        _response = self._raw_client.repo_get_repo_permissions(
             owner, repo, collaborator, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_all_commits(
         self,
@@ -2430,9 +2598,17 @@ class RepositoryClient:
         client.repository.repo_get_all_commits(
             owner="owner",
             repo="repo",
+            sha="sha",
+            path="path",
+            stat=True,
+            verification=True,
+            files=True,
+            page=1,
+            limit=1,
+            not_="not",
         )
         """
-        response = self._raw_client.repo_get_all_commits(
+        _response = self._raw_client.repo_get_all_commits(
             owner,
             repo,
             sha=sha,
@@ -2445,7 +2621,7 @@ class RepositoryClient:
             not_=not_,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_combined_status_by_ref(
         self,
@@ -2494,12 +2670,14 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             ref="ref",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_get_combined_status_by_ref(
+        _response = self._raw_client.repo_get_combined_status_by_ref(
             owner, repo, ref, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_statuses_by_ref(
         self,
@@ -2556,9 +2734,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             ref="ref",
+            sort="oldest",
+            state="pending",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_statuses_by_ref(
+        _response = self._raw_client.repo_list_statuses_by_ref(
             owner,
             repo,
             ref,
@@ -2568,7 +2750,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_commit_pull_request(
         self,
@@ -2611,10 +2793,10 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.repo_get_commit_pull_request(
+        _response = self._raw_client.repo_get_commit_pull_request(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_compare_diff(
         self,
@@ -2657,10 +2839,10 @@ class RepositoryClient:
             basehead="basehead",
         )
         """
-        response = self._raw_client.repo_compare_diff(
+        _response = self._raw_client.repo_compare_diff(
             owner, repo, basehead, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_contents_list(
         self,
@@ -2700,12 +2882,13 @@ class RepositoryClient:
         client.repository.repo_get_contents_list(
             owner="owner",
             repo="repo",
+            ref="ref",
         )
         """
-        response = self._raw_client.repo_get_contents_list(
+        _response = self._raw_client.repo_get_contents_list(
             owner, repo, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_change_files(
         self,
@@ -2778,7 +2961,7 @@ class RepositoryClient:
             ],
         )
         """
-        response = self._raw_client.repo_change_files(
+        _response = self._raw_client.repo_change_files(
             owner,
             repo,
             files=files,
@@ -2791,7 +2974,7 @@ class RepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_contents(
         self,
@@ -2823,7 +3006,7 @@ class RepositoryClient:
         Returns
         -------
         RepoGetContentsResponse
-            A file's contents or a directory listing
+            A single file's contents or a directory listing
 
         Examples
         --------
@@ -2836,12 +3019,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             filepath="filepath",
+            ref="ref",
         )
         """
-        response = self._raw_client.repo_get_contents(
+        _response = self._raw_client.repo_get_contents(
             owner, repo, filepath, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_file(
         self,
@@ -2914,7 +3098,7 @@ class RepositoryClient:
             content="content",
         )
         """
-        response = self._raw_client.repo_create_file(
+        _response = self._raw_client.repo_create_file(
             owner,
             repo,
             filepath,
@@ -2928,7 +3112,7 @@ class RepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_update_file(
         self,
@@ -3010,7 +3194,7 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.repo_update_file(
+        _response = self._raw_client.repo_update_file(
             owner,
             repo,
             filepath,
@@ -3026,7 +3210,7 @@ class RepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_delete_file(
         self,
@@ -3099,7 +3283,7 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.repo_delete_file(
+        _response = self._raw_client.repo_delete_file(
             owner,
             repo,
             filepath,
@@ -3113,7 +3297,48 @@ class RepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
+
+    def repo_convert(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Repository:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo to convert
+
+        repo : str
+            name of the repo to convert
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Repository
+            Repository
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_convert(
+            owner="owner",
+            repo="repo",
+        )
+        """
+        _response = self._raw_client.repo_convert(
+            owner, repo, request_options=request_options
+        )
+        return _response.data
 
     def repo_apply_diff_patch(
         self,
@@ -3190,7 +3415,7 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.repo_apply_diff_patch(
+        _response = self._raw_client.repo_apply_diff_patch(
             owner,
             repo,
             content=content,
@@ -3205,7 +3430,7 @@ class RepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_editor_config(
         self,
@@ -3215,7 +3440,7 @@ class RepositoryClient:
         *,
         ref: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> None:
+    ) -> typing.Dict[str, str]:
         """
         Parameters
         ----------
@@ -3236,7 +3461,8 @@ class RepositoryClient:
 
         Returns
         -------
-        None
+        typing.Dict[str, str]
+            definitions
 
         Examples
         --------
@@ -3249,12 +3475,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             filepath="filepath",
+            ref="ref",
         )
         """
-        response = self._raw_client.repo_get_editor_config(
+        _response = self._raw_client.repo_get_editor_config(
             owner, repo, filepath, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_flags(
         self,
@@ -3292,10 +3519,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_flags(
+        _response = self._raw_client.repo_list_flags(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_replace_all_flags(
         self,
@@ -3335,10 +3562,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_replace_all_flags(
+        _response = self._raw_client.repo_replace_all_flags(
             owner, repo, flags=flags, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_all_flags(
         self,
@@ -3375,10 +3602,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_delete_all_flags(
+        _response = self._raw_client.repo_delete_all_flags(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_check_flag(
         self,
@@ -3420,10 +3647,10 @@ class RepositoryClient:
             flag="flag",
         )
         """
-        response = self._raw_client.repo_check_flag(
+        _response = self._raw_client.repo_check_flag(
             owner, repo, flag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_add_flag(
         self,
@@ -3465,10 +3692,10 @@ class RepositoryClient:
             flag="flag",
         )
         """
-        response = self._raw_client.repo_add_flag(
+        _response = self._raw_client.repo_add_flag(
             owner, repo, flag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_flag(
         self,
@@ -3510,10 +3737,10 @@ class RepositoryClient:
             flag="flag",
         )
         """
-        response = self._raw_client.repo_delete_flag(
+        _response = self._raw_client.repo_delete_flag(
             owner, repo, flag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_forks(
         self,
@@ -3557,12 +3784,14 @@ class RepositoryClient:
         client.repository.list_forks(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_forks(
+        _response = self._raw_client.list_forks(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_fork(
         self,
@@ -3608,14 +3837,60 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.create_fork(
+        _response = self._raw_client.create_fork(
             owner,
             repo,
             name=name,
             organization=organization,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
+
+    def get_blobs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        shas: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> typing.List[GitBlob]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        shas : str
+            a comma separated list of blob-sha (mind the overall URL-length limit of ~2,083 chars)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[GitBlob]
+            GitBlobList
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.get_blobs(
+            owner="owner",
+            repo="repo",
+            shas="shas",
+        )
+        """
+        _response = self._raw_client.get_blobs(
+            owner, repo, shas=shas, request_options=request_options
+        )
+        return _response.data
 
     def get_blob(
         self,
@@ -3624,7 +3899,7 @@ class RepositoryClient:
         sha: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> GitBlobResponse:
+    ) -> GitBlob:
         """
         Parameters
         ----------
@@ -3635,15 +3910,15 @@ class RepositoryClient:
             name of the repo
 
         sha : str
-            sha of the commit
+            sha of the blob to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        GitBlobResponse
-            GitBlobResponse
+        GitBlob
+            GitBlob
 
         Examples
         --------
@@ -3658,10 +3933,10 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.get_blob(
+        _response = self._raw_client.get_blob(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_single_commit(
         self,
@@ -3714,9 +3989,12 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
+            stat=True,
+            verification=True,
+            files=True,
         )
         """
-        response = self._raw_client.repo_get_single_commit(
+        _response = self._raw_client.repo_get_single_commit(
             owner,
             repo,
             sha,
@@ -3725,7 +4003,7 @@ class RepositoryClient:
             files=files,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_download_commit_diff_or_patch(
         self,
@@ -3773,10 +4051,10 @@ class RepositoryClient:
             diff_type="diff",
         )
         """
-        response = self._raw_client.repo_download_commit_diff_or_patch(
+        _response = self._raw_client.repo_download_commit_diff_or_patch(
             owner, repo, sha, diff_type, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_note(
         self,
@@ -3825,9 +4103,11 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
+            verification=True,
+            files=True,
         )
         """
-        response = self._raw_client.repo_get_note(
+        _response = self._raw_client.repo_get_note(
             owner,
             repo,
             sha,
@@ -3835,7 +4115,7 @@ class RepositoryClient:
             files=files,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_set_note(
         self,
@@ -3881,10 +4161,10 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.repo_set_note(
+        _response = self._raw_client.repo_set_note(
             owner, repo, sha, message=message, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_remove_note(
         self,
@@ -3926,10 +4206,10 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.repo_remove_note(
+        _response = self._raw_client.repo_remove_note(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_all_git_refs(
         self,
@@ -3967,10 +4247,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_all_git_refs(
+        _response = self._raw_client.repo_list_all_git_refs(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_git_refs(
         self,
@@ -4013,10 +4293,10 @@ class RepositoryClient:
             ref="ref",
         )
         """
-        response = self._raw_client.repo_list_git_refs(
+        _response = self._raw_client.repo_list_git_refs(
             owner, repo, ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_annotated_tag(
         self,
@@ -4059,10 +4339,10 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.get_annotated_tag(
+        _response = self._raw_client.get_annotated_tag(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_tree(
         self,
@@ -4115,9 +4395,12 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
+            recursive=True,
+            page=1,
+            per_page=1,
         )
         """
-        response = self._raw_client.get_tree(
+        _response = self._raw_client.get_tree(
             owner,
             repo,
             sha,
@@ -4126,7 +4409,7 @@ class RepositoryClient:
             per_page=per_page,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_hooks(
         self,
@@ -4170,12 +4453,14 @@ class RepositoryClient:
         client.repository.repo_list_hooks(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_hooks(
+        _response = self._raw_client.repo_list_hooks(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_hook(
         self,
@@ -4233,7 +4518,7 @@ class RepositoryClient:
             type="forgejo",
         )
         """
-        response = self._raw_client.repo_create_hook(
+        _response = self._raw_client.repo_create_hook(
             owner,
             repo,
             config=config,
@@ -4244,7 +4529,7 @@ class RepositoryClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_git_hooks(
         self,
@@ -4282,10 +4567,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_git_hooks(
+        _response = self._raw_client.repo_list_git_hooks(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_git_hook(
         self,
@@ -4328,10 +4613,10 @@ class RepositoryClient:
             id="id",
         )
         """
-        response = self._raw_client.repo_get_git_hook(
+        _response = self._raw_client.repo_get_git_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_git_hook(
         self,
@@ -4373,10 +4658,10 @@ class RepositoryClient:
             id="id",
         )
         """
-        response = self._raw_client.repo_delete_git_hook(
+        _response = self._raw_client.repo_delete_git_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_git_hook(
         self,
@@ -4422,10 +4707,10 @@ class RepositoryClient:
             id="id",
         )
         """
-        response = self._raw_client.repo_edit_git_hook(
+        _response = self._raw_client.repo_edit_git_hook(
             owner, repo, id, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_hook(
         self,
@@ -4468,10 +4753,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_get_hook(
+        _response = self._raw_client.repo_get_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_hook(
         self,
@@ -4513,10 +4798,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_delete_hook(
+        _response = self._raw_client.repo_delete_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_hook(
         self,
@@ -4574,7 +4859,7 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_edit_hook(
+        _response = self._raw_client.repo_edit_hook(
             owner,
             repo,
             id,
@@ -4585,7 +4870,7 @@ class RepositoryClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_test_hook(
         self,
@@ -4629,12 +4914,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             id=1000000,
+            ref="ref",
         )
         """
-        response = self._raw_client.repo_test_hook(
+        _response = self._raw_client.repo_test_hook(
             owner, repo, id, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_issue_config(
         self,
@@ -4672,10 +4958,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get_issue_config(
+        _response = self._raw_client.repo_get_issue_config(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_validate_issue_config(
         self,
@@ -4713,10 +4999,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_validate_issue_config(
+        _response = self._raw_client.repo_validate_issue_config(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_issue_templates(
         self,
@@ -4754,10 +5040,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get_issue_templates(
+        _response = self._raw_client.repo_get_issue_templates(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_pinned_issues(
         self,
@@ -4795,10 +5081,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_pinned_issues(
+        _response = self._raw_client.repo_list_pinned_issues(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_keys(
         self,
@@ -4850,9 +5136,13 @@ class RepositoryClient:
         client.repository.repo_list_keys(
             owner="owner",
             repo="repo",
+            key_id=1,
+            fingerprint="fingerprint",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_keys(
+        _response = self._raw_client.repo_list_keys(
             owner,
             repo,
             key_id=key_id,
@@ -4861,7 +5151,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_create_key(
         self,
@@ -4913,7 +5203,7 @@ class RepositoryClient:
             title="title",
         )
         """
-        response = self._raw_client.repo_create_key(
+        _response = self._raw_client.repo_create_key(
             owner,
             repo,
             key=key,
@@ -4921,7 +5211,7 @@ class RepositoryClient:
             read_only=read_only,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_key(
         self,
@@ -4964,10 +5254,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_get_key(
+        _response = self._raw_client.repo_get_key(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_key(
         self,
@@ -5009,10 +5299,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_delete_key(
+        _response = self._raw_client.repo_delete_key(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_languages(
         self,
@@ -5050,10 +5340,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get_languages(
+        _response = self._raw_client.repo_get_languages(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_raw_file_or_lfs(
         self,
@@ -5086,6 +5376,19 @@ class RepositoryClient:
         -------
         typing.Iterator[bytes]
             Returns raw file content.
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_get_raw_file_or_lfs(
+            owner="owner",
+            repo="repo",
+            filepath="filepath",
+        )
         """
         with self._raw_client.repo_get_raw_file_or_lfs(
             owner, repo, filepath, ref=ref, request_options=request_options
@@ -5127,10 +5430,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_mirror_sync(
+        _response = self._raw_client.repo_mirror_sync(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_new_pin_allowed(
         self,
@@ -5168,10 +5471,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_new_pin_allowed(
+        _response = self._raw_client.repo_new_pin_allowed(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_pull_requests(
         self,
@@ -5235,9 +5538,15 @@ class RepositoryClient:
         client.repository.repo_list_pull_requests(
             owner="owner",
             repo="repo",
+            state="open",
+            sort="oldest",
+            milestone=1000000,
+            poster="poster",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_pull_requests(
+        _response = self._raw_client.repo_list_pull_requests(
             owner,
             repo,
             state=state,
@@ -5249,7 +5558,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_create_pull_request(
         self,
@@ -5314,7 +5623,7 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_create_pull_request(
+        _response = self._raw_client.repo_create_pull_request(
             owner,
             repo,
             assignee=assignee,
@@ -5328,7 +5637,7 @@ class RepositoryClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_pinned_pull_requests(
         self,
@@ -5366,10 +5675,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_pinned_pull_requests(
+        _response = self._raw_client.repo_list_pinned_pull_requests(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_pull_request_by_base_head(
         self,
@@ -5417,10 +5726,10 @@ class RepositoryClient:
             head="head",
         )
         """
-        response = self._raw_client.repo_get_pull_request_by_base_head(
+        _response = self._raw_client.repo_get_pull_request_by_base_head(
             owner, repo, base, head, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_pull_request(
         self,
@@ -5463,10 +5772,10 @@ class RepositoryClient:
             index=1000000,
         )
         """
-        response = self._raw_client.repo_get_pull_request(
+        _response = self._raw_client.repo_get_pull_request(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_pull_request(
         self,
@@ -5542,7 +5851,7 @@ class RepositoryClient:
             index=1000000,
         )
         """
-        response = self._raw_client.repo_edit_pull_request(
+        _response = self._raw_client.repo_edit_pull_request(
             owner,
             repo,
             index,
@@ -5559,7 +5868,7 @@ class RepositoryClient:
             unset_due_date=unset_due_date,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_download_pull_diff_or_patch(
         self,
@@ -5609,9 +5918,10 @@ class RepositoryClient:
             repo="repo",
             index=1000000,
             diff_type="diff",
+            binary=True,
         )
         """
-        response = self._raw_client.repo_download_pull_diff_or_patch(
+        _response = self._raw_client.repo_download_pull_diff_or_patch(
             owner,
             repo,
             index,
@@ -5619,7 +5929,7 @@ class RepositoryClient:
             binary=binary,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_pull_request_commits(
         self,
@@ -5676,9 +5986,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            page=1,
+            limit=1,
+            verification=True,
+            files=True,
         )
         """
-        response = self._raw_client.repo_get_pull_request_commits(
+        _response = self._raw_client.repo_get_pull_request_commits(
             owner,
             repo,
             index,
@@ -5688,7 +6002,7 @@ class RepositoryClient:
             files=files,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_pull_request_files(
         self,
@@ -5745,9 +6059,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            skip_to="skip-to",
+            whitespace="ignore-all",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_get_pull_request_files(
+        _response = self._raw_client.repo_get_pull_request_files(
             owner,
             repo,
             index,
@@ -5757,7 +6075,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_pull_request_is_merged(
         self,
@@ -5799,10 +6117,10 @@ class RepositoryClient:
             index=1000000,
         )
         """
-        response = self._raw_client.repo_pull_request_is_merged(
+        _response = self._raw_client.repo_pull_request_is_merged(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_merge_pull_request(
         self,
@@ -5869,7 +6187,7 @@ class RepositoryClient:
             do="merge",
         )
         """
-        response = self._raw_client.repo_merge_pull_request(
+        _response = self._raw_client.repo_merge_pull_request(
             owner,
             repo,
             index,
@@ -5883,7 +6201,7 @@ class RepositoryClient:
             merge_when_checks_succeed=merge_when_checks_succeed,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_cancel_scheduled_auto_merge(
         self,
@@ -5925,10 +6243,10 @@ class RepositoryClient:
             index=1000000,
         )
         """
-        response = self._raw_client.repo_cancel_scheduled_auto_merge(
+        _response = self._raw_client.repo_cancel_scheduled_auto_merge(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_pull_review_requests(
         self,
@@ -5977,7 +6295,7 @@ class RepositoryClient:
             index=1000000,
         )
         """
-        response = self._raw_client.repo_create_pull_review_requests(
+        _response = self._raw_client.repo_create_pull_review_requests(
             owner,
             repo,
             index,
@@ -5985,7 +6303,7 @@ class RepositoryClient:
             team_reviewers=team_reviewers,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_delete_pull_review_requests(
         self,
@@ -6033,7 +6351,7 @@ class RepositoryClient:
             index=1000000,
         )
         """
-        response = self._raw_client.repo_delete_pull_review_requests(
+        _response = self._raw_client.repo_delete_pull_review_requests(
             owner,
             repo,
             index,
@@ -6041,7 +6359,7 @@ class RepositoryClient:
             team_reviewers=team_reviewers,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_pull_reviews(
         self,
@@ -6090,12 +6408,14 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_pull_reviews(
+        _response = self._raw_client.repo_list_pull_reviews(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_pull_review(
         self,
@@ -6150,7 +6470,7 @@ class RepositoryClient:
             index=1000000,
         )
         """
-        response = self._raw_client.repo_create_pull_review(
+        _response = self._raw_client.repo_create_pull_review(
             owner,
             repo,
             index,
@@ -6160,7 +6480,7 @@ class RepositoryClient:
             event=event,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_pull_review(
         self,
@@ -6208,10 +6528,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_get_pull_review(
+        _response = self._raw_client.repo_get_pull_review(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_submit_pull_review(
         self,
@@ -6265,7 +6585,7 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_submit_pull_review(
+        _response = self._raw_client.repo_submit_pull_review(
             owner,
             repo,
             index,
@@ -6274,7 +6594,7 @@ class RepositoryClient:
             event=event,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_delete_pull_review(
         self,
@@ -6321,10 +6641,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_delete_pull_review(
+        _response = self._raw_client.repo_delete_pull_review(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_pull_review_comments(
         self,
@@ -6372,10 +6692,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_get_pull_review_comments(
+        _response = self._raw_client.repo_get_pull_review_comments(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_pull_review_comment(
         self,
@@ -6438,7 +6758,7 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_create_pull_review_comment(
+        _response = self._raw_client.repo_create_pull_review_comment(
             owner,
             repo,
             index,
@@ -6449,7 +6769,7 @@ class RepositoryClient:
             path=path,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_pull_review_comment(
         self,
@@ -6502,10 +6822,10 @@ class RepositoryClient:
             comment=1000000,
         )
         """
-        response = self._raw_client.repo_get_pull_review_comment(
+        _response = self._raw_client.repo_get_pull_review_comment(
             owner, repo, index, id, comment, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_pull_review_comment(
         self,
@@ -6557,10 +6877,10 @@ class RepositoryClient:
             comment=1000000,
         )
         """
-        response = self._raw_client.repo_delete_pull_review_comment(
+        _response = self._raw_client.repo_delete_pull_review_comment(
             owner, repo, index, id, comment, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_dismiss_pull_review(
         self,
@@ -6614,7 +6934,7 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_dismiss_pull_review(
+        _response = self._raw_client.repo_dismiss_pull_review(
             owner,
             repo,
             index,
@@ -6623,7 +6943,7 @@ class RepositoryClient:
             priors=priors,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_un_dismiss_pull_review(
         self,
@@ -6671,10 +6991,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_un_dismiss_pull_review(
+        _response = self._raw_client.repo_un_dismiss_pull_review(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_update_pull_request(
         self,
@@ -6718,12 +7038,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            style="merge",
         )
         """
-        response = self._raw_client.repo_update_pull_request(
+        _response = self._raw_client.repo_update_pull_request(
             owner, repo, index, style=style, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_push_mirrors(
         self,
@@ -6767,18 +7088,21 @@ class RepositoryClient:
         client.repository.repo_list_push_mirrors(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_push_mirrors(
+        _response = self._raw_client.repo_list_push_mirrors(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_add_push_mirror(
         self,
         owner: str,
         repo: str,
         *,
+        branch_filter: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         remote_address: typing.Optional[str] = OMIT,
         remote_password: typing.Optional[str] = OMIT,
@@ -6795,6 +7119,8 @@ class RepositoryClient:
 
         repo : str
             name of the repo
+
+        branch_filter : typing.Optional[str]
 
         interval : typing.Optional[str]
 
@@ -6828,9 +7154,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_add_push_mirror(
+        _response = self._raw_client.repo_add_push_mirror(
             owner,
             repo,
+            branch_filter=branch_filter,
             interval=interval,
             remote_address=remote_address,
             remote_password=remote_password,
@@ -6839,7 +7166,7 @@ class RepositoryClient:
             use_ssh=use_ssh,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_push_mirror_sync(
         self,
@@ -6876,10 +7203,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_push_mirror_sync(
+        _response = self._raw_client.repo_push_mirror_sync(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_push_mirror_by_remote_name(
         self,
@@ -6922,10 +7249,10 @@ class RepositoryClient:
             name="name",
         )
         """
-        response = self._raw_client.repo_get_push_mirror_by_remote_name(
+        _response = self._raw_client.repo_get_push_mirror_by_remote_name(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_push_mirror(
         self,
@@ -6967,10 +7294,10 @@ class RepositoryClient:
             name="name",
         )
         """
-        response = self._raw_client.repo_delete_push_mirror(
+        _response = self._raw_client.repo_delete_push_mirror(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_raw_file(
         self,
@@ -7003,6 +7330,19 @@ class RepositoryClient:
         -------
         typing.Iterator[bytes]
             Returns raw file content.
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_get_raw_file(
+            owner="owner",
+            repo="repo",
+            filepath="filepath",
+        )
         """
         with self._raw_client.repo_get_raw_file(
             owner, repo, filepath, ref=ref, request_options=request_options
@@ -7063,9 +7403,14 @@ class RepositoryClient:
         client.repository.repo_list_releases(
             owner="owner",
             repo="repo",
+            draft=True,
+            pre_release=True,
+            q="q",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_releases(
+        _response = self._raw_client.repo_list_releases(
             owner,
             repo,
             draft=draft,
@@ -7075,7 +7420,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_create_release(
         self,
@@ -7135,7 +7480,7 @@ class RepositoryClient:
             tag_name="tag_name",
         )
         """
-        response = self._raw_client.repo_create_release(
+        _response = self._raw_client.repo_create_release(
             owner,
             repo,
             tag_name=tag_name,
@@ -7147,7 +7492,7 @@ class RepositoryClient:
             target_commitish=target_commitish,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_latest_release(
         self,
@@ -7185,10 +7530,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get_latest_release(
+        _response = self._raw_client.repo_get_latest_release(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_release_by_tag(
         self,
@@ -7231,10 +7576,10 @@ class RepositoryClient:
             tag="tag",
         )
         """
-        response = self._raw_client.repo_get_release_by_tag(
+        _response = self._raw_client.repo_get_release_by_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_release_by_tag(
         self,
@@ -7276,10 +7621,10 @@ class RepositoryClient:
             tag="tag",
         )
         """
-        response = self._raw_client.repo_delete_release_by_tag(
+        _response = self._raw_client.repo_delete_release_by_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_release(
         self,
@@ -7322,10 +7667,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_get_release(
+        _response = self._raw_client.repo_get_release(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_release(
         self,
@@ -7367,10 +7712,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_delete_release(
+        _response = self._raw_client.repo_delete_release(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_release(
         self,
@@ -7434,7 +7779,7 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_edit_release(
+        _response = self._raw_client.repo_edit_release(
             owner,
             repo,
             id,
@@ -7447,7 +7792,7 @@ class RepositoryClient:
             target_commitish=target_commitish,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_release_attachments(
         self,
@@ -7490,10 +7835,10 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_list_release_attachments(
+        _response = self._raw_client.repo_list_release_attachments(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_release_attachment(
         self,
@@ -7504,6 +7849,7 @@ class RepositoryClient:
         request: typing.Union[
             bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]
         ],
+        name: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Attachment:
         """
@@ -7520,6 +7866,9 @@ class RepositoryClient:
 
         request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
 
+        name : typing.Optional[str]
+            name of the attachment
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -7528,10 +7877,10 @@ class RepositoryClient:
         Attachment
             Attachment
         """
-        response = self._raw_client.repo_create_release_attachment(
-            owner, repo, id, request=request, request_options=request_options
+        _response = self._raw_client.repo_create_release_attachment(
+            owner, repo, id, request=request, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_release_attachment(
         self,
@@ -7579,10 +7928,10 @@ class RepositoryClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.repo_get_release_attachment(
+        _response = self._raw_client.repo_get_release_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_release_attachment(
         self,
@@ -7629,10 +7978,10 @@ class RepositoryClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.repo_delete_release_attachment(
+        _response = self._raw_client.repo_delete_release_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_release_attachment(
         self,
@@ -7687,7 +8036,7 @@ class RepositoryClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.repo_edit_release_attachment(
+        _response = self._raw_client.repo_edit_release_attachment(
             owner,
             repo,
             id,
@@ -7696,7 +8045,7 @@ class RepositoryClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_reviewers(
         self,
@@ -7734,10 +8083,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_get_reviewers(
+        _response = self._raw_client.repo_get_reviewers(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_signing_key(
         self,
@@ -7775,10 +8124,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_signing_key(
+        _response = self._raw_client.repo_signing_key(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_stargazers(
         self,
@@ -7822,12 +8171,14 @@ class RepositoryClient:
         client.repository.repo_list_stargazers(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_stargazers(
+        _response = self._raw_client.repo_list_stargazers(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_statuses(
         self,
@@ -7884,9 +8235,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
+            sort="oldest",
+            state="pending",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_statuses(
+        _response = self._raw_client.repo_list_statuses(
             owner,
             repo,
             sha,
@@ -7896,7 +8251,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_create_status(
         self,
@@ -7951,7 +8306,7 @@ class RepositoryClient:
             sha="sha",
         )
         """
-        response = self._raw_client.repo_create_status(
+        _response = self._raw_client.repo_create_status(
             owner,
             repo,
             sha,
@@ -7961,7 +8316,7 @@ class RepositoryClient:
             target_url=target_url,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_subscribers(
         self,
@@ -8005,12 +8360,14 @@ class RepositoryClient:
         client.repository.repo_list_subscribers(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_subscribers(
+        _response = self._raw_client.repo_list_subscribers(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_current_check_subscription(
         self,
@@ -8048,10 +8405,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.user_current_check_subscription(
+        _response = self._raw_client.user_current_check_subscription(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_current_put_subscription(
         self,
@@ -8089,10 +8446,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.user_current_put_subscription(
+        _response = self._raw_client.user_current_put_subscription(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_current_delete_subscription(
         self,
@@ -8129,10 +8486,182 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.user_current_delete_subscription(
+        _response = self._raw_client.user_current_delete_subscription(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
+
+    def repo_sync_fork_default_info(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SyncForkInfo:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SyncForkInfo
+            SyncForkInfo
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_sync_fork_default_info(
+            owner="owner",
+            repo="repo",
+        )
+        """
+        _response = self._raw_client.repo_sync_fork_default_info(
+            owner, repo, request_options=request_options
+        )
+        return _response.data
+
+    def repo_sync_fork_default(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_sync_fork_default(
+            owner="owner",
+            repo="repo",
+        )
+        """
+        _response = self._raw_client.repo_sync_fork_default(
+            owner, repo, request_options=request_options
+        )
+        return _response.data
+
+    def repo_sync_fork_branch_info(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SyncForkInfo:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SyncForkInfo
+            SyncForkInfo
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_sync_fork_branch_info(
+            owner="owner",
+            repo="repo",
+            branch="branch",
+        )
+        """
+        _response = self._raw_client.repo_sync_fork_branch_info(
+            owner, repo, branch, request_options=request_options
+        )
+        return _response.data
+
+    def repo_sync_fork_branch(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.repository.repo_sync_fork_branch(
+            owner="owner",
+            repo="repo",
+            branch="branch",
+        )
+        """
+        _response = self._raw_client.repo_sync_fork_branch(
+            owner, repo, branch, request_options=request_options
+        )
+        return _response.data
 
     def repo_list_tag_protection(
         self,
@@ -8170,10 +8699,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_tag_protection(
+        _response = self._raw_client.repo_list_tag_protection(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_tag_protection(
         self,
@@ -8220,7 +8749,7 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_create_tag_protection(
+        _response = self._raw_client.repo_create_tag_protection(
             owner,
             repo,
             name_pattern=name_pattern,
@@ -8228,7 +8757,7 @@ class RepositoryClient:
             whitelist_usernames=whitelist_usernames,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_tag_protection(
         self,
@@ -8268,13 +8797,13 @@ class RepositoryClient:
         client.repository.repo_get_tag_protection(
             owner="owner",
             repo="repo",
-            id=1,
+            id=1000000,
         )
         """
-        response = self._raw_client.repo_get_tag_protection(
+        _response = self._raw_client.repo_get_tag_protection(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_tag_protection(
         self,
@@ -8313,13 +8842,13 @@ class RepositoryClient:
         client.repository.repo_delete_tag_protection(
             owner="owner",
             repo="repo",
-            id=1,
+            id=1000000,
         )
         """
-        response = self._raw_client.repo_delete_tag_protection(
+        _response = self._raw_client.repo_delete_tag_protection(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_tag_protection(
         self,
@@ -8368,10 +8897,10 @@ class RepositoryClient:
         client.repository.repo_edit_tag_protection(
             owner="owner",
             repo="repo",
-            id=1,
+            id=1000000,
         )
         """
-        response = self._raw_client.repo_edit_tag_protection(
+        _response = self._raw_client.repo_edit_tag_protection(
             owner,
             repo,
             id,
@@ -8380,7 +8909,7 @@ class RepositoryClient:
             whitelist_usernames=whitelist_usernames,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_list_tags(
         self,
@@ -8424,12 +8953,14 @@ class RepositoryClient:
         client.repository.repo_list_tags(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_tags(
+        _response = self._raw_client.repo_list_tags(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_tag(
         self,
@@ -8477,7 +9008,7 @@ class RepositoryClient:
             tag_name="tag_name",
         )
         """
-        response = self._raw_client.repo_create_tag(
+        _response = self._raw_client.repo_create_tag(
             owner,
             repo,
             tag_name=tag_name,
@@ -8485,7 +9016,7 @@ class RepositoryClient:
             target=target,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_tag(
         self,
@@ -8528,10 +9059,10 @@ class RepositoryClient:
             tag="tag",
         )
         """
-        response = self._raw_client.repo_get_tag(
+        _response = self._raw_client.repo_get_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_tag(
         self,
@@ -8573,10 +9104,10 @@ class RepositoryClient:
             tag="tag",
         )
         """
-        response = self._raw_client.repo_delete_tag(
+        _response = self._raw_client.repo_delete_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_teams(
         self,
@@ -8614,10 +9145,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_list_teams(
+        _response = self._raw_client.repo_list_teams(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_check_team(
         self,
@@ -8660,10 +9191,10 @@ class RepositoryClient:
             team="team",
         )
         """
-        response = self._raw_client.repo_check_team(
+        _response = self._raw_client.repo_check_team(
             owner, repo, team, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_add_team(
         self,
@@ -8705,10 +9236,10 @@ class RepositoryClient:
             team="team",
         )
         """
-        response = self._raw_client.repo_add_team(
+        _response = self._raw_client.repo_add_team(
             owner, repo, team, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_team(
         self,
@@ -8750,10 +9281,10 @@ class RepositoryClient:
             team="team",
         )
         """
-        response = self._raw_client.repo_delete_team(
+        _response = self._raw_client.repo_delete_team(
             owner, repo, team, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_tracked_times(
         self,
@@ -8801,6 +9332,8 @@ class RepositoryClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -8809,9 +9342,18 @@ class RepositoryClient:
         client.repository.repo_tracked_times(
             owner="owner",
             repo="repo",
+            user="user",
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_tracked_times(
+        _response = self._raw_client.repo_tracked_times(
             owner,
             repo,
             user=user,
@@ -8821,7 +9363,7 @@ class RepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def user_tracked_times(
         self,
@@ -8864,10 +9406,10 @@ class RepositoryClient:
             user="user",
         )
         """
-        response = self._raw_client.user_tracked_times(
+        _response = self._raw_client.user_tracked_times(
             owner, repo, user, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_list_topics(
         self,
@@ -8911,12 +9453,14 @@ class RepositoryClient:
         client.repository.repo_list_topics(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_list_topics(
+        _response = self._raw_client.repo_list_topics(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_update_topics(
         self,
@@ -8957,10 +9501,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_update_topics(
+        _response = self._raw_client.repo_update_topics(
             owner, repo, topics=topics, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_add_topic(
         self,
@@ -9002,10 +9546,10 @@ class RepositoryClient:
             topic="topic",
         )
         """
-        response = self._raw_client.repo_add_topic(
+        _response = self._raw_client.repo_add_topic(
             owner, repo, topic, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_topic(
         self,
@@ -9047,10 +9591,10 @@ class RepositoryClient:
             topic="topic",
         )
         """
-        response = self._raw_client.repo_delete_topic(
+        _response = self._raw_client.repo_delete_topic(
             owner, repo, topic, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_transfer(
         self,
@@ -9096,14 +9640,14 @@ class RepositoryClient:
             new_owner="new_owner",
         )
         """
-        response = self._raw_client.repo_transfer(
+        _response = self._raw_client.repo_transfer(
             owner,
             repo,
             new_owner=new_owner,
             team_ids=team_ids,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def accept_repo_transfer(
         self,
@@ -9141,10 +9685,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.accept_repo_transfer(
+        _response = self._raw_client.accept_repo_transfer(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def reject_repo_transfer(
         self,
@@ -9182,10 +9726,10 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.reject_repo_transfer(
+        _response = self._raw_client.reject_repo_transfer(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_create_wiki_page(
         self,
@@ -9235,7 +9779,7 @@ class RepositoryClient:
             repo="repo",
         )
         """
-        response = self._raw_client.repo_create_wiki_page(
+        _response = self._raw_client.repo_create_wiki_page(
             owner,
             repo,
             content_base_64=content_base_64,
@@ -9243,7 +9787,7 @@ class RepositoryClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_wiki_page(
         self,
@@ -9286,10 +9830,10 @@ class RepositoryClient:
             page_name="pageName",
         )
         """
-        response = self._raw_client.repo_get_wiki_page(
+        _response = self._raw_client.repo_get_wiki_page(
             owner, repo, page_name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_delete_wiki_page(
         self,
@@ -9331,10 +9875,10 @@ class RepositoryClient:
             page_name="pageName",
         )
         """
-        response = self._raw_client.repo_delete_wiki_page(
+        _response = self._raw_client.repo_delete_wiki_page(
             owner, repo, page_name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_edit_wiki_page(
         self,
@@ -9389,7 +9933,7 @@ class RepositoryClient:
             page_name="pageName",
         )
         """
-        response = self._raw_client.repo_edit_wiki_page(
+        _response = self._raw_client.repo_edit_wiki_page(
             owner,
             repo,
             page_name,
@@ -9398,7 +9942,7 @@ class RepositoryClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_wiki_pages(
         self,
@@ -9442,12 +9986,14 @@ class RepositoryClient:
         client.repository.repo_get_wiki_pages(
             owner="owner",
             repo="repo",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.repo_get_wiki_pages(
+        _response = self._raw_client.repo_get_wiki_pages(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def repo_get_wiki_page_revisions(
         self,
@@ -9492,12 +10038,13 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             page_name="pageName",
+            page=1,
         )
         """
-        response = self._raw_client.repo_get_wiki_page_revisions(
+        _response = self._raw_client.repo_get_wiki_page_revisions(
             owner, repo, page_name, page=page, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def generate_repo(
         self,
@@ -9585,7 +10132,7 @@ class RepositoryClient:
             owner="owner",
         )
         """
-        response = self._raw_client.generate_repo(
+        _response = self._raw_client.generate_repo(
             template_owner,
             template_repo,
             name=name,
@@ -9602,7 +10149,7 @@ class RepositoryClient:
             webhooks=webhooks,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def repo_get_by_id(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -9632,8 +10179,8 @@ class RepositoryClient:
             id=1000000,
         )
         """
-        response = self._raw_client.repo_get_by_id(id, request_options=request_options)
-        return response.data
+        _response = self._raw_client.repo_get_by_id(id, request_options=request_options)
+        return _response.data
 
     def topic_search(
         self,
@@ -9642,12 +10189,12 @@ class RepositoryClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> typing.List[TopicResponse]:
+    ) -> TopicSearchResults:
         """
         Parameters
         ----------
         q : str
-            keywords to search
+            keyword to search for
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -9660,8 +10207,8 @@ class RepositoryClient:
 
         Returns
         -------
-        typing.List[TopicResponse]
-            TopicListResponse
+        TopicSearchResults
+            SearchResults of a successful search
 
         Examples
         --------
@@ -9672,12 +10219,14 @@ class RepositoryClient:
         )
         client.repository.topic_search(
             q="q",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.topic_search(
+        _response = self._raw_client.topic_search(
             q=q, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_current_user_repo(
         self,
@@ -9754,7 +10303,7 @@ class RepositoryClient:
             name="name",
         )
         """
-        response = self._raw_client.create_current_user_repo(
+        _response = self._raw_client.create_current_user_repo(
             name=name,
             auto_init=auto_init,
             default_branch=default_branch,
@@ -9769,7 +10318,7 @@ class RepositoryClient:
             trust_model=trust_model,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
 
 class AsyncRepositoryClient:
@@ -9885,7 +10434,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_migrate(
+        _response = await self._raw_client.repo_migrate(
             clone_addr=clone_addr,
             repo_name=repo_name,
             auth_password=auth_password,
@@ -9908,7 +10457,7 @@ class AsyncRepositoryClient:
             wiki=wiki,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_search(
         self,
@@ -9926,8 +10475,8 @@ class AsyncRepositoryClient:
         archived: typing.Optional[bool] = None,
         mode: typing.Optional[str] = None,
         exclusive: typing.Optional[bool] = None,
-        sort: typing.Optional[str] = None,
-        order: typing.Optional[str] = None,
+        sort: typing.Optional[RepoSearchRequestSort] = None,
+        order: typing.Optional[RepoSearchRequestOrder] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -9974,10 +10523,10 @@ class AsyncRepositoryClient:
         exclusive : typing.Optional[bool]
             if `uid` is given, search only for repos that the user owns
 
-        sort : typing.Optional[str]
+        sort : typing.Optional[RepoSearchRequestSort]
             sort repos by attribute. Supported values are "alpha", "created", "updated", "size", "git_size", "lfs_size", "stars", "forks" and "id". Default is "alpha"
 
-        order : typing.Optional[str]
+        order : typing.Optional[RepoSearchRequestOrder]
             sort order, either "asc" (ascending) or "desc" (descending). Default is "asc", ignored if "sort" is not specified.
 
         page : typing.Optional[int]
@@ -10006,12 +10555,30 @@ class AsyncRepositoryClient:
 
 
         async def main() -> None:
-            await client.repository.repo_search()
+            await client.repository.repo_search(
+                q="q",
+                topic=True,
+                include_desc=True,
+                uid=1000000,
+                priority_owner_id=1000000,
+                team_id=1000000,
+                starred_by=1000000,
+                private=True,
+                is_private=True,
+                template=True,
+                archived=True,
+                mode="mode",
+                exclusive=True,
+                sort="alpha",
+                order="asc",
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_search(
+        _response = await self._raw_client.repo_search(
             q=q,
             topic=topic,
             include_desc=include_desc,
@@ -10031,7 +10598,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get(
         self,
@@ -10077,10 +10644,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get(
+        _response = await self._raw_client.repo_get(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete(
         self,
@@ -10125,10 +10692,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete(
+        _response = await self._raw_client.repo_delete(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit(
         self,
@@ -10217,7 +10784,7 @@ class AsyncRepositoryClient:
             set to `true` to delete pr branch after merge by default
 
         default_merge_style : typing.Optional[str]
-            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
+            set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", "fast-forward-only", "manually-merged", or "rebase-update-only".
 
         default_update_style : typing.Optional[str]
             set to a update style to be used by this repository: "rebase" or "merge"
@@ -10309,7 +10876,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit(
+        _response = await self._raw_client.repo_edit(
             owner,
             repo,
             allow_fast_forward_only_merge=allow_fast_forward_only_merge,
@@ -10348,7 +10915,7 @@ class AsyncRepositoryClient:
             wiki_branch=wiki_branch,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_search_run_jobs(
         self,
@@ -10393,15 +10960,16 @@ class AsyncRepositoryClient:
             await client.repository.repo_search_run_jobs(
                 owner="owner",
                 repo="repo",
+                labels="labels",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_search_run_jobs(
+        _response = await self._raw_client.repo_search_run_jobs(
             owner, repo, labels=labels, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_runner_registration_token(
         self,
@@ -10409,7 +10977,7 @@ class AsyncRepositoryClient:
         repo: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> None:
+    ) -> RegistrationToken:
         """
         Parameters
         ----------
@@ -10424,7 +10992,8 @@ class AsyncRepositoryClient:
 
         Returns
         -------
-        None
+        RegistrationToken
+            RegistrationToken is a string used to register a runner with a server
 
         Examples
         --------
@@ -10446,10 +11015,154 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_runner_registration_token(
+        _response = await self._raw_client.repo_get_runner_registration_token(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
+
+    async def list_action_runs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        page: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        event: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        status: typing.Optional[
+            typing.Union[
+                ListActionRunsRequestStatusItem,
+                typing.Sequence[ListActionRunsRequestStatusItem],
+            ]
+        ] = None,
+        run_number: typing.Optional[int] = None,
+        head_sha: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListActionRunResponse:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        page : typing.Optional[int]
+            page number of results to return (1-based)
+
+        limit : typing.Optional[int]
+            page size of results, default maximum page size is 50
+
+        event : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Returns workflow run triggered by the specified events. For example, `push`, `pull_request` or `workflow_dispatch`.
+
+        status : typing.Optional[typing.Union[ListActionRunsRequestStatusItem, typing.Sequence[ListActionRunsRequestStatusItem]]]
+            Returns workflow runs with the check run status or conclusion that is specified. For example, a conclusion can be success or a status can be in_progress. Only Forgejo Actions can set a status of waiting, pending, or requested.
+
+        run_number : typing.Optional[int]
+            Returns the workflow run associated with the run number.
+
+        head_sha : typing.Optional[str]
+            Only returns workflow runs that are associated with the specified head_sha.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListActionRunResponse
+            ActionRunList
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.list_action_runs(
+                owner="owner",
+                repo="repo",
+                page=1,
+                limit=1,
+                run_number=1000000,
+                head_sha="head_sha",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list_action_runs(
+            owner,
+            repo,
+            page=page,
+            limit=limit,
+            event=event,
+            status=status,
+            run_number=run_number,
+            head_sha=head_sha,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def action_run(
+        self,
+        owner: str,
+        repo: str,
+        run_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ActionRun:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        run_id : int
+            id of the action run
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ActionRun
+            ActionRun
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.action_run(
+                owner="owner",
+                repo="repo",
+                run_id=1000000,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.action_run(
+            owner, repo, run_id, request_options=request_options
+        )
+        return _response.data
 
     async def repo_list_actions_secrets(
         self,
@@ -10498,15 +11211,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_actions_secrets(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_actions_secrets(
+        _response = await self._raw_client.repo_list_actions_secrets(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def update_repo_secret(
         self,
@@ -10561,10 +11276,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_repo_secret(
+        _response = await self._raw_client.update_repo_secret(
             owner, repo, secretname, data=data, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_repo_secret(
         self,
@@ -10614,10 +11329,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_repo_secret(
+        _response = await self._raw_client.delete_repo_secret(
             owner, repo, secretname, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_action_tasks(
         self,
@@ -10666,15 +11381,17 @@ class AsyncRepositoryClient:
             await client.repository.list_action_tasks(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_action_tasks(
+        _response = await self._raw_client.list_action_tasks(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_repo_variables_list(
         self,
@@ -10723,15 +11440,17 @@ class AsyncRepositoryClient:
             await client.repository.get_repo_variables_list(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_repo_variables_list(
+        _response = await self._raw_client.get_repo_variables_list(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_repo_variable(
         self,
@@ -10782,10 +11501,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_repo_variable(
+        _response = await self._raw_client.get_repo_variable(
             owner, repo, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_repo_variable(
         self,
@@ -10840,10 +11559,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_repo_variable(
+        _response = await self._raw_client.create_repo_variable(
             owner, repo, variablename, value=value, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def update_repo_variable(
         self,
@@ -10902,7 +11621,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_repo_variable(
+        _response = await self._raw_client.update_repo_variable(
             owner,
             repo,
             variablename,
@@ -10910,7 +11629,7 @@ class AsyncRepositoryClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def delete_repo_variable(
         self,
@@ -10919,7 +11638,7 @@ class AsyncRepositoryClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ActionVariable:
+    ) -> None:
         """
         Parameters
         ----------
@@ -10937,8 +11656,7 @@ class AsyncRepositoryClient:
 
         Returns
         -------
-        ActionVariable
-            ActionVariable
+        None
 
         Examples
         --------
@@ -10961,16 +11679,16 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_repo_variable(
+        _response = await self._raw_client.delete_repo_variable(
             owner, repo, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def dispatch_workflow(
         self,
         owner: str,
         repo: str,
-        workflowname: str,
+        workflowfilename: str,
         *,
         ref: str,
         inputs: typing.Optional[typing.Dict[str, str]] = OMIT,
@@ -10986,7 +11704,7 @@ class AsyncRepositoryClient:
         repo : str
             name of the repo
 
-        workflowname : str
+        workflowfilename : str
             name of the workflow
 
         ref : str
@@ -11021,23 +11739,23 @@ class AsyncRepositoryClient:
             await client.repository.dispatch_workflow(
                 owner="owner",
                 repo="repo",
-                workflowname="workflowname",
+                workflowfilename="workflowfilename",
                 ref="ref",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.dispatch_workflow(
+        _response = await self._raw_client.dispatch_workflow(
             owner,
             repo,
-            workflowname,
+            workflowfilename,
             ref=ref,
             inputs=inputs,
             return_run_info=return_run_info,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_activity_feeds(
         self,
@@ -11090,12 +11808,15 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_activity_feeds(
                 owner="owner",
                 repo="repo",
+                date="date",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_activity_feeds(
+        _response = await self._raw_client.repo_list_activity_feeds(
             owner,
             repo,
             date=date,
@@ -11103,7 +11824,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_archive(
         self,
@@ -11153,10 +11874,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_archive(
+        _response = await self._raw_client.repo_get_archive(
             owner, repo, archive, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_assignees(
         self,
@@ -11202,10 +11923,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_assignees(
+        _response = await self._raw_client.repo_get_assignees(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_update_avatar(
         self,
@@ -11254,10 +11975,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_update_avatar(
+        _response = await self._raw_client.repo_update_avatar(
             owner, repo, image=image, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_avatar(
         self,
@@ -11302,10 +12023,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_avatar(
+        _response = await self._raw_client.repo_delete_avatar(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_branch_protection(
         self,
@@ -11351,10 +12072,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_branch_protection(
+        _response = await self._raw_client.repo_list_branch_protection(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_branch_protection(
         self,
@@ -11476,7 +12197,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_branch_protection(
+        _response = await self._raw_client.repo_create_branch_protection(
             owner,
             repo,
             apply_to_admins=apply_to_admins,
@@ -11506,7 +12227,7 @@ class AsyncRepositoryClient:
             unprotected_file_patterns=unprotected_file_patterns,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_branch_protection(
         self,
@@ -11557,10 +12278,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_branch_protection(
+        _response = await self._raw_client.repo_get_branch_protection(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_branch_protection(
         self,
@@ -11610,10 +12331,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_branch_protection(
+        _response = await self._raw_client.repo_delete_branch_protection(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_branch_protection(
         self,
@@ -11733,7 +12454,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_branch_protection(
+        _response = await self._raw_client.repo_edit_branch_protection(
             owner,
             repo,
             name,
@@ -11762,7 +12483,7 @@ class AsyncRepositoryClient:
             unprotected_file_patterns=unprotected_file_patterns,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_branches(
         self,
@@ -11811,15 +12532,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_branches(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_branches(
+        _response = await self._raw_client.repo_list_branches(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_branch(
         self,
@@ -11879,7 +12602,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_branch(
+        _response = await self._raw_client.repo_create_branch(
             owner,
             repo,
             new_branch_name=new_branch_name,
@@ -11887,7 +12610,7 @@ class AsyncRepositoryClient:
             old_ref_name=old_ref_name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_branch(
         self,
@@ -11938,10 +12661,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_branch(
+        _response = await self._raw_client.repo_get_branch(
             owner, repo, branch, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_branch(
         self,
@@ -11991,10 +12714,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_branch(
+        _response = await self._raw_client.repo_delete_branch(
             owner, repo, branch, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_update_branch(
         self,
@@ -12049,10 +12772,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_update_branch(
+        _response = await self._raw_client.repo_update_branch(
             owner, repo, branch, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_collaborators(
         self,
@@ -12101,15 +12824,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_collaborators(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_collaborators(
+        _response = await self._raw_client.repo_list_collaborators(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_check_collaborator(
         self,
@@ -12161,10 +12886,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_check_collaborator(
+        _response = await self._raw_client.repo_check_collaborator(
             owner, repo, collaborator, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_add_collaborator(
         self,
@@ -12217,14 +12942,14 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_add_collaborator(
+        _response = await self._raw_client.repo_add_collaborator(
             owner,
             repo,
             collaborator,
             permission=permission,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_collaborator(
         self,
@@ -12274,10 +12999,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_collaborator(
+        _response = await self._raw_client.repo_delete_collaborator(
             owner, repo, collaborator, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_repo_permissions(
         self,
@@ -12328,10 +13053,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_repo_permissions(
+        _response = await self._raw_client.repo_get_repo_permissions(
             owner, repo, collaborator, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_all_commits(
         self,
@@ -12404,12 +13129,20 @@ class AsyncRepositoryClient:
             await client.repository.repo_get_all_commits(
                 owner="owner",
                 repo="repo",
+                sha="sha",
+                path="path",
+                stat=True,
+                verification=True,
+                files=True,
+                page=1,
+                limit=1,
+                not_="not",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_all_commits(
+        _response = await self._raw_client.repo_get_all_commits(
             owner,
             repo,
             sha=sha,
@@ -12422,7 +13155,7 @@ class AsyncRepositoryClient:
             not_=not_,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_combined_status_by_ref(
         self,
@@ -12476,15 +13209,17 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 ref="ref",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_combined_status_by_ref(
+        _response = await self._raw_client.repo_get_combined_status_by_ref(
             owner, repo, ref, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_statuses_by_ref(
         self,
@@ -12546,12 +13281,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 ref="ref",
+                sort="oldest",
+                state="pending",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_statuses_by_ref(
+        _response = await self._raw_client.repo_list_statuses_by_ref(
             owner,
             repo,
             ref,
@@ -12561,7 +13300,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_commit_pull_request(
         self,
@@ -12612,10 +13351,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_commit_pull_request(
+        _response = await self._raw_client.repo_get_commit_pull_request(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_compare_diff(
         self,
@@ -12666,10 +13405,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_compare_diff(
+        _response = await self._raw_client.repo_compare_diff(
             owner, repo, basehead, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_contents_list(
         self,
@@ -12714,15 +13453,16 @@ class AsyncRepositoryClient:
             await client.repository.repo_get_contents_list(
                 owner="owner",
                 repo="repo",
+                ref="ref",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_contents_list(
+        _response = await self._raw_client.repo_get_contents_list(
             owner, repo, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_change_files(
         self,
@@ -12803,7 +13543,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_change_files(
+        _response = await self._raw_client.repo_change_files(
             owner,
             repo,
             files=files,
@@ -12816,7 +13556,7 @@ class AsyncRepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_contents(
         self,
@@ -12848,7 +13588,7 @@ class AsyncRepositoryClient:
         Returns
         -------
         RepoGetContentsResponse
-            A file's contents or a directory listing
+            A single file's contents or a directory listing
 
         Examples
         --------
@@ -12866,15 +13606,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 filepath="filepath",
+                ref="ref",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_contents(
+        _response = await self._raw_client.repo_get_contents(
             owner, repo, filepath, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_file(
         self,
@@ -12955,7 +13696,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_file(
+        _response = await self._raw_client.repo_create_file(
             owner,
             repo,
             filepath,
@@ -12969,7 +13710,7 @@ class AsyncRepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_update_file(
         self,
@@ -13059,7 +13800,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_update_file(
+        _response = await self._raw_client.repo_update_file(
             owner,
             repo,
             filepath,
@@ -13075,7 +13816,7 @@ class AsyncRepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_file(
         self,
@@ -13156,7 +13897,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_file(
+        _response = await self._raw_client.repo_delete_file(
             owner,
             repo,
             filepath,
@@ -13170,7 +13911,56 @@ class AsyncRepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
+
+    async def repo_convert(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> Repository:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo to convert
+
+        repo : str
+            name of the repo to convert
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        Repository
+            Repository
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_convert(
+                owner="owner",
+                repo="repo",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.repo_convert(
+            owner, repo, request_options=request_options
+        )
+        return _response.data
 
     async def repo_apply_diff_patch(
         self,
@@ -13255,7 +14045,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_apply_diff_patch(
+        _response = await self._raw_client.repo_apply_diff_patch(
             owner,
             repo,
             content=content,
@@ -13270,7 +14060,7 @@ class AsyncRepositoryClient:
             signoff=signoff,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_editor_config(
         self,
@@ -13280,7 +14070,7 @@ class AsyncRepositoryClient:
         *,
         ref: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> None:
+    ) -> typing.Dict[str, str]:
         """
         Parameters
         ----------
@@ -13301,7 +14091,8 @@ class AsyncRepositoryClient:
 
         Returns
         -------
-        None
+        typing.Dict[str, str]
+            definitions
 
         Examples
         --------
@@ -13319,15 +14110,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 filepath="filepath",
+                ref="ref",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_editor_config(
+        _response = await self._raw_client.repo_get_editor_config(
             owner, repo, filepath, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_flags(
         self,
@@ -13373,10 +14165,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_flags(
+        _response = await self._raw_client.repo_list_flags(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_replace_all_flags(
         self,
@@ -13424,10 +14216,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_replace_all_flags(
+        _response = await self._raw_client.repo_replace_all_flags(
             owner, repo, flags=flags, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_all_flags(
         self,
@@ -13472,10 +14264,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_all_flags(
+        _response = await self._raw_client.repo_delete_all_flags(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_check_flag(
         self,
@@ -13525,10 +14317,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_check_flag(
+        _response = await self._raw_client.repo_check_flag(
             owner, repo, flag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_add_flag(
         self,
@@ -13578,10 +14370,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_add_flag(
+        _response = await self._raw_client.repo_add_flag(
             owner, repo, flag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_flag(
         self,
@@ -13631,10 +14423,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_flag(
+        _response = await self._raw_client.repo_delete_flag(
             owner, repo, flag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_forks(
         self,
@@ -13683,15 +14475,17 @@ class AsyncRepositoryClient:
             await client.repository.list_forks(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_forks(
+        _response = await self._raw_client.list_forks(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_fork(
         self,
@@ -13745,14 +14539,68 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_fork(
+        _response = await self._raw_client.create_fork(
             owner,
             repo,
             name=name,
             organization=organization,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
+
+    async def get_blobs(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        shas: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> typing.List[GitBlob]:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        shas : str
+            a comma separated list of blob-sha (mind the overall URL-length limit of ~2,083 chars)
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[GitBlob]
+            GitBlobList
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.get_blobs(
+                owner="owner",
+                repo="repo",
+                shas="shas",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_blobs(
+            owner, repo, shas=shas, request_options=request_options
+        )
+        return _response.data
 
     async def get_blob(
         self,
@@ -13761,7 +14609,7 @@ class AsyncRepositoryClient:
         sha: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> GitBlobResponse:
+    ) -> GitBlob:
         """
         Parameters
         ----------
@@ -13772,15 +14620,15 @@ class AsyncRepositoryClient:
             name of the repo
 
         sha : str
-            sha of the commit
+            sha of the blob to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        GitBlobResponse
-            GitBlobResponse
+        GitBlob
+            GitBlob
 
         Examples
         --------
@@ -13803,10 +14651,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_blob(
+        _response = await self._raw_client.get_blob(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_single_commit(
         self,
@@ -13864,12 +14712,15 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
+                stat=True,
+                verification=True,
+                files=True,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_single_commit(
+        _response = await self._raw_client.repo_get_single_commit(
             owner,
             repo,
             sha,
@@ -13878,7 +14729,7 @@ class AsyncRepositoryClient:
             files=files,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_download_commit_diff_or_patch(
         self,
@@ -13934,10 +14785,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_download_commit_diff_or_patch(
+        _response = await self._raw_client.repo_download_commit_diff_or_patch(
             owner, repo, sha, diff_type, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_note(
         self,
@@ -13991,12 +14842,14 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
+                verification=True,
+                files=True,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_note(
+        _response = await self._raw_client.repo_get_note(
             owner,
             repo,
             sha,
@@ -14004,7 +14857,7 @@ class AsyncRepositoryClient:
             files=files,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_set_note(
         self,
@@ -14058,10 +14911,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_set_note(
+        _response = await self._raw_client.repo_set_note(
             owner, repo, sha, message=message, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_remove_note(
         self,
@@ -14111,10 +14964,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_remove_note(
+        _response = await self._raw_client.repo_remove_note(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_all_git_refs(
         self,
@@ -14160,10 +15013,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_all_git_refs(
+        _response = await self._raw_client.repo_list_all_git_refs(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_git_refs(
         self,
@@ -14214,10 +15067,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_git_refs(
+        _response = await self._raw_client.repo_list_git_refs(
             owner, repo, ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_annotated_tag(
         self,
@@ -14268,10 +15121,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_annotated_tag(
+        _response = await self._raw_client.get_annotated_tag(
             owner, repo, sha, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_tree(
         self,
@@ -14329,12 +15182,15 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
+                recursive=True,
+                page=1,
+                per_page=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_tree(
+        _response = await self._raw_client.get_tree(
             owner,
             repo,
             sha,
@@ -14343,7 +15199,7 @@ class AsyncRepositoryClient:
             per_page=per_page,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_hooks(
         self,
@@ -14392,15 +15248,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_hooks(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_hooks(
+        _response = await self._raw_client.repo_list_hooks(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_hook(
         self,
@@ -14466,7 +15324,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_hook(
+        _response = await self._raw_client.repo_create_hook(
             owner,
             repo,
             config=config,
@@ -14477,7 +15335,7 @@ class AsyncRepositoryClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_git_hooks(
         self,
@@ -14523,10 +15381,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_git_hooks(
+        _response = await self._raw_client.repo_list_git_hooks(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_git_hook(
         self,
@@ -14577,10 +15435,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_git_hook(
+        _response = await self._raw_client.repo_get_git_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_git_hook(
         self,
@@ -14630,10 +15488,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_git_hook(
+        _response = await self._raw_client.repo_delete_git_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_git_hook(
         self,
@@ -14687,10 +15545,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_git_hook(
+        _response = await self._raw_client.repo_edit_git_hook(
             owner, repo, id, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_hook(
         self,
@@ -14741,10 +15599,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_hook(
+        _response = await self._raw_client.repo_get_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_hook(
         self,
@@ -14794,10 +15652,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_hook(
+        _response = await self._raw_client.repo_delete_hook(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_hook(
         self,
@@ -14863,7 +15721,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_hook(
+        _response = await self._raw_client.repo_edit_hook(
             owner,
             repo,
             id,
@@ -14874,7 +15732,7 @@ class AsyncRepositoryClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_test_hook(
         self,
@@ -14923,15 +15781,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 id=1000000,
+                ref="ref",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_test_hook(
+        _response = await self._raw_client.repo_test_hook(
             owner, repo, id, ref=ref, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_issue_config(
         self,
@@ -14977,10 +15836,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_issue_config(
+        _response = await self._raw_client.repo_get_issue_config(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_validate_issue_config(
         self,
@@ -15026,10 +15885,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_validate_issue_config(
+        _response = await self._raw_client.repo_validate_issue_config(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_issue_templates(
         self,
@@ -15075,10 +15934,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_issue_templates(
+        _response = await self._raw_client.repo_get_issue_templates(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_pinned_issues(
         self,
@@ -15124,10 +15983,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_pinned_issues(
+        _response = await self._raw_client.repo_list_pinned_issues(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_keys(
         self,
@@ -15184,12 +16043,16 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_keys(
                 owner="owner",
                 repo="repo",
+                key_id=1,
+                fingerprint="fingerprint",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_keys(
+        _response = await self._raw_client.repo_list_keys(
             owner,
             repo,
             key_id=key_id,
@@ -15198,7 +16061,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_create_key(
         self,
@@ -15258,7 +16121,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_key(
+        _response = await self._raw_client.repo_create_key(
             owner,
             repo,
             key=key,
@@ -15266,7 +16129,7 @@ class AsyncRepositoryClient:
             read_only=read_only,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_key(
         self,
@@ -15317,10 +16180,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_key(
+        _response = await self._raw_client.repo_get_key(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_key(
         self,
@@ -15370,10 +16233,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_key(
+        _response = await self._raw_client.repo_delete_key(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_languages(
         self,
@@ -15419,10 +16282,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_languages(
+        _response = await self._raw_client.repo_get_languages(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_raw_file_or_lfs(
         self,
@@ -15455,12 +16318,33 @@ class AsyncRepositoryClient:
         -------
         typing.AsyncIterator[bytes]
             Returns raw file content.
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_get_raw_file_or_lfs(
+                owner="owner",
+                repo="repo",
+                filepath="filepath",
+            )
+
+
+        asyncio.run(main())
         """
         async with self._raw_client.repo_get_raw_file_or_lfs(
             owner, repo, filepath, ref=ref, request_options=request_options
         ) as r:
-            async for data in r.data:
-                yield data
+            async for _chunk in r.data:
+                yield _chunk
 
     async def repo_mirror_sync(
         self,
@@ -15505,10 +16389,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_mirror_sync(
+        _response = await self._raw_client.repo_mirror_sync(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_new_pin_allowed(
         self,
@@ -15554,10 +16438,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_new_pin_allowed(
+        _response = await self._raw_client.repo_new_pin_allowed(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_pull_requests(
         self,
@@ -15626,12 +16510,18 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_pull_requests(
                 owner="owner",
                 repo="repo",
+                state="open",
+                sort="oldest",
+                milestone=1000000,
+                poster="poster",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_pull_requests(
+        _response = await self._raw_client.repo_list_pull_requests(
             owner,
             repo,
             state=state,
@@ -15643,7 +16533,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_create_pull_request(
         self,
@@ -15716,7 +16606,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_pull_request(
+        _response = await self._raw_client.repo_create_pull_request(
             owner,
             repo,
             assignee=assignee,
@@ -15730,7 +16620,7 @@ class AsyncRepositoryClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_pinned_pull_requests(
         self,
@@ -15776,10 +16666,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_pinned_pull_requests(
+        _response = await self._raw_client.repo_list_pinned_pull_requests(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_pull_request_by_base_head(
         self,
@@ -15835,10 +16725,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_pull_request_by_base_head(
+        _response = await self._raw_client.repo_get_pull_request_by_base_head(
             owner, repo, base, head, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_pull_request(
         self,
@@ -15889,10 +16779,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_pull_request(
+        _response = await self._raw_client.repo_get_pull_request(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_pull_request(
         self,
@@ -15976,7 +16866,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_pull_request(
+        _response = await self._raw_client.repo_edit_pull_request(
             owner,
             repo,
             index,
@@ -15993,7 +16883,7 @@ class AsyncRepositoryClient:
             unset_due_date=unset_due_date,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_download_pull_diff_or_patch(
         self,
@@ -16048,12 +16938,13 @@ class AsyncRepositoryClient:
                 repo="repo",
                 index=1000000,
                 diff_type="diff",
+                binary=True,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_download_pull_diff_or_patch(
+        _response = await self._raw_client.repo_download_pull_diff_or_patch(
             owner,
             repo,
             index,
@@ -16061,7 +16952,7 @@ class AsyncRepositoryClient:
             binary=binary,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_pull_request_commits(
         self,
@@ -16123,12 +17014,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                page=1,
+                limit=1,
+                verification=True,
+                files=True,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_pull_request_commits(
+        _response = await self._raw_client.repo_get_pull_request_commits(
             owner,
             repo,
             index,
@@ -16138,7 +17033,7 @@ class AsyncRepositoryClient:
             files=files,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_pull_request_files(
         self,
@@ -16200,12 +17095,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                skip_to="skip-to",
+                whitespace="ignore-all",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_pull_request_files(
+        _response = await self._raw_client.repo_get_pull_request_files(
             owner,
             repo,
             index,
@@ -16215,7 +17114,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_pull_request_is_merged(
         self,
@@ -16265,10 +17164,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_pull_request_is_merged(
+        _response = await self._raw_client.repo_pull_request_is_merged(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_merge_pull_request(
         self,
@@ -16343,7 +17242,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_merge_pull_request(
+        _response = await self._raw_client.repo_merge_pull_request(
             owner,
             repo,
             index,
@@ -16357,7 +17256,7 @@ class AsyncRepositoryClient:
             merge_when_checks_succeed=merge_when_checks_succeed,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_cancel_scheduled_auto_merge(
         self,
@@ -16407,10 +17306,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_cancel_scheduled_auto_merge(
+        _response = await self._raw_client.repo_cancel_scheduled_auto_merge(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_pull_review_requests(
         self,
@@ -16467,7 +17366,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_pull_review_requests(
+        _response = await self._raw_client.repo_create_pull_review_requests(
             owner,
             repo,
             index,
@@ -16475,7 +17374,7 @@ class AsyncRepositoryClient:
             team_reviewers=team_reviewers,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_pull_review_requests(
         self,
@@ -16531,7 +17430,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_pull_review_requests(
+        _response = await self._raw_client.repo_delete_pull_review_requests(
             owner,
             repo,
             index,
@@ -16539,7 +17438,7 @@ class AsyncRepositoryClient:
             team_reviewers=team_reviewers,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_pull_reviews(
         self,
@@ -16593,15 +17492,17 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_pull_reviews(
+        _response = await self._raw_client.repo_list_pull_reviews(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_pull_review(
         self,
@@ -16664,7 +17565,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_pull_review(
+        _response = await self._raw_client.repo_create_pull_review(
             owner,
             repo,
             index,
@@ -16674,7 +17575,7 @@ class AsyncRepositoryClient:
             event=event,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_pull_review(
         self,
@@ -16730,10 +17631,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_pull_review(
+        _response = await self._raw_client.repo_get_pull_review(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_submit_pull_review(
         self,
@@ -16795,7 +17696,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_submit_pull_review(
+        _response = await self._raw_client.repo_submit_pull_review(
             owner,
             repo,
             index,
@@ -16804,7 +17705,7 @@ class AsyncRepositoryClient:
             event=event,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_pull_review(
         self,
@@ -16859,10 +17760,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_pull_review(
+        _response = await self._raw_client.repo_delete_pull_review(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_pull_review_comments(
         self,
@@ -16918,10 +17819,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_pull_review_comments(
+        _response = await self._raw_client.repo_get_pull_review_comments(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_pull_review_comment(
         self,
@@ -16992,7 +17893,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_pull_review_comment(
+        _response = await self._raw_client.repo_create_pull_review_comment(
             owner,
             repo,
             index,
@@ -17003,7 +17904,7 @@ class AsyncRepositoryClient:
             path=path,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_pull_review_comment(
         self,
@@ -17064,10 +17965,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_pull_review_comment(
+        _response = await self._raw_client.repo_get_pull_review_comment(
             owner, repo, index, id, comment, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_pull_review_comment(
         self,
@@ -17127,10 +18028,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_pull_review_comment(
+        _response = await self._raw_client.repo_delete_pull_review_comment(
             owner, repo, index, id, comment, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_dismiss_pull_review(
         self,
@@ -17192,7 +18093,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_dismiss_pull_review(
+        _response = await self._raw_client.repo_dismiss_pull_review(
             owner,
             repo,
             index,
@@ -17201,7 +18102,7 @@ class AsyncRepositoryClient:
             priors=priors,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_un_dismiss_pull_review(
         self,
@@ -17257,10 +18158,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_un_dismiss_pull_review(
+        _response = await self._raw_client.repo_un_dismiss_pull_review(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_update_pull_request(
         self,
@@ -17309,15 +18210,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                style="merge",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_update_pull_request(
+        _response = await self._raw_client.repo_update_pull_request(
             owner, repo, index, style=style, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_push_mirrors(
         self,
@@ -17366,21 +18268,24 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_push_mirrors(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_push_mirrors(
+        _response = await self._raw_client.repo_list_push_mirrors(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_add_push_mirror(
         self,
         owner: str,
         repo: str,
         *,
+        branch_filter: typing.Optional[str] = OMIT,
         interval: typing.Optional[str] = OMIT,
         remote_address: typing.Optional[str] = OMIT,
         remote_password: typing.Optional[str] = OMIT,
@@ -17397,6 +18302,8 @@ class AsyncRepositoryClient:
 
         repo : str
             name of the repo
+
+        branch_filter : typing.Optional[str]
 
         interval : typing.Optional[str]
 
@@ -17438,9 +18345,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_add_push_mirror(
+        _response = await self._raw_client.repo_add_push_mirror(
             owner,
             repo,
+            branch_filter=branch_filter,
             interval=interval,
             remote_address=remote_address,
             remote_password=remote_password,
@@ -17449,7 +18357,7 @@ class AsyncRepositoryClient:
             use_ssh=use_ssh,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_push_mirror_sync(
         self,
@@ -17494,10 +18402,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_push_mirror_sync(
+        _response = await self._raw_client.repo_push_mirror_sync(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_push_mirror_by_remote_name(
         self,
@@ -17548,10 +18456,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_push_mirror_by_remote_name(
+        _response = await self._raw_client.repo_get_push_mirror_by_remote_name(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_push_mirror(
         self,
@@ -17601,10 +18509,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_push_mirror(
+        _response = await self._raw_client.repo_delete_push_mirror(
             owner, repo, name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_raw_file(
         self,
@@ -17637,12 +18545,33 @@ class AsyncRepositoryClient:
         -------
         typing.AsyncIterator[bytes]
             Returns raw file content.
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_get_raw_file(
+                owner="owner",
+                repo="repo",
+                filepath="filepath",
+            )
+
+
+        asyncio.run(main())
         """
         async with self._raw_client.repo_get_raw_file(
             owner, repo, filepath, ref=ref, request_options=request_options
         ) as r:
-            async for data in r.data:
-                yield data
+            async for _chunk in r.data:
+                yield _chunk
 
     async def repo_list_releases(
         self,
@@ -17703,12 +18632,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_releases(
                 owner="owner",
                 repo="repo",
+                draft=True,
+                pre_release=True,
+                q="q",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_releases(
+        _response = await self._raw_client.repo_list_releases(
             owner,
             repo,
             draft=draft,
@@ -17718,7 +18652,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_create_release(
         self,
@@ -17786,7 +18720,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_release(
+        _response = await self._raw_client.repo_create_release(
             owner,
             repo,
             tag_name=tag_name,
@@ -17798,7 +18732,7 @@ class AsyncRepositoryClient:
             target_commitish=target_commitish,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_latest_release(
         self,
@@ -17844,10 +18778,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_latest_release(
+        _response = await self._raw_client.repo_get_latest_release(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_release_by_tag(
         self,
@@ -17898,10 +18832,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_release_by_tag(
+        _response = await self._raw_client.repo_get_release_by_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_release_by_tag(
         self,
@@ -17951,10 +18885,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_release_by_tag(
+        _response = await self._raw_client.repo_delete_release_by_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_release(
         self,
@@ -18005,10 +18939,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_release(
+        _response = await self._raw_client.repo_get_release(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_release(
         self,
@@ -18058,10 +18992,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_release(
+        _response = await self._raw_client.repo_delete_release(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_release(
         self,
@@ -18133,7 +19067,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_release(
+        _response = await self._raw_client.repo_edit_release(
             owner,
             repo,
             id,
@@ -18146,7 +19080,7 @@ class AsyncRepositoryClient:
             target_commitish=target_commitish,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_release_attachments(
         self,
@@ -18197,10 +19131,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_release_attachments(
+        _response = await self._raw_client.repo_list_release_attachments(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_release_attachment(
         self,
@@ -18211,6 +19145,7 @@ class AsyncRepositoryClient:
         request: typing.Union[
             bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]
         ],
+        name: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Attachment:
         """
@@ -18227,6 +19162,9 @@ class AsyncRepositoryClient:
 
         request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
 
+        name : typing.Optional[str]
+            name of the attachment
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -18235,10 +19173,10 @@ class AsyncRepositoryClient:
         Attachment
             Attachment
         """
-        response = await self._raw_client.repo_create_release_attachment(
-            owner, repo, id, request=request, request_options=request_options
+        _response = await self._raw_client.repo_create_release_attachment(
+            owner, repo, id, request=request, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_release_attachment(
         self,
@@ -18294,10 +19232,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_release_attachment(
+        _response = await self._raw_client.repo_get_release_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_release_attachment(
         self,
@@ -18352,10 +19290,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_release_attachment(
+        _response = await self._raw_client.repo_delete_release_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_release_attachment(
         self,
@@ -18418,7 +19356,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_release_attachment(
+        _response = await self._raw_client.repo_edit_release_attachment(
             owner,
             repo,
             id,
@@ -18427,7 +19365,7 @@ class AsyncRepositoryClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_reviewers(
         self,
@@ -18473,10 +19411,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_reviewers(
+        _response = await self._raw_client.repo_get_reviewers(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_signing_key(
         self,
@@ -18522,10 +19460,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_signing_key(
+        _response = await self._raw_client.repo_signing_key(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_stargazers(
         self,
@@ -18574,15 +19512,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_stargazers(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_stargazers(
+        _response = await self._raw_client.repo_list_stargazers(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_statuses(
         self,
@@ -18644,12 +19584,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
+                sort="oldest",
+                state="pending",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_statuses(
+        _response = await self._raw_client.repo_list_statuses(
             owner,
             repo,
             sha,
@@ -18659,7 +19603,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_create_status(
         self,
@@ -18722,7 +19666,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_status(
+        _response = await self._raw_client.repo_create_status(
             owner,
             repo,
             sha,
@@ -18732,7 +19676,7 @@ class AsyncRepositoryClient:
             target_url=target_url,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_subscribers(
         self,
@@ -18781,15 +19725,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_subscribers(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_subscribers(
+        _response = await self._raw_client.repo_list_subscribers(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_current_check_subscription(
         self,
@@ -18835,10 +19781,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_current_check_subscription(
+        _response = await self._raw_client.user_current_check_subscription(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_current_put_subscription(
         self,
@@ -18884,10 +19830,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_current_put_subscription(
+        _response = await self._raw_client.user_current_put_subscription(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_current_delete_subscription(
         self,
@@ -18932,10 +19878,214 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_current_delete_subscription(
+        _response = await self._raw_client.user_current_delete_subscription(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
+
+    async def repo_sync_fork_default_info(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SyncForkInfo:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SyncForkInfo
+            SyncForkInfo
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_sync_fork_default_info(
+                owner="owner",
+                repo="repo",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.repo_sync_fork_default_info(
+            owner, repo, request_options=request_options
+        )
+        return _response.data
+
+    async def repo_sync_fork_default(
+        self,
+        owner: str,
+        repo: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_sync_fork_default(
+                owner="owner",
+                repo="repo",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.repo_sync_fork_default(
+            owner, repo, request_options=request_options
+        )
+        return _response.data
+
+    async def repo_sync_fork_branch_info(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SyncForkInfo:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SyncForkInfo
+            SyncForkInfo
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_sync_fork_branch_info(
+                owner="owner",
+                repo="repo",
+                branch="branch",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.repo_sync_fork_branch_info(
+            owner, repo, branch, request_options=request_options
+        )
+        return _response.data
+
+    async def repo_sync_fork_branch(
+        self,
+        owner: str,
+        repo: str,
+        branch: str,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        owner : str
+            owner of the repo
+
+        repo : str
+            name of the repo
+
+        branch : str
+            The branch
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.repository.repo_sync_fork_branch(
+                owner="owner",
+                repo="repo",
+                branch="branch",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.repo_sync_fork_branch(
+            owner, repo, branch, request_options=request_options
+        )
+        return _response.data
 
     async def repo_list_tag_protection(
         self,
@@ -18981,10 +20131,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_tag_protection(
+        _response = await self._raw_client.repo_list_tag_protection(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_tag_protection(
         self,
@@ -19039,7 +20189,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_tag_protection(
+        _response = await self._raw_client.repo_create_tag_protection(
             owner,
             repo,
             name_pattern=name_pattern,
@@ -19047,7 +20197,7 @@ class AsyncRepositoryClient:
             whitelist_usernames=whitelist_usernames,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_tag_protection(
         self,
@@ -19092,16 +20242,16 @@ class AsyncRepositoryClient:
             await client.repository.repo_get_tag_protection(
                 owner="owner",
                 repo="repo",
-                id=1,
+                id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_tag_protection(
+        _response = await self._raw_client.repo_get_tag_protection(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_tag_protection(
         self,
@@ -19145,16 +20295,16 @@ class AsyncRepositoryClient:
             await client.repository.repo_delete_tag_protection(
                 owner="owner",
                 repo="repo",
-                id=1,
+                id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_tag_protection(
+        _response = await self._raw_client.repo_delete_tag_protection(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_tag_protection(
         self,
@@ -19208,13 +20358,13 @@ class AsyncRepositoryClient:
             await client.repository.repo_edit_tag_protection(
                 owner="owner",
                 repo="repo",
-                id=1,
+                id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_tag_protection(
+        _response = await self._raw_client.repo_edit_tag_protection(
             owner,
             repo,
             id,
@@ -19223,7 +20373,7 @@ class AsyncRepositoryClient:
             whitelist_usernames=whitelist_usernames,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_list_tags(
         self,
@@ -19272,15 +20422,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_tags(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_tags(
+        _response = await self._raw_client.repo_list_tags(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_tag(
         self,
@@ -19336,7 +20488,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_tag(
+        _response = await self._raw_client.repo_create_tag(
             owner,
             repo,
             tag_name=tag_name,
@@ -19344,7 +20496,7 @@ class AsyncRepositoryClient:
             target=target,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_tag(
         self,
@@ -19395,10 +20547,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_tag(
+        _response = await self._raw_client.repo_get_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_tag(
         self,
@@ -19448,10 +20600,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_tag(
+        _response = await self._raw_client.repo_delete_tag(
             owner, repo, tag, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_teams(
         self,
@@ -19497,10 +20649,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_teams(
+        _response = await self._raw_client.repo_list_teams(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_check_team(
         self,
@@ -19551,10 +20703,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_check_team(
+        _response = await self._raw_client.repo_check_team(
             owner, repo, team, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_add_team(
         self,
@@ -19604,10 +20756,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_add_team(
+        _response = await self._raw_client.repo_add_team(
             owner, repo, team, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_team(
         self,
@@ -19657,10 +20809,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_team(
+        _response = await self._raw_client.repo_delete_team(
             owner, repo, team, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_tracked_times(
         self,
@@ -19709,6 +20861,7 @@ class AsyncRepositoryClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -19721,12 +20874,21 @@ class AsyncRepositoryClient:
             await client.repository.repo_tracked_times(
                 owner="owner",
                 repo="repo",
+                user="user",
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_tracked_times(
+        _response = await self._raw_client.repo_tracked_times(
             owner,
             repo,
             user=user,
@@ -19736,7 +20898,7 @@ class AsyncRepositoryClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def user_tracked_times(
         self,
@@ -19787,10 +20949,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_tracked_times(
+        _response = await self._raw_client.user_tracked_times(
             owner, repo, user, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_list_topics(
         self,
@@ -19839,15 +21001,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_topics(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_list_topics(
+        _response = await self._raw_client.repo_list_topics(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_update_topics(
         self,
@@ -19896,10 +21060,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_update_topics(
+        _response = await self._raw_client.repo_update_topics(
             owner, repo, topics=topics, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_add_topic(
         self,
@@ -19949,10 +21113,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_add_topic(
+        _response = await self._raw_client.repo_add_topic(
             owner, repo, topic, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_topic(
         self,
@@ -20002,10 +21166,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_topic(
+        _response = await self._raw_client.repo_delete_topic(
             owner, repo, topic, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_transfer(
         self,
@@ -20059,14 +21223,14 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_transfer(
+        _response = await self._raw_client.repo_transfer(
             owner,
             repo,
             new_owner=new_owner,
             team_ids=team_ids,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def accept_repo_transfer(
         self,
@@ -20112,10 +21276,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.accept_repo_transfer(
+        _response = await self._raw_client.accept_repo_transfer(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def reject_repo_transfer(
         self,
@@ -20161,10 +21325,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.reject_repo_transfer(
+        _response = await self._raw_client.reject_repo_transfer(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_create_wiki_page(
         self,
@@ -20222,7 +21386,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_create_wiki_page(
+        _response = await self._raw_client.repo_create_wiki_page(
             owner,
             repo,
             content_base_64=content_base_64,
@@ -20230,7 +21394,7 @@ class AsyncRepositoryClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_wiki_page(
         self,
@@ -20281,10 +21445,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_wiki_page(
+        _response = await self._raw_client.repo_get_wiki_page(
             owner, repo, page_name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_delete_wiki_page(
         self,
@@ -20334,10 +21498,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_delete_wiki_page(
+        _response = await self._raw_client.repo_delete_wiki_page(
             owner, repo, page_name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_edit_wiki_page(
         self,
@@ -20400,7 +21564,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_edit_wiki_page(
+        _response = await self._raw_client.repo_edit_wiki_page(
             owner,
             repo,
             page_name,
@@ -20409,7 +21573,7 @@ class AsyncRepositoryClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_wiki_pages(
         self,
@@ -20458,15 +21622,17 @@ class AsyncRepositoryClient:
             await client.repository.repo_get_wiki_pages(
                 owner="owner",
                 repo="repo",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_wiki_pages(
+        _response = await self._raw_client.repo_get_wiki_pages(
             owner, repo, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def repo_get_wiki_page_revisions(
         self,
@@ -20516,15 +21682,16 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 page_name="pageName",
+                page=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_wiki_page_revisions(
+        _response = await self._raw_client.repo_get_wiki_page_revisions(
             owner, repo, page_name, page=page, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def generate_repo(
         self,
@@ -20620,7 +21787,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.generate_repo(
+        _response = await self._raw_client.generate_repo(
             template_owner,
             template_repo,
             name=name,
@@ -20637,7 +21804,7 @@ class AsyncRepositoryClient:
             webhooks=webhooks,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def repo_get_by_id(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -20675,10 +21842,10 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.repo_get_by_id(
+        _response = await self._raw_client.repo_get_by_id(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def topic_search(
         self,
@@ -20687,12 +21854,12 @@ class AsyncRepositoryClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> typing.List[TopicResponse]:
+    ) -> TopicSearchResults:
         """
         Parameters
         ----------
         q : str
-            keywords to search
+            keyword to search for
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -20705,8 +21872,8 @@ class AsyncRepositoryClient:
 
         Returns
         -------
-        typing.List[TopicResponse]
-            TopicListResponse
+        TopicSearchResults
+            SearchResults of a successful search
 
         Examples
         --------
@@ -20722,15 +21889,17 @@ class AsyncRepositoryClient:
         async def main() -> None:
             await client.repository.topic_search(
                 q="q",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.topic_search(
+        _response = await self._raw_client.topic_search(
             q=q, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_current_user_repo(
         self,
@@ -20815,7 +21984,7 @@ class AsyncRepositoryClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_current_user_repo(
+        _response = await self._raw_client.create_current_user_repo(
             name=name,
             auto_init=auto_init,
             default_branch=default_branch,
@@ -20830,4 +21999,4 @@ class AsyncRepositoryClient:
             trust_model=trust_model,
             request_options=request_options,
         )
-        return response.data
+        return _response.data

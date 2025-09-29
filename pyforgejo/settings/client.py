@@ -49,10 +49,10 @@ class SettingsClient:
         )
         client.settings.get_general_api_settings()
         """
-        response = self._raw_client.get_general_api_settings(
+        _response = self._raw_client.get_general_api_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_general_attachment_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -77,10 +77,10 @@ class SettingsClient:
         )
         client.settings.get_general_attachment_settings()
         """
-        response = self._raw_client.get_general_attachment_settings(
+        _response = self._raw_client.get_general_attachment_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_general_repository_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -105,10 +105,10 @@ class SettingsClient:
         )
         client.settings.get_general_repository_settings()
         """
-        response = self._raw_client.get_general_repository_settings(
+        _response = self._raw_client.get_general_repository_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_general_ui_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -133,10 +133,10 @@ class SettingsClient:
         )
         client.settings.get_general_ui_settings()
         """
-        response = self._raw_client.get_general_ui_settings(
+        _response = self._raw_client.get_general_ui_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
 
 class AsyncSettingsClient:
@@ -185,10 +185,10 @@ class AsyncSettingsClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_general_api_settings(
+        _response = await self._raw_client.get_general_api_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_general_attachment_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -221,10 +221,10 @@ class AsyncSettingsClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_general_attachment_settings(
+        _response = await self._raw_client.get_general_attachment_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_general_repository_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -257,10 +257,10 @@ class AsyncSettingsClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_general_repository_settings(
+        _response = await self._raw_client.get_general_repository_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_general_ui_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -293,7 +293,7 @@ class AsyncSettingsClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_general_ui_settings(
+        _response = await self._raw_client.get_general_ui_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data

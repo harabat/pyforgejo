@@ -22,6 +22,9 @@ from .types.create_milestone_option_state import CreateMilestoneOptionState
 from .types.issue_list_issues_request_sort import IssueListIssuesRequestSort
 from .types.issue_list_issues_request_state import IssueListIssuesRequestState
 from .types.issue_list_issues_request_type import IssueListIssuesRequestType
+from .types.issue_list_labels_request_sort import IssueListLabelsRequestSort
+from .types.issue_search_issues_request_sort import \
+    IssueSearchIssuesRequestSort
 from .types.issue_search_issues_request_state import \
     IssueSearchIssuesRequestState
 from .types.issue_search_issues_request_type import \
@@ -66,6 +69,7 @@ class IssueClient:
         team: typing.Optional[str] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
+        sort: typing.Optional[IssueSearchIssuesRequestSort] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[Issue]:
         """
@@ -122,6 +126,9 @@ class IssueClient:
         limit : typing.Optional[int]
             Number of items per page
 
+        sort : typing.Optional[IssueSearchIssuesRequestSort]
+            Type of sort
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -132,14 +139,39 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.issue.search_issues()
+        client.issue.search_issues(
+            state="open",
+            labels="labels",
+            milestones="milestones",
+            q="q",
+            priority_repo_id=1000000,
+            type="issues",
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            assigned=True,
+            created=True,
+            mentioned=True,
+            review_requested=True,
+            reviewed=True,
+            owner="owner",
+            team="team",
+            page=1,
+            limit=1,
+            sort="relevance",
+        )
         """
-        response = self._raw_client.search_issues(
+        _response = self._raw_client.search_issues(
             state=state,
             labels=labels,
             milestones=milestones,
@@ -157,9 +189,10 @@ class IssueClient:
             team=team,
             page=page,
             limit=limit,
+            sort=sort,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def list_issues(
         self,
@@ -239,6 +272,8 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -247,9 +282,26 @@ class IssueClient:
         client.issue.list_issues(
             owner="owner",
             repo="repo",
+            state="closed",
+            labels="labels",
+            q="q",
+            type="issues",
+            milestones="milestones",
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            created_by="created_by",
+            assigned_by="assigned_by",
+            mentioned_by="mentioned_by",
+            page=1,
+            limit=1,
+            sort="relevance",
         )
         """
-        response = self._raw_client.list_issues(
+        _response = self._raw_client.list_issues(
             owner,
             repo,
             state=state,
@@ -267,7 +319,7 @@ class IssueClient:
             sort=sort,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def create_issue(
         self,
@@ -336,7 +388,7 @@ class IssueClient:
             title="title",
         )
         """
-        response = self._raw_client.create_issue(
+        _response = self._raw_client.create_issue(
             owner,
             repo,
             title=title,
@@ -350,7 +402,7 @@ class IssueClient:
             ref=ref,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_repo_comments(
         self,
@@ -394,6 +446,8 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -402,9 +456,17 @@ class IssueClient:
         client.issue.get_repo_comments(
             owner="owner",
             repo="repo",
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.get_repo_comments(
+        _response = self._raw_client.get_repo_comments(
             owner,
             repo,
             since=since,
@@ -413,7 +475,7 @@ class IssueClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_comment(
         self,
@@ -456,10 +518,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.get_comment(
+        _response = self._raw_client.get_comment(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_comment(
         self,
@@ -501,10 +563,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_comment(
+        _response = self._raw_client.delete_comment(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def edit_comment(
         self,
@@ -554,7 +616,7 @@ class IssueClient:
             body="body",
         )
         """
-        response = self._raw_client.edit_comment(
+        _response = self._raw_client.edit_comment(
             owner,
             repo,
             id,
@@ -562,7 +624,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def list_issue_comment_attachments(
         self,
@@ -605,10 +667,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.list_issue_comment_attachments(
+        _response = self._raw_client.list_issue_comment_attachments(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_issue_comment_attachment(
         self,
@@ -652,6 +714,8 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -661,9 +725,13 @@ class IssueClient:
             owner="owner",
             repo="repo",
             id=1000000,
+            name="name",
+            updated_at=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
         )
         """
-        response = self._raw_client.create_issue_comment_attachment(
+        _response = self._raw_client.create_issue_comment_attachment(
             owner,
             repo,
             id,
@@ -672,7 +740,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_issue_comment_attachment(
         self,
@@ -720,10 +788,10 @@ class IssueClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.get_issue_comment_attachment(
+        _response = self._raw_client.get_issue_comment_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_issue_comment_attachment(
         self,
@@ -770,10 +838,10 @@ class IssueClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.delete_issue_comment_attachment(
+        _response = self._raw_client.delete_issue_comment_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def edit_issue_comment_attachment(
         self,
@@ -828,7 +896,7 @@ class IssueClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.edit_issue_comment_attachment(
+        _response = self._raw_client.edit_issue_comment_attachment(
             owner,
             repo,
             id,
@@ -837,7 +905,7 @@ class IssueClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_comment_reactions(
         self,
@@ -880,10 +948,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.get_comment_reactions(
+        _response = self._raw_client.get_comment_reactions(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def post_comment_reaction(
         self,
@@ -929,10 +997,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.post_comment_reaction(
+        _response = self._raw_client.post_comment_reaction(
             owner, repo, id, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_comment_reaction(
         self,
@@ -977,10 +1045,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_comment_reaction(
+        _response = self._raw_client.delete_comment_reaction(
             owner, repo, id, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_issue(
         self,
@@ -1023,10 +1091,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.get_issue(
+        _response = self._raw_client.get_issue(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete(
         self,
@@ -1068,10 +1136,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.delete(
+        _response = self._raw_client.delete(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def edit_issue(
         self,
@@ -1145,7 +1213,7 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.edit_issue(
+        _response = self._raw_client.edit_issue(
             owner,
             repo,
             index,
@@ -1161,7 +1229,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def list_issue_attachments(
         self,
@@ -1204,10 +1272,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.list_issue_attachments(
+        _response = self._raw_client.list_issue_attachments(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_issue_attachment(
         self,
@@ -1251,6 +1319,8 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -1260,9 +1330,13 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            name="name",
+            updated_at=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
         )
         """
-        response = self._raw_client.create_issue_attachment(
+        _response = self._raw_client.create_issue_attachment(
             owner,
             repo,
             index,
@@ -1271,7 +1345,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_issue_attachment(
         self,
@@ -1319,10 +1393,10 @@ class IssueClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.get_issue_attachment(
+        _response = self._raw_client.get_issue_attachment(
             owner, repo, index, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_issue_attachment(
         self,
@@ -1369,10 +1443,10 @@ class IssueClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.delete_issue_attachment(
+        _response = self._raw_client.delete_issue_attachment(
             owner, repo, index, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def edit_issue_attachment(
         self,
@@ -1427,7 +1501,7 @@ class IssueClient:
             attachment_id=1000000,
         )
         """
-        response = self._raw_client.edit_issue_attachment(
+        _response = self._raw_client.edit_issue_attachment(
             owner,
             repo,
             index,
@@ -1436,13 +1510,13 @@ class IssueClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def list_blocks(
         self,
         owner: str,
         repo: str,
-        index: str,
+        index: int,
         *,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
@@ -1457,7 +1531,7 @@ class IssueClient:
         repo : str
             name of the repo
 
-        index : str
+        index : int
             index of the issue
 
         page : typing.Optional[int]
@@ -1484,19 +1558,21 @@ class IssueClient:
         client.issue.list_blocks(
             owner="owner",
             repo="repo",
-            index="index",
+            index=1000000,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_blocks(
+        _response = self._raw_client.list_blocks(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_issue_blocking(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -1512,7 +1588,7 @@ class IssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -1539,10 +1615,10 @@ class IssueClient:
         client.issue.create_issue_blocking(
             owner_="owner",
             repo_="repo",
-            index_="index",
+            index_=1000000,
         )
         """
-        response = self._raw_client.create_issue_blocking(
+        _response = self._raw_client.create_issue_blocking(
             owner_,
             repo_,
             index_,
@@ -1551,13 +1627,13 @@ class IssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def remove_issue_blocking(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -1573,7 +1649,7 @@ class IssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -1600,10 +1676,10 @@ class IssueClient:
         client.issue.remove_issue_blocking(
             owner_="owner",
             repo_="repo",
-            index_="index",
+            index_=1000000,
         )
         """
-        response = self._raw_client.remove_issue_blocking(
+        _response = self._raw_client.remove_issue_blocking(
             owner_,
             repo_,
             index_,
@@ -1612,7 +1688,7 @@ class IssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_comments(
         self,
@@ -1652,6 +1728,8 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -1661,9 +1739,15 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
         )
         """
-        response = self._raw_client.get_comments(
+        _response = self._raw_client.get_comments(
             owner,
             repo,
             index,
@@ -1671,7 +1755,7 @@ class IssueClient:
             before=before,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def create_comment(
         self,
@@ -1721,7 +1805,7 @@ class IssueClient:
             body="body",
         )
         """
-        response = self._raw_client.create_comment(
+        _response = self._raw_client.create_comment(
             owner,
             repo,
             index,
@@ -1729,7 +1813,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def delete_comment_deprecated(
         self,
@@ -1776,10 +1860,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_comment_deprecated(
+        _response = self._raw_client.delete_comment_deprecated(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def edit_comment_deprecated(
         self,
@@ -1834,7 +1918,7 @@ class IssueClient:
             body="body",
         )
         """
-        response = self._raw_client.edit_comment_deprecated(
+        _response = self._raw_client.edit_comment_deprecated(
             owner,
             repo,
             index,
@@ -1843,7 +1927,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def edit_issue_deadline(
         self,
@@ -1894,16 +1978,16 @@ class IssueClient:
             ),
         )
         """
-        response = self._raw_client.edit_issue_deadline(
+        _response = self._raw_client.edit_issue_deadline(
             owner, repo, index, due_date=due_date, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_issue_dependencies(
         self,
         owner: str,
         repo: str,
-        index: str,
+        index: int,
         *,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
@@ -1918,7 +2002,7 @@ class IssueClient:
         repo : str
             name of the repo
 
-        index : str
+        index : int
             index of the issue
 
         page : typing.Optional[int]
@@ -1945,19 +2029,21 @@ class IssueClient:
         client.issue.list_issue_dependencies(
             owner="owner",
             repo="repo",
-            index="index",
+            index=1000000,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_issue_dependencies(
+        _response = self._raw_client.list_issue_dependencies(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_issue_dependencies(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -1973,7 +2059,7 @@ class IssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -2000,10 +2086,10 @@ class IssueClient:
         client.issue.create_issue_dependencies(
             owner_="owner",
             repo_="repo",
-            index_="index",
+            index_=1000000,
         )
         """
-        response = self._raw_client.create_issue_dependencies(
+        _response = self._raw_client.create_issue_dependencies(
             owner_,
             repo_,
             index_,
@@ -2012,13 +2098,13 @@ class IssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def remove_issue_dependencies(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -2034,7 +2120,7 @@ class IssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -2061,10 +2147,10 @@ class IssueClient:
         client.issue.remove_issue_dependencies(
             owner_="owner",
             repo_="repo",
-            index_="index",
+            index_=1000000,
         )
         """
-        response = self._raw_client.remove_issue_dependencies(
+        _response = self._raw_client.remove_issue_dependencies(
             owner_,
             repo_,
             index_,
@@ -2073,7 +2159,7 @@ class IssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_labels(
         self,
@@ -2116,10 +2202,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.get_labels(
+        _response = self._raw_client.get_labels(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def add_label(
         self,
@@ -2172,7 +2258,7 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.add_label(
+        _response = self._raw_client.add_label(
             owner,
             repo,
             index,
@@ -2180,7 +2266,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def replace_labels(
         self,
@@ -2233,7 +2319,7 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.replace_labels(
+        _response = self._raw_client.replace_labels(
             owner,
             repo,
             index,
@@ -2241,7 +2327,7 @@ class IssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def clear_labels(
         self,
@@ -2286,17 +2372,17 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.clear_labels(
+        _response = self._raw_client.clear_labels(
             owner, repo, index, updated_at=updated_at, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def remove_label(
         self,
         owner: str,
         repo: str,
         index: int,
-        id: int,
+        identifier: str,
         *,
         updated_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2313,8 +2399,8 @@ class IssueClient:
         index : int
             index of the issue
 
-        id : int
-            id of the label to remove
+        identifier : str
+            name or id of the label to remove
 
         updated_at : typing.Optional[dt.datetime]
 
@@ -2336,18 +2422,18 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            id=1000000,
+            identifier="identifier",
         )
         """
-        response = self._raw_client.remove_label(
+        _response = self._raw_client.remove_label(
             owner,
             repo,
             index,
-            id,
+            identifier,
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def pin_issue(
         self,
@@ -2389,10 +2475,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.pin_issue(
+        _response = self._raw_client.pin_issue(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def unpin_issue(
         self,
@@ -2434,10 +2520,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.unpin_issue(
+        _response = self._raw_client.unpin_issue(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def move_issue_pin(
         self,
@@ -2484,10 +2570,10 @@ class IssueClient:
             position=1000000,
         )
         """
-        response = self._raw_client.move_issue_pin(
+        _response = self._raw_client.move_issue_pin(
             owner, repo, index, position, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_issue_reactions(
         self,
@@ -2536,12 +2622,14 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.get_issue_reactions(
+        _response = self._raw_client.get_issue_reactions(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def post_issue_reaction(
         self,
@@ -2587,10 +2675,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.post_issue_reaction(
+        _response = self._raw_client.post_issue_reaction(
             owner, repo, index, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_issue_reaction(
         self,
@@ -2635,10 +2723,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.delete_issue_reaction(
+        _response = self._raw_client.delete_issue_reaction(
             owner, repo, index, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_stop_watch(
         self,
@@ -2680,10 +2768,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.delete_stop_watch(
+        _response = self._raw_client.delete_stop_watch(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def start_stop_watch(
         self,
@@ -2725,10 +2813,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.start_stop_watch(
+        _response = self._raw_client.start_stop_watch(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def stop_stop_watch(
         self,
@@ -2770,10 +2858,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.stop_stop_watch(
+        _response = self._raw_client.stop_stop_watch(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def subscriptions(
         self,
@@ -2822,12 +2910,14 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.subscriptions(
+        _response = self._raw_client.subscriptions(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def check_subscription(
         self,
@@ -2870,10 +2960,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.check_subscription(
+        _response = self._raw_client.check_subscription(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def add_subscription(
         self,
@@ -2920,10 +3010,10 @@ class IssueClient:
             user="user",
         )
         """
-        response = self._raw_client.add_subscription(
+        _response = self._raw_client.add_subscription(
             owner, repo, index, user, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_subscription(
         self,
@@ -2970,10 +3060,10 @@ class IssueClient:
             user="user",
         )
         """
-        response = self._raw_client.delete_subscription(
+        _response = self._raw_client.delete_subscription(
             owner, repo, index, user, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_comments_and_timeline(
         self,
@@ -3021,6 +3111,8 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -3030,9 +3122,17 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            page=1,
+            limit=1,
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
         )
         """
-        response = self._raw_client.get_comments_and_timeline(
+        _response = self._raw_client.get_comments_and_timeline(
             owner,
             repo,
             index,
@@ -3042,7 +3142,7 @@ class IssueClient:
             before=before,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def tracked_times(
         self,
@@ -3094,6 +3194,8 @@ class IssueClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -3103,9 +3205,18 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
+            user="user",
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.tracked_times(
+        _response = self._raw_client.tracked_times(
             owner,
             repo,
             index,
@@ -3116,7 +3227,7 @@ class IssueClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def add_time(
         self,
@@ -3171,7 +3282,7 @@ class IssueClient:
             time=1000000,
         )
         """
-        response = self._raw_client.add_time(
+        _response = self._raw_client.add_time(
             owner,
             repo,
             index,
@@ -3180,7 +3291,7 @@ class IssueClient:
             user_name=user_name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def reset_time(
         self,
@@ -3222,10 +3333,10 @@ class IssueClient:
             index=1000000,
         )
         """
-        response = self._raw_client.reset_time(
+        _response = self._raw_client.reset_time(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_time(
         self,
@@ -3272,16 +3383,17 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_time(
+        _response = self._raw_client.delete_time(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_labels(
         self,
         owner: str,
         repo: str,
         *,
+        sort: typing.Optional[IssueListLabelsRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -3294,6 +3406,9 @@ class IssueClient:
 
         repo : str
             name of the repo
+
+        sort : typing.Optional[IssueListLabelsRequestSort]
+            Specifies the sorting method: mostissues, leastissues, or reversealphabetically.
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -3319,12 +3434,20 @@ class IssueClient:
         client.issue.list_labels(
             owner="owner",
             repo="repo",
+            sort="mostissues",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_labels(
-            owner, repo, page=page, limit=limit, request_options=request_options
+        _response = self._raw_client.list_labels(
+            owner,
+            repo,
+            sort=sort,
+            page=page,
+            limit=limit,
+            request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def create_label(
         self,
@@ -3379,7 +3502,7 @@ class IssueClient:
             name="name",
         )
         """
-        response = self._raw_client.create_label(
+        _response = self._raw_client.create_label(
             owner,
             repo,
             color=color,
@@ -3389,7 +3512,7 @@ class IssueClient:
             is_archived=is_archived,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_label(
         self,
@@ -3432,10 +3555,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.get_label(
+        _response = self._raw_client.get_label(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_label(
         self,
@@ -3477,10 +3600,10 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_label(
+        _response = self._raw_client.delete_label(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def edit_label(
         self,
@@ -3538,7 +3661,7 @@ class IssueClient:
             id=1000000,
         )
         """
-        response = self._raw_client.edit_label(
+        _response = self._raw_client.edit_label(
             owner,
             repo,
             id,
@@ -3549,7 +3672,7 @@ class IssueClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_milestones_list(
         self,
@@ -3601,9 +3724,13 @@ class IssueClient:
         client.issue.get_milestones_list(
             owner="owner",
             repo="repo",
+            state="state",
+            name="name",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.get_milestones_list(
+        _response = self._raw_client.get_milestones_list(
             owner,
             repo,
             state=state,
@@ -3612,7 +3739,7 @@ class IssueClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def create_milestone(
         self,
@@ -3662,7 +3789,7 @@ class IssueClient:
             repo="repo",
         )
         """
-        response = self._raw_client.create_milestone(
+        _response = self._raw_client.create_milestone(
             owner,
             repo,
             description=description,
@@ -3671,13 +3798,13 @@ class IssueClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_milestone(
         self,
         owner: str,
         repo: str,
-        id: str,
+        id: int,
         *,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Milestone:
@@ -3690,7 +3817,7 @@ class IssueClient:
         repo : str
             name of the repo
 
-        id : str
+        id : int
             the milestone to get, identified by ID and if not available by name
 
         request_options : typing.Optional[RequestOptions]
@@ -3711,19 +3838,19 @@ class IssueClient:
         client.issue.get_milestone(
             owner="owner",
             repo="repo",
-            id="id",
+            id=1000000,
         )
         """
-        response = self._raw_client.get_milestone(
+        _response = self._raw_client.get_milestone(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_milestone(
         self,
         owner: str,
         repo: str,
-        id: str,
+        id: int,
         *,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
@@ -3736,7 +3863,7 @@ class IssueClient:
         repo : str
             name of the repo
 
-        id : str
+        id : int
             the milestone to delete, identified by ID and if not available by name
 
         request_options : typing.Optional[RequestOptions]
@@ -3756,19 +3883,19 @@ class IssueClient:
         client.issue.delete_milestone(
             owner="owner",
             repo="repo",
-            id="id",
+            id=1000000,
         )
         """
-        response = self._raw_client.delete_milestone(
+        _response = self._raw_client.delete_milestone(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def edit_milestone(
         self,
         owner: str,
         repo: str,
-        id: str,
+        id: int,
         *,
         description: typing.Optional[str] = OMIT,
         due_on: typing.Optional[dt.datetime] = OMIT,
@@ -3785,7 +3912,7 @@ class IssueClient:
         repo : str
             name of the repo
 
-        id : str
+        id : int
             the milestone to edit, identified by ID and if not available by name
 
         description : typing.Optional[str]
@@ -3814,10 +3941,10 @@ class IssueClient:
         client.issue.edit_milestone(
             owner="owner",
             repo="repo",
-            id="id",
+            id=1000000,
         )
         """
-        response = self._raw_client.edit_milestone(
+        _response = self._raw_client.edit_milestone(
             owner,
             repo,
             id,
@@ -3827,7 +3954,7 @@ class IssueClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
 
 class AsyncIssueClient:
@@ -3865,6 +3992,7 @@ class AsyncIssueClient:
         team: typing.Optional[str] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
+        sort: typing.Optional[IssueSearchIssuesRequestSort] = None,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[Issue]:
         """
@@ -3921,6 +4049,9 @@ class AsyncIssueClient:
         limit : typing.Optional[int]
             Number of items per page
 
+        sort : typing.Optional[IssueSearchIssuesRequestSort]
+            Type of sort
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -3932,6 +4063,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -3941,12 +4073,35 @@ class AsyncIssueClient:
 
 
         async def main() -> None:
-            await client.issue.search_issues()
+            await client.issue.search_issues(
+                state="open",
+                labels="labels",
+                milestones="milestones",
+                q="q",
+                priority_repo_id=1000000,
+                type="issues",
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                assigned=True,
+                created=True,
+                mentioned=True,
+                review_requested=True,
+                reviewed=True,
+                owner="owner",
+                team="team",
+                page=1,
+                limit=1,
+                sort="relevance",
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.search_issues(
+        _response = await self._raw_client.search_issues(
             state=state,
             labels=labels,
             milestones=milestones,
@@ -3964,9 +4119,10 @@ class AsyncIssueClient:
             team=team,
             page=page,
             limit=limit,
+            sort=sort,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def list_issues(
         self,
@@ -4047,6 +4203,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -4059,12 +4216,29 @@ class AsyncIssueClient:
             await client.issue.list_issues(
                 owner="owner",
                 repo="repo",
+                state="closed",
+                labels="labels",
+                q="q",
+                type="issues",
+                milestones="milestones",
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                created_by="created_by",
+                assigned_by="assigned_by",
+                mentioned_by="mentioned_by",
+                page=1,
+                limit=1,
+                sort="relevance",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_issues(
+        _response = await self._raw_client.list_issues(
             owner,
             repo,
             state=state,
@@ -4082,7 +4256,7 @@ class AsyncIssueClient:
             sort=sort,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def create_issue(
         self,
@@ -4159,7 +4333,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_issue(
+        _response = await self._raw_client.create_issue(
             owner,
             repo,
             title=title,
@@ -4173,7 +4347,7 @@ class AsyncIssueClient:
             ref=ref,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_repo_comments(
         self,
@@ -4218,6 +4392,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -4230,12 +4405,20 @@ class AsyncIssueClient:
             await client.issue.get_repo_comments(
                 owner="owner",
                 repo="repo",
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_repo_comments(
+        _response = await self._raw_client.get_repo_comments(
             owner,
             repo,
             since=since,
@@ -4244,7 +4427,7 @@ class AsyncIssueClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_comment(
         self,
@@ -4295,10 +4478,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_comment(
+        _response = await self._raw_client.get_comment(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_comment(
         self,
@@ -4348,10 +4531,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_comment(
+        _response = await self._raw_client.delete_comment(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_comment(
         self,
@@ -4409,7 +4592,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_comment(
+        _response = await self._raw_client.edit_comment(
             owner,
             repo,
             id,
@@ -4417,7 +4600,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def list_issue_comment_attachments(
         self,
@@ -4468,10 +4651,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_issue_comment_attachments(
+        _response = await self._raw_client.list_issue_comment_attachments(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_issue_comment_attachment(
         self,
@@ -4516,6 +4699,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -4529,12 +4713,16 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 id=1000000,
+                name="name",
+                updated_at=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_issue_comment_attachment(
+        _response = await self._raw_client.create_issue_comment_attachment(
             owner,
             repo,
             id,
@@ -4543,7 +4731,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_issue_comment_attachment(
         self,
@@ -4599,10 +4787,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_issue_comment_attachment(
+        _response = await self._raw_client.get_issue_comment_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_issue_comment_attachment(
         self,
@@ -4657,10 +4845,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_issue_comment_attachment(
+        _response = await self._raw_client.delete_issue_comment_attachment(
             owner, repo, id, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_issue_comment_attachment(
         self,
@@ -4723,7 +4911,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_issue_comment_attachment(
+        _response = await self._raw_client.edit_issue_comment_attachment(
             owner,
             repo,
             id,
@@ -4732,7 +4920,7 @@ class AsyncIssueClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_comment_reactions(
         self,
@@ -4783,10 +4971,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_comment_reactions(
+        _response = await self._raw_client.get_comment_reactions(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def post_comment_reaction(
         self,
@@ -4840,10 +5028,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.post_comment_reaction(
+        _response = await self._raw_client.post_comment_reaction(
             owner, repo, id, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_comment_reaction(
         self,
@@ -4896,10 +5084,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_comment_reaction(
+        _response = await self._raw_client.delete_comment_reaction(
             owner, repo, id, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_issue(
         self,
@@ -4950,10 +5138,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_issue(
+        _response = await self._raw_client.get_issue(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete(
         self,
@@ -5003,10 +5191,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete(
+        _response = await self._raw_client.delete(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_issue(
         self,
@@ -5088,7 +5276,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_issue(
+        _response = await self._raw_client.edit_issue(
             owner,
             repo,
             index,
@@ -5104,7 +5292,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def list_issue_attachments(
         self,
@@ -5155,10 +5343,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_issue_attachments(
+        _response = await self._raw_client.list_issue_attachments(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_issue_attachment(
         self,
@@ -5203,6 +5391,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -5216,12 +5405,16 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                name="name",
+                updated_at=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_issue_attachment(
+        _response = await self._raw_client.create_issue_attachment(
             owner,
             repo,
             index,
@@ -5230,7 +5423,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_issue_attachment(
         self,
@@ -5286,10 +5479,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_issue_attachment(
+        _response = await self._raw_client.get_issue_attachment(
             owner, repo, index, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_issue_attachment(
         self,
@@ -5344,10 +5537,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_issue_attachment(
+        _response = await self._raw_client.delete_issue_attachment(
             owner, repo, index, attachment_id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_issue_attachment(
         self,
@@ -5410,7 +5603,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_issue_attachment(
+        _response = await self._raw_client.edit_issue_attachment(
             owner,
             repo,
             index,
@@ -5419,13 +5612,13 @@ class AsyncIssueClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def list_blocks(
         self,
         owner: str,
         repo: str,
-        index: str,
+        index: int,
         *,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
@@ -5440,7 +5633,7 @@ class AsyncIssueClient:
         repo : str
             name of the repo
 
-        index : str
+        index : int
             index of the issue
 
         page : typing.Optional[int]
@@ -5472,22 +5665,24 @@ class AsyncIssueClient:
             await client.issue.list_blocks(
                 owner="owner",
                 repo="repo",
-                index="index",
+                index=1000000,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_blocks(
+        _response = await self._raw_client.list_blocks(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_issue_blocking(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -5503,7 +5698,7 @@ class AsyncIssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -5535,13 +5730,13 @@ class AsyncIssueClient:
             await client.issue.create_issue_blocking(
                 owner_="owner",
                 repo_="repo",
-                index_="index",
+                index_=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_issue_blocking(
+        _response = await self._raw_client.create_issue_blocking(
             owner_,
             repo_,
             index_,
@@ -5550,13 +5745,13 @@ class AsyncIssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def remove_issue_blocking(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -5572,7 +5767,7 @@ class AsyncIssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -5604,13 +5799,13 @@ class AsyncIssueClient:
             await client.issue.remove_issue_blocking(
                 owner_="owner",
                 repo_="repo",
-                index_="index",
+                index_=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.remove_issue_blocking(
+        _response = await self._raw_client.remove_issue_blocking(
             owner_,
             repo_,
             index_,
@@ -5619,7 +5814,7 @@ class AsyncIssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_comments(
         self,
@@ -5660,6 +5855,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -5673,12 +5869,18 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_comments(
+        _response = await self._raw_client.get_comments(
             owner,
             repo,
             index,
@@ -5686,7 +5888,7 @@ class AsyncIssueClient:
             before=before,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def create_comment(
         self,
@@ -5744,7 +5946,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_comment(
+        _response = await self._raw_client.create_comment(
             owner,
             repo,
             index,
@@ -5752,7 +5954,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def delete_comment_deprecated(
         self,
@@ -5807,10 +6009,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_comment_deprecated(
+        _response = await self._raw_client.delete_comment_deprecated(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_comment_deprecated(
         self,
@@ -5873,7 +6075,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_comment_deprecated(
+        _response = await self._raw_client.edit_comment_deprecated(
             owner,
             repo,
             index,
@@ -5882,7 +6084,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def edit_issue_deadline(
         self,
@@ -5940,16 +6142,16 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_issue_deadline(
+        _response = await self._raw_client.edit_issue_deadline(
             owner, repo, index, due_date=due_date, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_issue_dependencies(
         self,
         owner: str,
         repo: str,
-        index: str,
+        index: int,
         *,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
@@ -5964,7 +6166,7 @@ class AsyncIssueClient:
         repo : str
             name of the repo
 
-        index : str
+        index : int
             index of the issue
 
         page : typing.Optional[int]
@@ -5996,22 +6198,24 @@ class AsyncIssueClient:
             await client.issue.list_issue_dependencies(
                 owner="owner",
                 repo="repo",
-                index="index",
+                index=1000000,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_issue_dependencies(
+        _response = await self._raw_client.list_issue_dependencies(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_issue_dependencies(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -6027,7 +6231,7 @@ class AsyncIssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -6059,13 +6263,13 @@ class AsyncIssueClient:
             await client.issue.create_issue_dependencies(
                 owner_="owner",
                 repo_="repo",
-                index_="index",
+                index_=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_issue_dependencies(
+        _response = await self._raw_client.create_issue_dependencies(
             owner_,
             repo_,
             index_,
@@ -6074,13 +6278,13 @@ class AsyncIssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def remove_issue_dependencies(
         self,
         owner_: str,
         repo_: str,
-        index_: str,
+        index_: int,
         *,
         index: typing.Optional[int] = OMIT,
         owner: typing.Optional[str] = OMIT,
@@ -6096,7 +6300,7 @@ class AsyncIssueClient:
         repo_ : str
             name of the repo
 
-        index_ : str
+        index_ : int
             index of the issue
 
         index : typing.Optional[int]
@@ -6128,13 +6332,13 @@ class AsyncIssueClient:
             await client.issue.remove_issue_dependencies(
                 owner_="owner",
                 repo_="repo",
-                index_="index",
+                index_=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.remove_issue_dependencies(
+        _response = await self._raw_client.remove_issue_dependencies(
             owner_,
             repo_,
             index_,
@@ -6143,7 +6347,7 @@ class AsyncIssueClient:
             repo=repo,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_labels(
         self,
@@ -6194,10 +6398,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_labels(
+        _response = await self._raw_client.get_labels(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def add_label(
         self,
@@ -6258,7 +6462,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.add_label(
+        _response = await self._raw_client.add_label(
             owner,
             repo,
             index,
@@ -6266,7 +6470,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def replace_labels(
         self,
@@ -6327,7 +6531,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.replace_labels(
+        _response = await self._raw_client.replace_labels(
             owner,
             repo,
             index,
@@ -6335,7 +6539,7 @@ class AsyncIssueClient:
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def clear_labels(
         self,
@@ -6388,17 +6592,17 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.clear_labels(
+        _response = await self._raw_client.clear_labels(
             owner, repo, index, updated_at=updated_at, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def remove_label(
         self,
         owner: str,
         repo: str,
         index: int,
-        id: int,
+        identifier: str,
         *,
         updated_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6415,8 +6619,8 @@ class AsyncIssueClient:
         index : int
             index of the issue
 
-        id : int
-            id of the label to remove
+        identifier : str
+            name or id of the label to remove
 
         updated_at : typing.Optional[dt.datetime]
 
@@ -6443,21 +6647,21 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                id=1000000,
+                identifier="identifier",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.remove_label(
+        _response = await self._raw_client.remove_label(
             owner,
             repo,
             index,
-            id,
+            identifier,
             updated_at=updated_at,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def pin_issue(
         self,
@@ -6507,10 +6711,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.pin_issue(
+        _response = await self._raw_client.pin_issue(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def unpin_issue(
         self,
@@ -6560,10 +6764,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.unpin_issue(
+        _response = await self._raw_client.unpin_issue(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def move_issue_pin(
         self,
@@ -6618,10 +6822,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.move_issue_pin(
+        _response = await self._raw_client.move_issue_pin(
             owner, repo, index, position, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_issue_reactions(
         self,
@@ -6675,15 +6879,17 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_issue_reactions(
+        _response = await self._raw_client.get_issue_reactions(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def post_issue_reaction(
         self,
@@ -6737,10 +6943,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.post_issue_reaction(
+        _response = await self._raw_client.post_issue_reaction(
             owner, repo, index, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_issue_reaction(
         self,
@@ -6793,10 +6999,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_issue_reaction(
+        _response = await self._raw_client.delete_issue_reaction(
             owner, repo, index, content=content, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_stop_watch(
         self,
@@ -6846,10 +7052,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_stop_watch(
+        _response = await self._raw_client.delete_stop_watch(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def start_stop_watch(
         self,
@@ -6899,10 +7105,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.start_stop_watch(
+        _response = await self._raw_client.start_stop_watch(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def stop_stop_watch(
         self,
@@ -6952,10 +7158,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.stop_stop_watch(
+        _response = await self._raw_client.stop_stop_watch(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def subscriptions(
         self,
@@ -7009,15 +7215,17 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.subscriptions(
+        _response = await self._raw_client.subscriptions(
             owner, repo, index, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def check_subscription(
         self,
@@ -7068,10 +7276,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.check_subscription(
+        _response = await self._raw_client.check_subscription(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def add_subscription(
         self,
@@ -7126,10 +7334,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.add_subscription(
+        _response = await self._raw_client.add_subscription(
             owner, repo, index, user, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_subscription(
         self,
@@ -7184,10 +7392,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_subscription(
+        _response = await self._raw_client.delete_subscription(
             owner, repo, index, user, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_comments_and_timeline(
         self,
@@ -7236,6 +7444,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -7249,12 +7458,20 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                page=1,
+                limit=1,
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_comments_and_timeline(
+        _response = await self._raw_client.get_comments_and_timeline(
             owner,
             repo,
             index,
@@ -7264,7 +7481,7 @@ class AsyncIssueClient:
             before=before,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def tracked_times(
         self,
@@ -7317,6 +7534,7 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -7330,12 +7548,21 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
+                user="user",
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.tracked_times(
+        _response = await self._raw_client.tracked_times(
             owner,
             repo,
             index,
@@ -7346,7 +7573,7 @@ class AsyncIssueClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def add_time(
         self,
@@ -7409,7 +7636,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.add_time(
+        _response = await self._raw_client.add_time(
             owner,
             repo,
             index,
@@ -7418,7 +7645,7 @@ class AsyncIssueClient:
             user_name=user_name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def reset_time(
         self,
@@ -7468,10 +7695,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.reset_time(
+        _response = await self._raw_client.reset_time(
             owner, repo, index, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_time(
         self,
@@ -7526,16 +7753,17 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_time(
+        _response = await self._raw_client.delete_time(
             owner, repo, index, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_labels(
         self,
         owner: str,
         repo: str,
         *,
+        sort: typing.Optional[IssueListLabelsRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -7548,6 +7776,9 @@ class AsyncIssueClient:
 
         repo : str
             name of the repo
+
+        sort : typing.Optional[IssueListLabelsRequestSort]
+            Specifies the sorting method: mostissues, leastissues, or reversealphabetically.
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -7578,15 +7809,23 @@ class AsyncIssueClient:
             await client.issue.list_labels(
                 owner="owner",
                 repo="repo",
+                sort="mostissues",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_labels(
-            owner, repo, page=page, limit=limit, request_options=request_options
+        _response = await self._raw_client.list_labels(
+            owner,
+            repo,
+            sort=sort,
+            page=page,
+            limit=limit,
+            request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def create_label(
         self,
@@ -7649,7 +7888,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_label(
+        _response = await self._raw_client.create_label(
             owner,
             repo,
             color=color,
@@ -7659,7 +7898,7 @@ class AsyncIssueClient:
             is_archived=is_archived,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_label(
         self,
@@ -7710,10 +7949,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_label(
+        _response = await self._raw_client.get_label(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_label(
         self,
@@ -7763,10 +8002,10 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_label(
+        _response = await self._raw_client.delete_label(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_label(
         self,
@@ -7832,7 +8071,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_label(
+        _response = await self._raw_client.edit_label(
             owner,
             repo,
             id,
@@ -7843,7 +8082,7 @@ class AsyncIssueClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_milestones_list(
         self,
@@ -7900,12 +8139,16 @@ class AsyncIssueClient:
             await client.issue.get_milestones_list(
                 owner="owner",
                 repo="repo",
+                state="state",
+                name="name",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_milestones_list(
+        _response = await self._raw_client.get_milestones_list(
             owner,
             repo,
             state=state,
@@ -7914,7 +8157,7 @@ class AsyncIssueClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def create_milestone(
         self,
@@ -7972,7 +8215,7 @@ class AsyncIssueClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_milestone(
+        _response = await self._raw_client.create_milestone(
             owner,
             repo,
             description=description,
@@ -7981,13 +8224,13 @@ class AsyncIssueClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_milestone(
         self,
         owner: str,
         repo: str,
-        id: str,
+        id: int,
         *,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> Milestone:
@@ -8000,7 +8243,7 @@ class AsyncIssueClient:
         repo : str
             name of the repo
 
-        id : str
+        id : int
             the milestone to get, identified by ID and if not available by name
 
         request_options : typing.Optional[RequestOptions]
@@ -8026,22 +8269,22 @@ class AsyncIssueClient:
             await client.issue.get_milestone(
                 owner="owner",
                 repo="repo",
-                id="id",
+                id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_milestone(
+        _response = await self._raw_client.get_milestone(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_milestone(
         self,
         owner: str,
         repo: str,
-        id: str,
+        id: int,
         *,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
@@ -8054,7 +8297,7 @@ class AsyncIssueClient:
         repo : str
             name of the repo
 
-        id : str
+        id : int
             the milestone to delete, identified by ID and if not available by name
 
         request_options : typing.Optional[RequestOptions]
@@ -8079,22 +8322,22 @@ class AsyncIssueClient:
             await client.issue.delete_milestone(
                 owner="owner",
                 repo="repo",
-                id="id",
+                id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_milestone(
+        _response = await self._raw_client.delete_milestone(
             owner, repo, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_milestone(
         self,
         owner: str,
         repo: str,
-        id: str,
+        id: int,
         *,
         description: typing.Optional[str] = OMIT,
         due_on: typing.Optional[dt.datetime] = OMIT,
@@ -8111,7 +8354,7 @@ class AsyncIssueClient:
         repo : str
             name of the repo
 
-        id : str
+        id : int
             the milestone to edit, identified by ID and if not available by name
 
         description : typing.Optional[str]
@@ -8145,13 +8388,13 @@ class AsyncIssueClient:
             await client.issue.edit_milestone(
                 owner="owner",
                 repo="repo",
-                id="id",
+                id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_milestone(
+        _response = await self._raw_client.edit_milestone(
             owner,
             repo,
             id,
@@ -8161,4 +8404,4 @@ class AsyncIssueClient:
             title=title,
             request_options=request_options,
         )
-        return response.data
+        return _response.data

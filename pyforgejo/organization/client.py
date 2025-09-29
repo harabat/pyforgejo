@@ -22,6 +22,7 @@ from ..types.quota_info import QuotaInfo
 from ..types.quota_used_artifact_list import QuotaUsedArtifactList
 from ..types.quota_used_attachment_list import QuotaUsedAttachmentList
 from ..types.quota_used_package_list import QuotaUsedPackageList
+from ..types.registration_token import RegistrationToken
 from ..types.repository import Repository
 from ..types.secret import Secret
 from ..types.team import Team
@@ -30,7 +31,8 @@ from .raw_client import AsyncRawOrganizationClient, RawOrganizationClient
 from .types.create_team_option_permission import CreateTeamOptionPermission
 from .types.edit_org_option_visibility import EditOrgOptionVisibility
 from .types.edit_team_option_permission import EditTeamOptionPermission
-from .types.team_search_response import TeamSearchResponse
+from .types.org_list_labels_request_sort import OrgListLabelsRequestSort
+from .types.team_search_results import TeamSearchResults
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -131,7 +133,7 @@ class OrganizationClient:
             name="name",
         )
         """
-        response = self._raw_client.create_org_repo_deprecated(
+        _response = self._raw_client.create_org_repo_deprecated(
             org,
             name=name,
             auto_init=auto_init,
@@ -147,7 +149,7 @@ class OrganizationClient:
             trust_model=trust_model,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_get_all(
         self,
@@ -180,12 +182,15 @@ class OrganizationClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.organization.org_get_all()
+        client.organization.org_get_all(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.org_get_all(
+        _response = self._raw_client.org_get_all(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_create(
         self,
@@ -239,7 +244,7 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_create(
+        _response = self._raw_client.org_create(
             username=username,
             description=description,
             email=email,
@@ -250,7 +255,7 @@ class OrganizationClient:
             website=website,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_get(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -280,8 +285,8 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_get(org, request_options=request_options)
-        return response.data
+        _response = self._raw_client.org_get(org, request_options=request_options)
+        return _response.data
 
     def org_delete(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -310,8 +315,8 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_delete(org, request_options=request_options)
-        return response.data
+        _response = self._raw_client.org_delete(org, request_options=request_options)
+        return _response.data
 
     def org_edit(
         self,
@@ -366,7 +371,7 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_edit(
+        _response = self._raw_client.org_edit(
             org,
             description=description,
             email=email,
@@ -377,7 +382,7 @@ class OrganizationClient:
             website=website,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_search_run_jobs(
         self,
@@ -412,16 +417,17 @@ class OrganizationClient:
         )
         client.organization.org_search_run_jobs(
             org="org",
+            labels="labels",
         )
         """
-        response = self._raw_client.org_search_run_jobs(
+        _response = self._raw_client.org_search_run_jobs(
             org, labels=labels, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_get_runner_registration_token(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    ) -> RegistrationToken:
         """
         Parameters
         ----------
@@ -433,7 +439,8 @@ class OrganizationClient:
 
         Returns
         -------
-        None
+        RegistrationToken
+            RegistrationToken is a string used to register a runner with a server
 
         Examples
         --------
@@ -446,10 +453,10 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_get_runner_registration_token(
+        _response = self._raw_client.org_get_runner_registration_token(
             org, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_actions_secrets(
         self,
@@ -488,12 +495,14 @@ class OrganizationClient:
         )
         client.organization.org_list_actions_secrets(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_actions_secrets(
+        _response = self._raw_client.org_list_actions_secrets(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def update_org_secret(
         self,
@@ -535,10 +544,10 @@ class OrganizationClient:
             data="data",
         )
         """
-        response = self._raw_client.update_org_secret(
+        _response = self._raw_client.update_org_secret(
             org, secretname, data=data, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_org_secret(
         self,
@@ -575,10 +584,10 @@ class OrganizationClient:
             secretname="secretname",
         )
         """
-        response = self._raw_client.delete_org_secret(
+        _response = self._raw_client.delete_org_secret(
             org, secretname, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_org_variables_list(
         self,
@@ -617,12 +626,14 @@ class OrganizationClient:
         )
         client.organization.get_org_variables_list(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.get_org_variables_list(
+        _response = self._raw_client.get_org_variables_list(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_org_variable(
         self,
@@ -660,10 +671,10 @@ class OrganizationClient:
             variablename="variablename",
         )
         """
-        response = self._raw_client.get_org_variable(
+        _response = self._raw_client.get_org_variable(
             org, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_org_variable(
         self,
@@ -705,10 +716,10 @@ class OrganizationClient:
             value="value",
         )
         """
-        response = self._raw_client.create_org_variable(
+        _response = self._raw_client.create_org_variable(
             org, variablename, value=value, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def update_org_variable(
         self,
@@ -754,10 +765,10 @@ class OrganizationClient:
             value="value",
         )
         """
-        response = self._raw_client.update_org_variable(
+        _response = self._raw_client.update_org_variable(
             org, variablename, value=value, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_org_variable(
         self,
@@ -765,7 +776,7 @@ class OrganizationClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ActionVariable:
+    ) -> None:
         """
         Parameters
         ----------
@@ -780,8 +791,7 @@ class OrganizationClient:
 
         Returns
         -------
-        ActionVariable
-            ActionVariable
+        None
 
         Examples
         --------
@@ -795,10 +805,10 @@ class OrganizationClient:
             variablename="variablename",
         )
         """
-        response = self._raw_client.delete_org_variable(
+        _response = self._raw_client.delete_org_variable(
             org, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_activity_feeds(
         self,
@@ -841,12 +851,15 @@ class OrganizationClient:
         )
         client.organization.org_list_activity_feeds(
             org="org",
+            date="date",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_activity_feeds(
+        _response = self._raw_client.org_list_activity_feeds(
             org, date=date, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_update_avatar(
         self,
@@ -882,10 +895,10 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_update_avatar(
+        _response = self._raw_client.org_update_avatar(
             org, image=image, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_delete_avatar(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -914,10 +927,10 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_delete_avatar(
+        _response = self._raw_client.org_delete_avatar(
             org, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_block_user(
         self,
@@ -954,10 +967,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_block_user(
+        _response = self._raw_client.org_block_user(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_hooks(
         self,
@@ -996,12 +1009,14 @@ class OrganizationClient:
         )
         client.organization.org_list_hooks(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_hooks(
+        _response = self._raw_client.org_list_hooks(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_create_hook(
         self,
@@ -1054,7 +1069,7 @@ class OrganizationClient:
             type="forgejo",
         )
         """
-        response = self._raw_client.org_create_hook(
+        _response = self._raw_client.org_create_hook(
             org,
             config=config,
             type=type,
@@ -1064,7 +1079,7 @@ class OrganizationClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_get_hook(
         self,
@@ -1102,10 +1117,10 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_get_hook(
+        _response = self._raw_client.org_get_hook(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_delete_hook(
         self,
@@ -1142,10 +1157,10 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_delete_hook(
+        _response = self._raw_client.org_delete_hook(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_edit_hook(
         self,
@@ -1198,7 +1213,7 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_edit_hook(
+        _response = self._raw_client.org_edit_hook(
             org,
             id,
             active=active,
@@ -1208,12 +1223,13 @@ class OrganizationClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_list_labels(
         self,
         org: str,
         *,
+        sort: typing.Optional[OrgListLabelsRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -1223,6 +1239,9 @@ class OrganizationClient:
         ----------
         org : str
             name of the organization
+
+        sort : typing.Optional[OrgListLabelsRequestSort]
+            Specifies the sorting method: mostissues, leastissues, or reversealphabetically.
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -1247,12 +1266,15 @@ class OrganizationClient:
         )
         client.organization.org_list_labels(
             org="org",
+            sort="mostissues",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_labels(
-            org, page=page, limit=limit, request_options=request_options
+        _response = self._raw_client.org_list_labels(
+            org, sort=sort, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_create_label(
         self,
@@ -1302,7 +1324,7 @@ class OrganizationClient:
             name="name",
         )
         """
-        response = self._raw_client.org_create_label(
+        _response = self._raw_client.org_create_label(
             org,
             color=color,
             name=name,
@@ -1311,7 +1333,7 @@ class OrganizationClient:
             is_archived=is_archived,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_get_label(
         self,
@@ -1349,10 +1371,10 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_get_label(
+        _response = self._raw_client.org_get_label(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_delete_label(
         self,
@@ -1389,10 +1411,10 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_delete_label(
+        _response = self._raw_client.org_delete_label(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_edit_label(
         self,
@@ -1445,7 +1467,7 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_edit_label(
+        _response = self._raw_client.org_edit_label(
             org,
             id,
             color=color,
@@ -1455,7 +1477,7 @@ class OrganizationClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_list_blocked_users(
         self,
@@ -1494,12 +1516,14 @@ class OrganizationClient:
         )
         client.organization.org_list_blocked_users(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_blocked_users(
+        _response = self._raw_client.org_list_blocked_users(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_members(
         self,
@@ -1538,12 +1562,14 @@ class OrganizationClient:
         )
         client.organization.org_list_members(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_members(
+        _response = self._raw_client.org_list_members(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_is_member(
         self,
@@ -1580,10 +1606,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_is_member(
+        _response = self._raw_client.org_is_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_delete_member(
         self,
@@ -1620,10 +1646,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_delete_member(
+        _response = self._raw_client.org_delete_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_public_members(
         self,
@@ -1662,12 +1688,14 @@ class OrganizationClient:
         )
         client.organization.org_list_public_members(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_public_members(
+        _response = self._raw_client.org_list_public_members(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_is_public_member(
         self,
@@ -1704,10 +1732,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_is_public_member(
+        _response = self._raw_client.org_is_public_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_publicize_member(
         self,
@@ -1744,10 +1772,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_publicize_member(
+        _response = self._raw_client.org_publicize_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_conceal_member(
         self,
@@ -1784,10 +1812,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_conceal_member(
+        _response = self._raw_client.org_conceal_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_get_quota(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -1817,8 +1845,8 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_get_quota(org, request_options=request_options)
-        return response.data
+        _response = self._raw_client.org_get_quota(org, request_options=request_options)
+        return _response.data
 
     def org_list_quota_artifacts(
         self,
@@ -1857,12 +1885,14 @@ class OrganizationClient:
         )
         client.organization.org_list_quota_artifacts(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_quota_artifacts(
+        _response = self._raw_client.org_list_quota_artifacts(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_quota_attachments(
         self,
@@ -1901,28 +1931,38 @@ class OrganizationClient:
         )
         client.organization.org_list_quota_attachments(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_quota_attachments(
+        _response = self._raw_client.org_list_quota_attachments(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_check_quota(
-        self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+        self,
+        org: str,
+        *,
+        subject: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> bool:
         """
         Parameters
         ----------
         org : str
             name of the organization
 
+        subject : str
+            subject of the quota
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        None
+        bool
+            Returns true if the action is accepted.
 
         Examples
         --------
@@ -1933,12 +1973,13 @@ class OrganizationClient:
         )
         client.organization.org_check_quota(
             org="org",
+            subject="subject",
         )
         """
-        response = self._raw_client.org_check_quota(
-            org, request_options=request_options
+        _response = self._raw_client.org_check_quota(
+            org, subject=subject, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_quota_packages(
         self,
@@ -1977,12 +2018,14 @@ class OrganizationClient:
         )
         client.organization.org_list_quota_packages(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_quota_packages(
+        _response = self._raw_client.org_list_quota_packages(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def rename_org(
         self,
@@ -2019,10 +2062,10 @@ class OrganizationClient:
             new_name="new_name",
         )
         """
-        response = self._raw_client.rename_org(
+        _response = self._raw_client.rename_org(
             org, new_name=new_name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_repos(
         self,
@@ -2061,12 +2104,14 @@ class OrganizationClient:
         )
         client.organization.org_list_repos(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_repos(
+        _response = self._raw_client.org_list_repos(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_org_repo(
         self,
@@ -2148,7 +2193,7 @@ class OrganizationClient:
             name="name",
         )
         """
-        response = self._raw_client.create_org_repo(
+        _response = self._raw_client.create_org_repo(
             org,
             name=name,
             auto_init=auto_init,
@@ -2164,7 +2209,7 @@ class OrganizationClient:
             trust_model=trust_model,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_list_teams(
         self,
@@ -2203,12 +2248,14 @@ class OrganizationClient:
         )
         client.organization.org_list_teams(
             org="org",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_teams(
+        _response = self._raw_client.org_list_teams(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_create_team(
         self,
@@ -2263,7 +2310,7 @@ class OrganizationClient:
             name="name",
         )
         """
-        response = self._raw_client.org_create_team(
+        _response = self._raw_client.org_create_team(
             org,
             name=name,
             can_create_org_repo=can_create_org_repo,
@@ -2274,7 +2321,7 @@ class OrganizationClient:
             units_map=units_map,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def team_search(
         self,
@@ -2285,7 +2332,7 @@ class OrganizationClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> TeamSearchResponse:
+    ) -> TeamSearchResults:
         """
         Parameters
         ----------
@@ -2309,7 +2356,7 @@ class OrganizationClient:
 
         Returns
         -------
-        TeamSearchResponse
+        TeamSearchResults
             SearchResults of a successful search
 
         Examples
@@ -2321,9 +2368,13 @@ class OrganizationClient:
         )
         client.organization.team_search(
             org="org",
+            q="q",
+            include_desc=True,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.team_search(
+        _response = self._raw_client.team_search(
             org,
             q=q,
             include_desc=include_desc,
@@ -2331,7 +2382,7 @@ class OrganizationClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_unblock_user(
         self,
@@ -2368,10 +2419,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_unblock_user(
+        _response = self._raw_client.org_unblock_user(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_get_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -2401,8 +2452,8 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_get_team(id, request_options=request_options)
-        return response.data
+        _response = self._raw_client.org_get_team(id, request_options=request_options)
+        return _response.data
 
     def org_delete_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -2431,8 +2482,10 @@ class OrganizationClient:
             id=1000000,
         )
         """
-        response = self._raw_client.org_delete_team(id, request_options=request_options)
-        return response.data
+        _response = self._raw_client.org_delete_team(
+            id, request_options=request_options
+        )
+        return _response.data
 
     def org_edit_team(
         self,
@@ -2483,11 +2536,11 @@ class OrganizationClient:
             api_key="YOUR_API_KEY",
         )
         client.organization.org_edit_team(
-            id=1,
+            id=1000000,
             name="name",
         )
         """
-        response = self._raw_client.org_edit_team(
+        _response = self._raw_client.org_edit_team(
             id,
             name=name,
             can_create_org_repo=can_create_org_repo,
@@ -2498,7 +2551,7 @@ class OrganizationClient:
             units_map=units_map,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def org_list_team_activity_feeds(
         self,
@@ -2541,12 +2594,15 @@ class OrganizationClient:
         )
         client.organization.org_list_team_activity_feeds(
             id=1000000,
+            date="date",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_team_activity_feeds(
+        _response = self._raw_client.org_list_team_activity_feeds(
             id, date=date, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_team_members(
         self,
@@ -2585,12 +2641,14 @@ class OrganizationClient:
         )
         client.organization.org_list_team_members(
             id=1000000,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_team_members(
+        _response = self._raw_client.org_list_team_members(
             id, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_team_member(
         self,
@@ -2628,10 +2686,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_list_team_member(
+        _response = self._raw_client.org_list_team_member(
             id, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_add_team_member(
         self,
@@ -2668,10 +2726,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_add_team_member(
+        _response = self._raw_client.org_add_team_member(
             id, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_remove_team_member(
         self,
@@ -2708,10 +2766,10 @@ class OrganizationClient:
             username="username",
         )
         """
-        response = self._raw_client.org_remove_team_member(
+        _response = self._raw_client.org_remove_team_member(
             id, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_team_repos(
         self,
@@ -2750,12 +2808,14 @@ class OrganizationClient:
         )
         client.organization.org_list_team_repos(
             id=1000000,
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_team_repos(
+        _response = self._raw_client.org_list_team_repos(
             id, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_team_repo(
         self,
@@ -2798,10 +2858,10 @@ class OrganizationClient:
             repo="repo",
         )
         """
-        response = self._raw_client.org_list_team_repo(
+        _response = self._raw_client.org_list_team_repo(
             id, org, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_add_team_repository(
         self,
@@ -2843,10 +2903,10 @@ class OrganizationClient:
             repo="repo",
         )
         """
-        response = self._raw_client.org_add_team_repository(
+        _response = self._raw_client.org_add_team_repository(
             id, org, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_remove_team_repository(
         self,
@@ -2890,10 +2950,10 @@ class OrganizationClient:
             repo="repo",
         )
         """
-        response = self._raw_client.org_remove_team_repository(
+        _response = self._raw_client.org_remove_team_repository(
             id, org, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_current_user_orgs(
         self,
@@ -2926,12 +2986,15 @@ class OrganizationClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.organization.org_list_current_user_orgs()
+        client.organization.org_list_current_user_orgs(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.org_list_current_user_orgs(
+        _response = self._raw_client.org_list_current_user_orgs(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_list_user_orgs(
         self,
@@ -2970,12 +3033,14 @@ class OrganizationClient:
         )
         client.organization.org_list_user_orgs(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.org_list_user_orgs(
+        _response = self._raw_client.org_list_user_orgs(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def org_get_user_permissions(
         self,
@@ -3013,10 +3078,10 @@ class OrganizationClient:
             org="org",
         )
         """
-        response = self._raw_client.org_get_user_permissions(
+        _response = self._raw_client.org_get_user_permissions(
             username, org, request_options=request_options
         )
-        return response.data
+        return _response.data
 
 
 class AsyncOrganizationClient:
@@ -3122,7 +3187,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_org_repo_deprecated(
+        _response = await self._raw_client.create_org_repo_deprecated(
             org,
             name=name,
             auto_init=auto_init,
@@ -3138,7 +3203,7 @@ class AsyncOrganizationClient:
             trust_model=trust_model,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_get_all(
         self,
@@ -3176,15 +3241,18 @@ class AsyncOrganizationClient:
 
 
         async def main() -> None:
-            await client.organization.org_get_all()
+            await client.organization.org_get_all(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get_all(
+        _response = await self._raw_client.org_get_all(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_create(
         self,
@@ -3246,7 +3314,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_create(
+        _response = await self._raw_client.org_create(
             username=username,
             description=description,
             email=email,
@@ -3257,7 +3325,7 @@ class AsyncOrganizationClient:
             website=website,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_get(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3295,8 +3363,8 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get(org, request_options=request_options)
-        return response.data
+        _response = await self._raw_client.org_get(org, request_options=request_options)
+        return _response.data
 
     async def org_delete(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3333,10 +3401,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_delete(
+        _response = await self._raw_client.org_delete(
             org, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_edit(
         self,
@@ -3399,7 +3467,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_edit(
+        _response = await self._raw_client.org_edit(
             org,
             description=description,
             email=email,
@@ -3410,7 +3478,7 @@ class AsyncOrganizationClient:
             website=website,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_search_run_jobs(
         self,
@@ -3450,19 +3518,20 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_search_run_jobs(
                 org="org",
+                labels="labels",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_search_run_jobs(
+        _response = await self._raw_client.org_search_run_jobs(
             org, labels=labels, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_get_runner_registration_token(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    ) -> RegistrationToken:
         """
         Parameters
         ----------
@@ -3474,7 +3543,8 @@ class AsyncOrganizationClient:
 
         Returns
         -------
-        None
+        RegistrationToken
+            RegistrationToken is a string used to register a runner with a server
 
         Examples
         --------
@@ -3495,10 +3565,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get_runner_registration_token(
+        _response = await self._raw_client.org_get_runner_registration_token(
             org, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_actions_secrets(
         self,
@@ -3542,15 +3612,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_actions_secrets(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_actions_secrets(
+        _response = await self._raw_client.org_list_actions_secrets(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def update_org_secret(
         self,
@@ -3600,10 +3672,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_org_secret(
+        _response = await self._raw_client.update_org_secret(
             org, secretname, data=data, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_org_secret(
         self,
@@ -3648,10 +3720,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_org_secret(
+        _response = await self._raw_client.delete_org_secret(
             org, secretname, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_org_variables_list(
         self,
@@ -3695,15 +3767,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.get_org_variables_list(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_org_variables_list(
+        _response = await self._raw_client.get_org_variables_list(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_org_variable(
         self,
@@ -3749,10 +3823,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_org_variable(
+        _response = await self._raw_client.get_org_variable(
             org, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_org_variable(
         self,
@@ -3802,10 +3876,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_org_variable(
+        _response = await self._raw_client.create_org_variable(
             org, variablename, value=value, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def update_org_variable(
         self,
@@ -3859,10 +3933,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_org_variable(
+        _response = await self._raw_client.update_org_variable(
             org, variablename, value=value, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_org_variable(
         self,
@@ -3870,7 +3944,7 @@ class AsyncOrganizationClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ActionVariable:
+    ) -> None:
         """
         Parameters
         ----------
@@ -3885,8 +3959,7 @@ class AsyncOrganizationClient:
 
         Returns
         -------
-        ActionVariable
-            ActionVariable
+        None
 
         Examples
         --------
@@ -3908,10 +3981,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_org_variable(
+        _response = await self._raw_client.delete_org_variable(
             org, variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_activity_feeds(
         self,
@@ -3959,15 +4032,18 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_activity_feeds(
                 org="org",
+                date="date",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_activity_feeds(
+        _response = await self._raw_client.org_list_activity_feeds(
             org, date=date, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_update_avatar(
         self,
@@ -4011,10 +4087,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_update_avatar(
+        _response = await self._raw_client.org_update_avatar(
             org, image=image, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_delete_avatar(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -4051,10 +4127,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_delete_avatar(
+        _response = await self._raw_client.org_delete_avatar(
             org, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_block_user(
         self,
@@ -4099,10 +4175,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_block_user(
+        _response = await self._raw_client.org_block_user(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_hooks(
         self,
@@ -4146,15 +4222,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_hooks(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_hooks(
+        _response = await self._raw_client.org_list_hooks(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_create_hook(
         self,
@@ -4215,7 +4293,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_create_hook(
+        _response = await self._raw_client.org_create_hook(
             org,
             config=config,
             type=type,
@@ -4225,7 +4303,7 @@ class AsyncOrganizationClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_get_hook(
         self,
@@ -4271,10 +4349,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get_hook(
+        _response = await self._raw_client.org_get_hook(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_delete_hook(
         self,
@@ -4319,10 +4397,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_delete_hook(
+        _response = await self._raw_client.org_delete_hook(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_edit_hook(
         self,
@@ -4383,7 +4461,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_edit_hook(
+        _response = await self._raw_client.org_edit_hook(
             org,
             id,
             active=active,
@@ -4393,12 +4471,13 @@ class AsyncOrganizationClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_list_labels(
         self,
         org: str,
         *,
+        sort: typing.Optional[OrgListLabelsRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -4408,6 +4487,9 @@ class AsyncOrganizationClient:
         ----------
         org : str
             name of the organization
+
+        sort : typing.Optional[OrgListLabelsRequestSort]
+            Specifies the sorting method: mostissues, leastissues, or reversealphabetically.
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -4437,15 +4519,18 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_labels(
                 org="org",
+                sort="mostissues",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_labels(
-            org, page=page, limit=limit, request_options=request_options
+        _response = await self._raw_client.org_list_labels(
+            org, sort=sort, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_create_label(
         self,
@@ -4503,7 +4588,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_create_label(
+        _response = await self._raw_client.org_create_label(
             org,
             color=color,
             name=name,
@@ -4512,7 +4597,7 @@ class AsyncOrganizationClient:
             is_archived=is_archived,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_get_label(
         self,
@@ -4558,10 +4643,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get_label(
+        _response = await self._raw_client.org_get_label(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_delete_label(
         self,
@@ -4606,10 +4691,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_delete_label(
+        _response = await self._raw_client.org_delete_label(
             org, id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_edit_label(
         self,
@@ -4670,7 +4755,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_edit_label(
+        _response = await self._raw_client.org_edit_label(
             org,
             id,
             color=color,
@@ -4680,7 +4765,7 @@ class AsyncOrganizationClient:
             name=name,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_list_blocked_users(
         self,
@@ -4724,15 +4809,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_blocked_users(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_blocked_users(
+        _response = await self._raw_client.org_list_blocked_users(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_members(
         self,
@@ -4776,15 +4863,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_members(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_members(
+        _response = await self._raw_client.org_list_members(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_is_member(
         self,
@@ -4829,10 +4918,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_is_member(
+        _response = await self._raw_client.org_is_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_delete_member(
         self,
@@ -4877,10 +4966,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_delete_member(
+        _response = await self._raw_client.org_delete_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_public_members(
         self,
@@ -4924,15 +5013,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_public_members(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_public_members(
+        _response = await self._raw_client.org_list_public_members(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_is_public_member(
         self,
@@ -4977,10 +5068,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_is_public_member(
+        _response = await self._raw_client.org_is_public_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_publicize_member(
         self,
@@ -5025,10 +5116,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_publicize_member(
+        _response = await self._raw_client.org_publicize_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_conceal_member(
         self,
@@ -5073,10 +5164,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_conceal_member(
+        _response = await self._raw_client.org_conceal_member(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_get_quota(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5114,10 +5205,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get_quota(
+        _response = await self._raw_client.org_get_quota(
             org, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_quota_artifacts(
         self,
@@ -5161,15 +5252,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_quota_artifacts(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_quota_artifacts(
+        _response = await self._raw_client.org_list_quota_artifacts(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_quota_attachments(
         self,
@@ -5213,31 +5306,41 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_quota_attachments(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_quota_attachments(
+        _response = await self._raw_client.org_list_quota_attachments(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_check_quota(
-        self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+        self,
+        org: str,
+        *,
+        subject: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> bool:
         """
         Parameters
         ----------
         org : str
             name of the organization
 
+        subject : str
+            subject of the quota
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        None
+        bool
+            Returns true if the action is accepted.
 
         Examples
         --------
@@ -5253,15 +5356,16 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_check_quota(
                 org="org",
+                subject="subject",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_check_quota(
-            org, request_options=request_options
+        _response = await self._raw_client.org_check_quota(
+            org, subject=subject, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_quota_packages(
         self,
@@ -5305,15 +5409,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_quota_packages(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_quota_packages(
+        _response = await self._raw_client.org_list_quota_packages(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def rename_org(
         self,
@@ -5358,10 +5464,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.rename_org(
+        _response = await self._raw_client.rename_org(
             org, new_name=new_name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_repos(
         self,
@@ -5405,15 +5511,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_repos(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_repos(
+        _response = await self._raw_client.org_list_repos(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_org_repo(
         self,
@@ -5503,7 +5611,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_org_repo(
+        _response = await self._raw_client.create_org_repo(
             org,
             name=name,
             auto_init=auto_init,
@@ -5519,7 +5627,7 @@ class AsyncOrganizationClient:
             trust_model=trust_model,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_list_teams(
         self,
@@ -5563,15 +5671,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_teams(
                 org="org",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_teams(
+        _response = await self._raw_client.org_list_teams(
             org, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_create_team(
         self,
@@ -5634,7 +5744,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_create_team(
+        _response = await self._raw_client.org_create_team(
             org,
             name=name,
             can_create_org_repo=can_create_org_repo,
@@ -5645,7 +5755,7 @@ class AsyncOrganizationClient:
             units_map=units_map,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def team_search(
         self,
@@ -5656,7 +5766,7 @@ class AsyncOrganizationClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> TeamSearchResponse:
+    ) -> TeamSearchResults:
         """
         Parameters
         ----------
@@ -5680,7 +5790,7 @@ class AsyncOrganizationClient:
 
         Returns
         -------
-        TeamSearchResponse
+        TeamSearchResults
             SearchResults of a successful search
 
         Examples
@@ -5697,12 +5807,16 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.team_search(
                 org="org",
+                q="q",
+                include_desc=True,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.team_search(
+        _response = await self._raw_client.team_search(
             org,
             q=q,
             include_desc=include_desc,
@@ -5710,7 +5824,7 @@ class AsyncOrganizationClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_unblock_user(
         self,
@@ -5755,10 +5869,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_unblock_user(
+        _response = await self._raw_client.org_unblock_user(
             org, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_get_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -5796,10 +5910,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get_team(
+        _response = await self._raw_client.org_get_team(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_delete_team(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -5836,10 +5950,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_delete_team(
+        _response = await self._raw_client.org_delete_team(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_edit_team(
         self,
@@ -5895,14 +6009,14 @@ class AsyncOrganizationClient:
 
         async def main() -> None:
             await client.organization.org_edit_team(
-                id=1,
+                id=1000000,
                 name="name",
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_edit_team(
+        _response = await self._raw_client.org_edit_team(
             id,
             name=name,
             can_create_org_repo=can_create_org_repo,
@@ -5913,7 +6027,7 @@ class AsyncOrganizationClient:
             units_map=units_map,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def org_list_team_activity_feeds(
         self,
@@ -5961,15 +6075,18 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_team_activity_feeds(
                 id=1000000,
+                date="date",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_team_activity_feeds(
+        _response = await self._raw_client.org_list_team_activity_feeds(
             id, date=date, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_team_members(
         self,
@@ -6013,15 +6130,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_team_members(
                 id=1000000,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_team_members(
+        _response = await self._raw_client.org_list_team_members(
             id, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_team_member(
         self,
@@ -6067,10 +6186,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_team_member(
+        _response = await self._raw_client.org_list_team_member(
             id, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_add_team_member(
         self,
@@ -6115,10 +6234,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_add_team_member(
+        _response = await self._raw_client.org_add_team_member(
             id, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_remove_team_member(
         self,
@@ -6163,10 +6282,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_remove_team_member(
+        _response = await self._raw_client.org_remove_team_member(
             id, username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_team_repos(
         self,
@@ -6210,15 +6329,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_team_repos(
                 id=1000000,
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_team_repos(
+        _response = await self._raw_client.org_list_team_repos(
             id, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_team_repo(
         self,
@@ -6269,10 +6390,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_team_repo(
+        _response = await self._raw_client.org_list_team_repo(
             id, org, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_add_team_repository(
         self,
@@ -6322,10 +6443,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_add_team_repository(
+        _response = await self._raw_client.org_add_team_repository(
             id, org, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_remove_team_repository(
         self,
@@ -6377,10 +6498,10 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_remove_team_repository(
+        _response = await self._raw_client.org_remove_team_repository(
             id, org, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_current_user_orgs(
         self,
@@ -6418,15 +6539,18 @@ class AsyncOrganizationClient:
 
 
         async def main() -> None:
-            await client.organization.org_list_current_user_orgs()
+            await client.organization.org_list_current_user_orgs(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_current_user_orgs(
+        _response = await self._raw_client.org_list_current_user_orgs(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_list_user_orgs(
         self,
@@ -6470,15 +6594,17 @@ class AsyncOrganizationClient:
         async def main() -> None:
             await client.organization.org_list_user_orgs(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_list_user_orgs(
+        _response = await self._raw_client.org_list_user_orgs(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def org_get_user_permissions(
         self,
@@ -6524,7 +6650,7 @@ class AsyncOrganizationClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.org_get_user_permissions(
+        _response = await self._raw_client.org_get_user_permissions(
             username, org, request_options=request_options
         )
-        return response.data
+        return _response.data

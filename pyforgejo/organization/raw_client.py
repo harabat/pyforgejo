@@ -34,6 +34,7 @@ from ..types.quota_info import QuotaInfo
 from ..types.quota_used_artifact_list import QuotaUsedArtifactList
 from ..types.quota_used_attachment_list import QuotaUsedAttachmentList
 from ..types.quota_used_package_list import QuotaUsedPackageList
+from ..types.registration_token import RegistrationToken
 from ..types.repository import Repository
 from ..types.secret import Secret
 from ..types.team import Team
@@ -41,7 +42,8 @@ from ..types.user import User
 from .types.create_team_option_permission import CreateTeamOptionPermission
 from .types.edit_org_option_visibility import EditOrgOptionVisibility
 from .types.edit_team_option_permission import EditTeamOptionPermission
-from .types.team_search_response import TeamSearchResponse
+from .types.org_list_labels_request_sort import OrgListLabelsRequestSort
+from .types.team_search_results import TeamSearchResults
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -136,6 +138,9 @@ class RawOrganizationClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -151,41 +156,48 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get_all(
@@ -234,10 +246,14 @@ class RawOrganizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_create(
@@ -294,6 +310,9 @@ class RawOrganizationClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -309,31 +328,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get(
@@ -370,21 +395,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_delete(
@@ -413,21 +443,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_edit(
@@ -502,31 +537,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_search_run_jobs(
@@ -573,26 +614,31 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get_runner_registration_token(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    ) -> HttpResponse[RegistrationToken]:
         """
         Parameters
         ----------
@@ -604,7 +650,8 @@ class RawOrganizationClient:
 
         Returns
         -------
-        HttpResponse[None]
+        HttpResponse[RegistrationToken]
+            RegistrationToken is a string used to register a runner with a server
         """
         _response = self._client_wrapper.httpx_client.request(
             f"orgs/{jsonable_encoder(org)}/actions/runners/registration-token",
@@ -613,14 +660,25 @@ class RawOrganizationClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return HttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    RegistrationToken,
+                    parse_obj_as(
+                        type_=RegistrationToken,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_actions_secrets(
@@ -672,21 +730,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def update_org_secret(
@@ -722,6 +785,9 @@ class RawOrganizationClient:
             json={
                 "data": data,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -730,31 +796,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_org_secret(
@@ -790,31 +862,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_org_variables_list(
@@ -866,31 +944,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_org_variable(
@@ -934,31 +1018,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_org_variable(
@@ -994,6 +1084,9 @@ class RawOrganizationClient:
             json={
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1002,31 +1095,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def update_org_variable(
@@ -1067,6 +1166,9 @@ class RawOrganizationClient:
                 "name": name,
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1075,31 +1177,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_org_variable(
@@ -1108,7 +1216,7 @@ class RawOrganizationClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ActionVariable]:
+    ) -> HttpResponse[None]:
         """
         Parameters
         ----------
@@ -1123,8 +1231,7 @@ class RawOrganizationClient:
 
         Returns
         -------
-        HttpResponse[ActionVariable]
-            ActionVariable
+        HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
             f"orgs/{jsonable_encoder(org)}/actions/variables/{jsonable_encoder(variablename)}",
@@ -1133,41 +1240,40 @@ class RawOrganizationClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    ActionVariable,
-                    parse_obj_as(
-                        type_=ActionVariable,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return HttpResponse(response=_response, data=_data)
+                return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_activity_feeds(
@@ -1224,21 +1330,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_update_avatar(
@@ -1270,6 +1381,9 @@ class RawOrganizationClient:
             json={
                 "image": image,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1278,21 +1392,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_delete_avatar(
@@ -1321,21 +1440,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_block_user(
@@ -1371,31 +1495,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_hooks(
@@ -1447,21 +1577,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_create_hook(
@@ -1513,6 +1648,9 @@ class RawOrganizationClient:
                 "events": events,
                 "type": type,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1528,21 +1666,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get_hook(
@@ -1586,21 +1729,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_delete_hook(
@@ -1636,21 +1784,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_edit_hook(
@@ -1702,6 +1855,9 @@ class RawOrganizationClient:
                 "config": config,
                 "events": events,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1717,27 +1873,33 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_labels(
         self,
         org: str,
         *,
+        sort: typing.Optional[OrgListLabelsRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -1747,6 +1909,9 @@ class RawOrganizationClient:
         ----------
         org : str
             name of the organization
+
+        sort : typing.Optional[OrgListLabelsRequestSort]
+            Specifies the sorting method: mostissues, leastissues, or reversealphabetically.
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -1766,6 +1931,7 @@ class RawOrganizationClient:
             f"orgs/{jsonable_encoder(org)}/labels",
             method="GET",
             params={
+                "sort": sort,
                 "page": page,
                 "limit": limit,
             },
@@ -1783,21 +1949,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_create_label(
@@ -1845,6 +2016,9 @@ class RawOrganizationClient:
                 "is_archived": is_archived,
                 "name": name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1860,31 +2034,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get_label(
@@ -1928,21 +2108,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_delete_label(
@@ -1978,21 +2163,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_edit_label(
@@ -2044,6 +2234,9 @@ class RawOrganizationClient:
                 "is_archived": is_archived,
                 "name": name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2059,31 +2252,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_blocked_users(
@@ -2136,10 +2335,14 @@ class RawOrganizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_members(
@@ -2191,21 +2394,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_is_member(
@@ -2241,21 +2449,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_delete_member(
@@ -2291,21 +2504,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_public_members(
@@ -2357,21 +2575,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_is_public_member(
@@ -2407,21 +2630,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_publicize_member(
@@ -2457,31 +2685,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_conceal_member(
@@ -2517,31 +2751,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get_quota(
@@ -2578,31 +2818,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_quota_artifacts(
@@ -2654,31 +2900,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_quota_attachments(
@@ -2730,94 +2982,125 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_check_quota(
-        self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+        self,
+        org: str,
+        *,
+        subject: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[bool]:
         """
         Parameters
         ----------
         org : str
             name of the organization
 
+        subject : str
+            subject of the quota
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        HttpResponse[None]
+        HttpResponse[bool]
+            Returns true if the action is accepted.
         """
         _response = self._client_wrapper.httpx_client.request(
             f"orgs/{jsonable_encoder(org)}/quota/check",
             method="GET",
+            params={
+                "subject": subject,
+            },
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
-                return HttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    bool,
+                    parse_obj_as(
+                        type_=bool,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_quota_packages(
@@ -2869,31 +3152,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def rename_org(
@@ -2936,31 +3225,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_repos(
@@ -3012,21 +3307,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_org_repo(
@@ -3114,6 +3414,9 @@ class RawOrganizationClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -3129,41 +3432,48 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_teams(
@@ -3215,21 +3525,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_create_team(
@@ -3303,31 +3618,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def team_search(
@@ -3339,7 +3660,7 @@ class RawOrganizationClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[TeamSearchResponse]:
+    ) -> HttpResponse[TeamSearchResults]:
         """
         Parameters
         ----------
@@ -3363,7 +3684,7 @@ class RawOrganizationClient:
 
         Returns
         -------
-        HttpResponse[TeamSearchResponse]
+        HttpResponse[TeamSearchResults]
             SearchResults of a successful search
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -3380,30 +3701,35 @@ class RawOrganizationClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    TeamSearchResponse,
+                    TeamSearchResults,
                     parse_obj_as(
-                        type_=TeamSearchResponse,  # type: ignore
+                        type_=TeamSearchResults,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_unblock_user(
@@ -3439,31 +3765,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get_team(
@@ -3500,21 +3832,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_delete_team(
@@ -3543,21 +3880,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_edit_team(
@@ -3631,21 +3973,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_team_activity_feeds(
@@ -3702,21 +4049,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_team_members(
@@ -3768,21 +4120,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_team_member(
@@ -3826,21 +4183,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_add_team_member(
@@ -3876,21 +4238,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_remove_team_member(
@@ -3926,21 +4293,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_team_repos(
@@ -3992,21 +4364,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_team_repo(
@@ -4054,21 +4431,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_add_team_repository(
@@ -4108,31 +4490,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_remove_team_repository(
@@ -4174,31 +4562,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_current_user_orgs(
@@ -4246,41 +4640,48 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 401:
                 raise UnauthorizedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiUnauthorizedError,
                         parse_obj_as(
                             type_=ApiUnauthorizedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_list_user_orgs(
@@ -4332,21 +4733,26 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def org_get_user_permissions(
@@ -4390,31 +4796,37 @@ class RawOrganizationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
 
@@ -4507,6 +4919,9 @@ class AsyncRawOrganizationClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4522,41 +4937,48 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get_all(
@@ -4605,10 +5027,14 @@ class AsyncRawOrganizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_create(
@@ -4665,6 +5091,9 @@ class AsyncRawOrganizationClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4680,31 +5109,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get(
@@ -4741,21 +5176,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_delete(
@@ -4784,21 +5224,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_edit(
@@ -4873,31 +5318,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_search_run_jobs(
@@ -4944,26 +5395,31 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get_runner_registration_token(
         self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[None]:
+    ) -> AsyncHttpResponse[RegistrationToken]:
         """
         Parameters
         ----------
@@ -4975,7 +5431,8 @@ class AsyncRawOrganizationClient:
 
         Returns
         -------
-        AsyncHttpResponse[None]
+        AsyncHttpResponse[RegistrationToken]
+            RegistrationToken is a string used to register a runner with a server
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"orgs/{jsonable_encoder(org)}/actions/runners/registration-token",
@@ -4984,14 +5441,25 @@ class AsyncRawOrganizationClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return AsyncHttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    RegistrationToken,
+                    parse_obj_as(
+                        type_=RegistrationToken,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_actions_secrets(
@@ -5043,21 +5511,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def update_org_secret(
@@ -5093,6 +5566,9 @@ class AsyncRawOrganizationClient:
             json={
                 "data": data,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5101,31 +5577,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_org_secret(
@@ -5161,31 +5643,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_org_variables_list(
@@ -5237,31 +5725,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_org_variable(
@@ -5305,31 +5799,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_org_variable(
@@ -5365,6 +5865,9 @@ class AsyncRawOrganizationClient:
             json={
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5373,31 +5876,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def update_org_variable(
@@ -5438,6 +5947,9 @@ class AsyncRawOrganizationClient:
                 "name": name,
                 "value": value,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5446,31 +5958,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_org_variable(
@@ -5479,7 +5997,7 @@ class AsyncRawOrganizationClient:
         variablename: str,
         *,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ActionVariable]:
+    ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
@@ -5494,8 +6012,7 @@ class AsyncRawOrganizationClient:
 
         Returns
         -------
-        AsyncHttpResponse[ActionVariable]
-            ActionVariable
+        AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"orgs/{jsonable_encoder(org)}/actions/variables/{jsonable_encoder(variablename)}",
@@ -5504,41 +6021,40 @@ class AsyncRawOrganizationClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    ActionVariable,
-                    parse_obj_as(
-                        type_=ActionVariable,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return AsyncHttpResponse(response=_response, data=_data)
+                return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_activity_feeds(
@@ -5595,21 +6111,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_update_avatar(
@@ -5641,6 +6162,9 @@ class AsyncRawOrganizationClient:
             json={
                 "image": image,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5649,21 +6173,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_delete_avatar(
@@ -5692,21 +6221,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_block_user(
@@ -5742,31 +6276,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_hooks(
@@ -5818,21 +6358,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_create_hook(
@@ -5884,6 +6429,9 @@ class AsyncRawOrganizationClient:
                 "events": events,
                 "type": type,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5899,21 +6447,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get_hook(
@@ -5957,21 +6510,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_delete_hook(
@@ -6007,21 +6565,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_edit_hook(
@@ -6073,6 +6636,9 @@ class AsyncRawOrganizationClient:
                 "config": config,
                 "events": events,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6088,27 +6654,33 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_labels(
         self,
         org: str,
         *,
+        sort: typing.Optional[OrgListLabelsRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -6118,6 +6690,9 @@ class AsyncRawOrganizationClient:
         ----------
         org : str
             name of the organization
+
+        sort : typing.Optional[OrgListLabelsRequestSort]
+            Specifies the sorting method: mostissues, leastissues, or reversealphabetically.
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -6137,6 +6712,7 @@ class AsyncRawOrganizationClient:
             f"orgs/{jsonable_encoder(org)}/labels",
             method="GET",
             params={
+                "sort": sort,
                 "page": page,
                 "limit": limit,
             },
@@ -6154,21 +6730,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_create_label(
@@ -6216,6 +6797,9 @@ class AsyncRawOrganizationClient:
                 "is_archived": is_archived,
                 "name": name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6231,31 +6815,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get_label(
@@ -6299,21 +6889,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_delete_label(
@@ -6349,21 +6944,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_edit_label(
@@ -6415,6 +7015,9 @@ class AsyncRawOrganizationClient:
                 "is_archived": is_archived,
                 "name": name,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -6430,31 +7033,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_blocked_users(
@@ -6507,10 +7116,14 @@ class AsyncRawOrganizationClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_members(
@@ -6562,21 +7175,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_is_member(
@@ -6612,21 +7230,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_delete_member(
@@ -6662,21 +7285,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_public_members(
@@ -6728,21 +7356,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_is_public_member(
@@ -6778,21 +7411,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_publicize_member(
@@ -6828,31 +7466,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_conceal_member(
@@ -6888,31 +7532,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get_quota(
@@ -6949,31 +7599,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_quota_artifacts(
@@ -7025,31 +7681,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_quota_attachments(
@@ -7101,94 +7763,125 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_check_quota(
-        self, org: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[None]:
+        self,
+        org: str,
+        *,
+        subject: str,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[bool]:
         """
         Parameters
         ----------
         org : str
             name of the organization
 
+        subject : str
+            subject of the quota
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        AsyncHttpResponse[None]
+        AsyncHttpResponse[bool]
+            Returns true if the action is accepted.
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"orgs/{jsonable_encoder(org)}/quota/check",
             method="GET",
+            params={
+                "subject": subject,
+            },
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
-                return AsyncHttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    bool,
+                    parse_obj_as(
+                        type_=bool,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_quota_packages(
@@ -7240,31 +7933,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def rename_org(
@@ -7307,31 +8006,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_repos(
@@ -7383,21 +8088,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_org_repo(
@@ -7485,6 +8195,9 @@ class AsyncRawOrganizationClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -7500,41 +8213,48 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_teams(
@@ -7586,21 +8306,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_create_team(
@@ -7674,31 +8399,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def team_search(
@@ -7710,7 +8441,7 @@ class AsyncRawOrganizationClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[TeamSearchResponse]:
+    ) -> AsyncHttpResponse[TeamSearchResults]:
         """
         Parameters
         ----------
@@ -7734,7 +8465,7 @@ class AsyncRawOrganizationClient:
 
         Returns
         -------
-        AsyncHttpResponse[TeamSearchResponse]
+        AsyncHttpResponse[TeamSearchResults]
             SearchResults of a successful search
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -7751,30 +8482,35 @@ class AsyncRawOrganizationClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    TeamSearchResponse,
+                    TeamSearchResults,
                     parse_obj_as(
-                        type_=TeamSearchResponse,  # type: ignore
+                        type_=TeamSearchResults,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_unblock_user(
@@ -7810,31 +8546,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get_team(
@@ -7871,21 +8613,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_delete_team(
@@ -7914,21 +8661,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_edit_team(
@@ -8002,21 +8754,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_team_activity_feeds(
@@ -8073,21 +8830,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_team_members(
@@ -8139,21 +8901,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_team_member(
@@ -8197,21 +8964,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_add_team_member(
@@ -8247,21 +9019,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_remove_team_member(
@@ -8297,21 +9074,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_team_repos(
@@ -8363,21 +9145,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_team_repo(
@@ -8425,21 +9212,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_add_team_repository(
@@ -8479,31 +9271,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_remove_team_repository(
@@ -8545,31 +9343,37 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_current_user_orgs(
@@ -8617,41 +9421,48 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 401:
                 raise UnauthorizedError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         ApiUnauthorizedError,
                         parse_obj_as(
                             type_=ApiUnauthorizedError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_list_user_orgs(
@@ -8703,21 +9514,26 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def org_get_user_permissions(
@@ -8761,29 +9577,35 @@ class AsyncRawOrganizationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )

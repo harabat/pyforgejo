@@ -5,11 +5,11 @@ import typing
 import pydantic
 
 from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ...types.user import User
+from ...types.team import Team
 
 
-class UserSearchResponse(UniversalBaseModel):
-    data: typing.Optional[typing.List[User]] = None
+class TeamSearchResults(UniversalBaseModel):
+    data: typing.Optional[typing.List[Team]] = None
     ok: typing.Optional[bool] = None
 
     if IS_PYDANTIC_V2:

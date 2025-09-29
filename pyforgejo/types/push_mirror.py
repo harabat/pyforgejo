@@ -13,6 +13,7 @@ class PushMirror(UniversalBaseModel):
     PushMirror represents information of a push mirror
     """
 
+    branch_filter: typing.Optional[str] = None
     created: typing.Optional[dt.datetime] = None
     interval: typing.Optional[str] = None
     last_error: typing.Optional[str] = None

@@ -54,10 +54,10 @@ class MiscellaneousClient:
         )
         client.miscellaneous.list_gitignores_templates()
         """
-        response = self._raw_client.list_gitignores_templates(
+        _response = self._raw_client.list_gitignores_templates(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_gitignore_template_info(
         self, name: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -87,10 +87,10 @@ class MiscellaneousClient:
             name="name",
         )
         """
-        response = self._raw_client.get_gitignore_template_info(
+        _response = self._raw_client.get_gitignore_template_info(
             name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_label_templates(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -115,10 +115,10 @@ class MiscellaneousClient:
         )
         client.miscellaneous.list_label_templates()
         """
-        response = self._raw_client.list_label_templates(
+        _response = self._raw_client.list_label_templates(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_label_template_info(
         self, name: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -148,10 +148,10 @@ class MiscellaneousClient:
             name="name",
         )
         """
-        response = self._raw_client.get_label_template_info(
+        _response = self._raw_client.get_label_template_info(
             name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_license_templates(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -176,10 +176,10 @@ class MiscellaneousClient:
         )
         client.miscellaneous.list_license_templates()
         """
-        response = self._raw_client.list_license_templates(
+        _response = self._raw_client.list_license_templates(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_license_template_info(
         self, name: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -209,10 +209,10 @@ class MiscellaneousClient:
             name="name",
         )
         """
-        response = self._raw_client.get_license_template_info(
+        _response = self._raw_client.get_license_template_info(
             name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def render_markdown(
         self,
@@ -263,14 +263,14 @@ class MiscellaneousClient:
         )
         client.miscellaneous.render_markdown()
         """
-        response = self._raw_client.render_markdown(
+        _response = self._raw_client.render_markdown(
             context=context,
             mode=mode,
             text=text,
             wiki=wiki,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def render_markdown_raw(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -295,8 +295,10 @@ class MiscellaneousClient:
         )
         client.miscellaneous.render_markdown_raw()
         """
-        response = self._raw_client.render_markdown_raw(request_options=request_options)
-        return response.data
+        _response = self._raw_client.render_markdown_raw(
+            request_options=request_options
+        )
+        return _response.data
 
     def render_markup(
         self,
@@ -359,7 +361,7 @@ class MiscellaneousClient:
         )
         client.miscellaneous.render_markup()
         """
-        response = self._raw_client.render_markup(
+        _response = self._raw_client.render_markup(
             branch_path=branch_path,
             context=context,
             file_path=file_path,
@@ -368,7 +370,7 @@ class MiscellaneousClient:
             wiki=wiki,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_node_info(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -393,12 +395,12 @@ class MiscellaneousClient:
         )
         client.miscellaneous.get_node_info()
         """
-        response = self._raw_client.get_node_info(request_options=request_options)
-        return response.data
+        _response = self._raw_client.get_node_info(request_options=request_options)
+        return _response.data
 
     def get_signing_key(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    ) -> str:
         """
         Parameters
         ----------
@@ -407,7 +409,8 @@ class MiscellaneousClient:
 
         Returns
         -------
-        None
+        str
+            GPG armored public key
 
         Examples
         --------
@@ -418,8 +421,36 @@ class MiscellaneousClient:
         )
         client.miscellaneous.get_signing_key()
         """
-        response = self._raw_client.get_signing_key(request_options=request_options)
-        return response.data
+        _response = self._raw_client.get_signing_key(request_options=request_options)
+        return _response.data
+
+    def get_ssh_signing_key(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> str:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            SSH public key in OpenSSH authorized key format
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.miscellaneous.get_ssh_signing_key()
+        """
+        _response = self._raw_client.get_ssh_signing_key(
+            request_options=request_options
+        )
+        return _response.data
 
     def get_version(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -444,8 +475,8 @@ class MiscellaneousClient:
         )
         client.miscellaneous.get_version()
         """
-        response = self._raw_client.get_version(request_options=request_options)
-        return response.data
+        _response = self._raw_client.get_version(request_options=request_options)
+        return _response.data
 
 
 class AsyncMiscellaneousClient:
@@ -494,10 +525,10 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_gitignores_templates(
+        _response = await self._raw_client.list_gitignores_templates(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_gitignore_template_info(
         self, name: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -535,10 +566,10 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_gitignore_template_info(
+        _response = await self._raw_client.get_gitignore_template_info(
             name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_label_templates(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -571,10 +602,10 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_label_templates(
+        _response = await self._raw_client.list_label_templates(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_label_template_info(
         self, name: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -612,10 +643,10 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_label_template_info(
+        _response = await self._raw_client.get_label_template_info(
             name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_license_templates(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -648,10 +679,10 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_license_templates(
+        _response = await self._raw_client.list_license_templates(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_license_template_info(
         self, name: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -689,10 +720,10 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_license_template_info(
+        _response = await self._raw_client.get_license_template_info(
             name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def render_markdown(
         self,
@@ -751,14 +782,14 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.render_markdown(
+        _response = await self._raw_client.render_markdown(
             context=context,
             mode=mode,
             text=text,
             wiki=wiki,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def render_markdown_raw(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -791,10 +822,10 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.render_markdown_raw(
+        _response = await self._raw_client.render_markdown_raw(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def render_markup(
         self,
@@ -865,7 +896,7 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.render_markup(
+        _response = await self._raw_client.render_markup(
             branch_path=branch_path,
             context=context,
             file_path=file_path,
@@ -874,7 +905,7 @@ class AsyncMiscellaneousClient:
             wiki=wiki,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_node_info(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -907,12 +938,14 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_node_info(request_options=request_options)
-        return response.data
+        _response = await self._raw_client.get_node_info(
+            request_options=request_options
+        )
+        return _response.data
 
     async def get_signing_key(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    ) -> str:
         """
         Parameters
         ----------
@@ -921,7 +954,8 @@ class AsyncMiscellaneousClient:
 
         Returns
         -------
-        None
+        str
+            GPG armored public key
 
         Examples
         --------
@@ -940,10 +974,46 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_signing_key(
+        _response = await self._raw_client.get_signing_key(
             request_options=request_options
         )
-        return response.data
+        return _response.data
+
+    async def get_ssh_signing_key(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> str:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        str
+            SSH public key in OpenSSH authorized key format
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.miscellaneous.get_ssh_signing_key()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get_ssh_signing_key(
+            request_options=request_options
+        )
+        return _response.data
 
     async def get_version(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -976,5 +1046,5 @@ class AsyncMiscellaneousClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_version(request_options=request_options)
-        return response.data
+        _response = await self._raw_client.get_version(request_options=request_options)
+        return _response.data

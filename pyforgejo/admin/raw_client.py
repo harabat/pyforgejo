@@ -34,6 +34,7 @@ from ..types.quota_group import QuotaGroup
 from ..types.quota_group_list import QuotaGroupList
 from ..types.quota_info import QuotaInfo
 from ..types.quota_rule_info import QuotaRuleInfo
+from ..types.registration_token import RegistrationToken
 from ..types.repository import Repository
 from ..types.user import User
 from .types.admin_search_users_request_sort import AdminSearchUsersRequestSort
@@ -91,21 +92,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def cron_run(
@@ -134,21 +140,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_all_emails(
@@ -196,21 +207,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def search_emails(
@@ -263,21 +279,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def list_hooks(
@@ -326,10 +347,14 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_hook(
@@ -377,6 +402,9 @@ class RawAdminClient:
                 "events": events,
                 "type": type,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -393,10 +421,14 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_hook(
@@ -434,10 +466,14 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_hook(
@@ -467,10 +503,14 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def edit_hook(
@@ -518,6 +558,9 @@ class RawAdminClient:
                 "config": config,
                 "events": events,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -534,10 +577,14 @@ class RawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_all_orgs(
@@ -585,21 +632,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def list_quota_groups(
@@ -633,21 +685,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_quota_group(
@@ -704,51 +761,59 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_quota_group(
@@ -788,41 +853,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_quota_group(
@@ -854,41 +926,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def add_rule_to_quota_group(
@@ -924,61 +1003,70 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def remove_rule_from_quota_group(
@@ -1014,41 +1102,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def list_users_in_quota_group(
@@ -1088,41 +1183,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def add_user_to_quota_group(
@@ -1158,61 +1260,70 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def remove_user_from_quota_group(
@@ -1248,41 +1359,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def list_quota_rules(
@@ -1316,21 +1434,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_quota_rule(
@@ -1369,6 +1492,9 @@ class RawAdminClient:
                 "name": name,
                 "subjects": subjects,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1384,51 +1510,59 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_quota_rule(
@@ -1465,41 +1599,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def admin_d_elete_quota_rule(
@@ -1528,41 +1669,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def edit_quota_rule(
@@ -1618,51 +1766,59 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def search_run_jobs(
@@ -1705,26 +1861,31 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    ) -> HttpResponse[RegistrationToken]:
         """
         Parameters
         ----------
@@ -1733,7 +1894,8 @@ class RawAdminClient:
 
         Returns
         -------
-        HttpResponse[None]
+        HttpResponse[RegistrationToken]
+            RegistrationToken is a string used to register a runner with a server
         """
         _response = self._client_wrapper.httpx_client.request(
             "admin/runners/registration-token",
@@ -1742,14 +1904,25 @@ class RawAdminClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return HttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    RegistrationToken,
+                    parse_obj_as(
+                        type_=RegistrationToken,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def unadopted_list(
@@ -1802,21 +1975,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def adopt_repository(
@@ -1852,31 +2030,37 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_unadopted_repository(
@@ -1912,21 +2096,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def search_users(
@@ -1989,21 +2178,26 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_user(
@@ -2092,41 +2286,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_user(
@@ -2165,41 +2366,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def edit_user(
@@ -2321,41 +2529,48 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_public_key(
@@ -2398,6 +2613,9 @@ class RawAdminClient:
                 "read_only": read_only,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2413,31 +2631,37 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def delete_user_public_key(
@@ -2473,31 +2697,37 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_org(
@@ -2558,6 +2788,9 @@ class RawAdminClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2573,31 +2806,37 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def get_user_quota(
@@ -2634,51 +2873,59 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def set_user_quota_groups(
@@ -2721,51 +2968,59 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def rename_user(
@@ -2808,31 +3063,37 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     def create_repo(
@@ -2920,6 +3181,9 @@ class RawAdminClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -2935,61 +3199,70 @@ class RawAdminClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
 
@@ -3042,21 +3315,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def cron_run(
@@ -3085,21 +3363,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_all_emails(
@@ -3147,21 +3430,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def search_emails(
@@ -3214,21 +3502,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def list_hooks(
@@ -3277,10 +3570,14 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_hook(
@@ -3328,6 +3625,9 @@ class AsyncRawAdminClient:
                 "events": events,
                 "type": type,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -3344,10 +3644,14 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_hook(
@@ -3385,10 +3689,14 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_hook(
@@ -3418,10 +3726,14 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def edit_hook(
@@ -3469,6 +3781,9 @@ class AsyncRawAdminClient:
                 "config": config,
                 "events": events,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -3485,10 +3800,14 @@ class AsyncRawAdminClient:
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_all_orgs(
@@ -3536,21 +3855,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def list_quota_groups(
@@ -3584,21 +3908,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_quota_group(
@@ -3655,51 +3984,59 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_quota_group(
@@ -3739,41 +4076,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_quota_group(
@@ -3805,41 +4149,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def add_rule_to_quota_group(
@@ -3875,61 +4226,70 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def remove_rule_from_quota_group(
@@ -3965,41 +4325,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def list_users_in_quota_group(
@@ -4039,41 +4406,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def add_user_to_quota_group(
@@ -4109,61 +4483,70 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def remove_user_from_quota_group(
@@ -4199,41 +4582,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def list_quota_rules(
@@ -4267,21 +4657,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_quota_rule(
@@ -4320,6 +4715,9 @@ class AsyncRawAdminClient:
                 "name": name,
                 "subjects": subjects,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -4335,51 +4733,59 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_quota_rule(
@@ -4416,41 +4822,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def admin_d_elete_quota_rule(
@@ -4479,41 +4892,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def edit_quota_rule(
@@ -4569,51 +4989,59 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def search_run_jobs(
@@ -4656,26 +5084,31 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[None]:
+    ) -> AsyncHttpResponse[RegistrationToken]:
         """
         Parameters
         ----------
@@ -4684,7 +5117,8 @@ class AsyncRawAdminClient:
 
         Returns
         -------
-        AsyncHttpResponse[None]
+        AsyncHttpResponse[RegistrationToken]
+            RegistrationToken is a string used to register a runner with a server
         """
         _response = await self._client_wrapper.httpx_client.request(
             "admin/runners/registration-token",
@@ -4693,14 +5127,25 @@ class AsyncRawAdminClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                return AsyncHttpResponse(response=_response, data=None)
+                _data = typing.cast(
+                    RegistrationToken,
+                    parse_obj_as(
+                        type_=RegistrationToken,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def unadopted_list(
@@ -4753,21 +5198,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def adopt_repository(
@@ -4803,31 +5253,37 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_unadopted_repository(
@@ -4863,21 +5319,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def search_users(
@@ -4940,21 +5401,26 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_user(
@@ -5043,41 +5509,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_user(
@@ -5116,41 +5589,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def edit_user(
@@ -5272,41 +5752,48 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_public_key(
@@ -5349,6 +5836,9 @@ class AsyncRawAdminClient:
                 "read_only": read_only,
                 "title": title,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5364,31 +5854,37 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def delete_user_public_key(
@@ -5424,31 +5920,37 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_org(
@@ -5509,6 +6011,9 @@ class AsyncRawAdminClient:
                 "visibility": visibility,
                 "website": website,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5524,31 +6029,37 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def get_user_quota(
@@ -5585,51 +6096,59 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def set_user_quota_groups(
@@ -5672,51 +6191,59 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def rename_user(
@@ -5759,31 +6286,37 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )
 
     async def create_repo(
@@ -5871,6 +6404,9 @@ class AsyncRawAdminClient:
                 "template": template,
                 "trust_model": trust_model,
             },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -5886,59 +6422,68 @@ class AsyncRawAdminClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 400:
                 raise BadRequestError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         types_api_error_ApiError,
                         parse_obj_as(
                             type_=types_api_error_ApiError,  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 409:
                 raise ConflictError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 422:
                 raise UnprocessableEntityError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
             raise core_api_error_ApiError(
-                status_code=_response.status_code, body=_response.text
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
             )
         raise core_api_error_ApiError(
-            status_code=_response.status_code, body=_response_json
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
         )

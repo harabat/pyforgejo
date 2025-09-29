@@ -21,6 +21,7 @@ from ..types.quota_info import QuotaInfo
 from ..types.quota_used_artifact_list import QuotaUsedArtifactList
 from ..types.quota_used_attachment_list import QuotaUsedAttachmentList
 from ..types.quota_used_package_list import QuotaUsedPackageList
+from ..types.registration_token import RegistrationToken
 from ..types.repository import Repository
 from ..types.stop_watch import StopWatch
 from ..types.team import Team
@@ -31,7 +32,8 @@ from ..types.user_settings import UserSettings
 from .raw_client import AsyncRawUserClient, RawUserClient
 from .types.user_current_list_repos_request_order_by import \
     UserCurrentListReposRequestOrderBy
-from .types.user_search_response import UserSearchResponse
+from .types.user_search_request_sort import UserSearchRequestSort
+from .types.user_search_results import UserSearchResults
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -75,8 +77,8 @@ class UserClient:
         )
         client.user.get_current()
         """
-        response = self._raw_client.get_current(request_options=request_options)
-        return response.data
+        _response = self._raw_client.get_current(request_options=request_options)
+        return _response.data
 
     def search_run_jobs(
         self,
@@ -105,16 +107,18 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.search_run_jobs()
+        client.user.search_run_jobs(
+            labels="labels",
+        )
         """
-        response = self._raw_client.search_run_jobs(
+        _response = self._raw_client.search_run_jobs(
             labels=labels, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    ) -> RegistrationToken:
         """
         Parameters
         ----------
@@ -123,7 +127,8 @@ class UserClient:
 
         Returns
         -------
-        None
+        RegistrationToken
+            RegistrationToken is a string used to register a runner with a server
 
         Examples
         --------
@@ -134,10 +139,10 @@ class UserClient:
         )
         client.user.get_runner_registration_token()
         """
-        response = self._raw_client.get_runner_registration_token(
+        _response = self._raw_client.get_runner_registration_token(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def update_user_secret(
         self,
@@ -174,10 +179,10 @@ class UserClient:
             data="data",
         )
         """
-        response = self._raw_client.update_user_secret(
+        _response = self._raw_client.update_user_secret(
             secretname, data=data, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_user_secret(
         self,
@@ -209,10 +214,10 @@ class UserClient:
             secretname="secretname",
         )
         """
-        response = self._raw_client.delete_user_secret(
+        _response = self._raw_client.delete_user_secret(
             secretname, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_user_variables_list(
         self,
@@ -245,12 +250,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.get_user_variables_list()
+        client.user.get_user_variables_list(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.get_user_variables_list(
+        _response = self._raw_client.get_user_variables_list(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_user_variable(
         self,
@@ -283,10 +291,10 @@ class UserClient:
             variablename="variablename",
         )
         """
-        response = self._raw_client.get_user_variable(
+        _response = self._raw_client.get_user_variable(
             variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_user_variable(
         self,
@@ -323,10 +331,10 @@ class UserClient:
             value="value",
         )
         """
-        response = self._raw_client.create_user_variable(
+        _response = self._raw_client.create_user_variable(
             variablename, value=value, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def update_user_variable(
         self,
@@ -367,10 +375,10 @@ class UserClient:
             value="value",
         )
         """
-        response = self._raw_client.update_user_variable(
+        _response = self._raw_client.update_user_variable(
             variablename, value=value, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_user_variable(
         self,
@@ -402,10 +410,10 @@ class UserClient:
             variablename="variablename",
         )
         """
-        response = self._raw_client.delete_user_variable(
+        _response = self._raw_client.delete_user_variable(
             variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_get_o_auth_2_applications(
         self,
@@ -438,12 +446,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_get_o_auth_2_applications()
+        client.user.user_get_o_auth_2_applications(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.user_get_o_auth_2_applications(
+        _response = self._raw_client.user_get_o_auth_2_applications(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_create_o_auth_2_application(
         self,
@@ -479,13 +490,13 @@ class UserClient:
         )
         client.user.user_create_o_auth_2_application()
         """
-        response = self._raw_client.user_create_o_auth_2_application(
+        _response = self._raw_client.user_create_o_auth_2_application(
             confidential_client=confidential_client,
             name=name,
             redirect_uris=redirect_uris,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def user_get_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -515,10 +526,10 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.user_get_o_auth_2_application(
+        _response = self._raw_client.user_get_o_auth_2_application(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_delete_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -547,10 +558,10 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.user_delete_o_auth_2_application(
+        _response = self._raw_client.user_delete_o_auth_2_application(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_update_o_auth_2_application(
         self,
@@ -592,14 +603,14 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.user_update_o_auth_2_application(
+        _response = self._raw_client.user_update_o_auth_2_application(
             id,
             confidential_client=confidential_client,
             name=name,
             redirect_uris=redirect_uris,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def update_avatar(
         self,
@@ -629,10 +640,10 @@ class UserClient:
         )
         client.user.update_avatar()
         """
-        response = self._raw_client.update_avatar(
+        _response = self._raw_client.update_avatar(
             image=image, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_avatar(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -656,8 +667,8 @@ class UserClient:
         )
         client.user.delete_avatar()
         """
-        response = self._raw_client.delete_avatar(request_options=request_options)
-        return response.data
+        _response = self._raw_client.delete_avatar(request_options=request_options)
+        return _response.data
 
     def block_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -686,10 +697,10 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.block_user(
+        _response = self._raw_client.block_user(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_emails(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -714,8 +725,8 @@ class UserClient:
         )
         client.user.list_emails()
         """
-        response = self._raw_client.list_emails(request_options=request_options)
-        return response.data
+        _response = self._raw_client.list_emails(request_options=request_options)
+        return _response.data
 
     def add_email(
         self,
@@ -746,10 +757,10 @@ class UserClient:
         )
         client.user.add_email()
         """
-        response = self._raw_client.add_email(
+        _response = self._raw_client.add_email(
             emails=emails, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_email(
         self,
@@ -779,10 +790,10 @@ class UserClient:
         )
         client.user.delete_email()
         """
-        response = self._raw_client.delete_email(
+        _response = self._raw_client.delete_email(
             emails=emails, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_list_followers(
         self,
@@ -815,12 +826,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_followers()
+        client.user.current_list_followers(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.current_list_followers(
+        _response = self._raw_client.current_list_followers(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_list_following(
         self,
@@ -853,12 +867,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_following()
+        client.user.current_list_following(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.current_list_following(
+        _response = self._raw_client.current_list_following(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_check_following(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -887,10 +904,10 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.current_check_following(
+        _response = self._raw_client.current_check_following(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_put_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -919,10 +936,10 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.current_put_follow(
+        _response = self._raw_client.current_put_follow(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_delete_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -951,10 +968,10 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.current_delete_follow(
+        _response = self._raw_client.current_delete_follow(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_verification_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -979,17 +996,26 @@ class UserClient:
         )
         client.user.get_verification_token()
         """
-        response = self._raw_client.get_verification_token(
+        _response = self._raw_client.get_verification_token(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_verify_gpg_key(
-        self, *, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        key_id: str,
+        armored_signature: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> GpgKey:
         """
         Parameters
         ----------
+        key_id : str
+            An Signature for a GPG key token
+
+        armored_signature : typing.Optional[str]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1005,10 +1031,16 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_verify_gpg_key()
+        client.user.user_verify_gpg_key(
+            key_id="key_id",
+        )
         """
-        response = self._raw_client.user_verify_gpg_key(request_options=request_options)
-        return response.data
+        _response = self._raw_client.user_verify_gpg_key(
+            key_id=key_id,
+            armored_signature=armored_signature,
+            request_options=request_options,
+        )
+        return _response.data
 
     def user_current_list_gpg_keys(
         self,
@@ -1041,12 +1073,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_current_list_gpg_keys()
+        client.user.user_current_list_gpg_keys(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.user_current_list_gpg_keys(
+        _response = self._raw_client.user_current_list_gpg_keys(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_current_post_gpg_key(
         self,
@@ -1082,12 +1117,12 @@ class UserClient:
             armored_public_key="armored_public_key",
         )
         """
-        response = self._raw_client.user_current_post_gpg_key(
+        _response = self._raw_client.user_current_post_gpg_key(
             armored_public_key=armored_public_key,
             armored_signature=armored_signature,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def user_current_get_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1117,10 +1152,10 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.user_current_get_gpg_key(
+        _response = self._raw_client.user_current_get_gpg_key(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_current_delete_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1149,10 +1184,10 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.user_current_delete_gpg_key(
+        _response = self._raw_client.user_current_delete_gpg_key(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_hooks(
         self,
@@ -1185,12 +1220,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_hooks()
+        client.user.list_hooks(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.list_hooks(
+        _response = self._raw_client.list_hooks(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_hook(
         self,
@@ -1238,7 +1276,7 @@ class UserClient:
             type="forgejo",
         )
         """
-        response = self._raw_client.create_hook(
+        _response = self._raw_client.create_hook(
             config=config,
             type=type,
             active=active,
@@ -1247,7 +1285,7 @@ class UserClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def get_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1277,8 +1315,8 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.get_hook(id, request_options=request_options)
-        return response.data
+        _response = self._raw_client.get_hook(id, request_options=request_options)
+        return _response.data
 
     def delete_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1307,8 +1345,8 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.delete_hook(id, request_options=request_options)
-        return response.data
+        _response = self._raw_client.delete_hook(id, request_options=request_options)
+        return _response.data
 
     def edit_hook(
         self,
@@ -1356,7 +1394,7 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.edit_hook(
+        _response = self._raw_client.edit_hook(
             id,
             active=active,
             authorization_header=authorization_header,
@@ -1365,7 +1403,7 @@ class UserClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def current_list_keys(
         self,
@@ -1402,15 +1440,19 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_keys()
+        client.user.current_list_keys(
+            fingerprint="fingerprint",
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.current_list_keys(
+        _response = self._raw_client.current_list_keys(
             fingerprint=fingerprint,
             page=page,
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def current_post_key(
         self,
@@ -1452,10 +1494,10 @@ class UserClient:
             title="title",
         )
         """
-        response = self._raw_client.current_post_key(
+        _response = self._raw_client.current_post_key(
             key=key, title=title, read_only=read_only, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_get_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1485,8 +1527,10 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.current_get_key(id, request_options=request_options)
-        return response.data
+        _response = self._raw_client.current_get_key(
+            id, request_options=request_options
+        )
+        return _response.data
 
     def current_delete_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -1515,10 +1559,10 @@ class UserClient:
             id=1000000,
         )
         """
-        response = self._raw_client.current_delete_key(
+        _response = self._raw_client.current_delete_key(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_blocked_users(
         self,
@@ -1551,12 +1595,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_blocked_users()
+        client.user.list_blocked_users(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.list_blocked_users(
+        _response = self._raw_client.list_blocked_users(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_quota(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -1581,8 +1628,8 @@ class UserClient:
         )
         client.user.get_quota()
         """
-        response = self._raw_client.get_quota(request_options=request_options)
-        return response.data
+        _response = self._raw_client.get_quota(request_options=request_options)
+        return _response.data
 
     def list_quota_artifacts(
         self,
@@ -1615,12 +1662,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_quota_artifacts()
+        client.user.list_quota_artifacts(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.list_quota_artifacts(
+        _response = self._raw_client.list_quota_artifacts(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_quota_attachments(
         self,
@@ -1653,25 +1703,32 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_quota_attachments()
+        client.user.list_quota_attachments(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.list_quota_attachments(
+        _response = self._raw_client.list_quota_attachments(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def check_quota(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+        self, *, subject: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> bool:
         """
         Parameters
         ----------
+        subject : str
+            subject of the quota
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        None
+        bool
+            Returns true if the action is accepted.
 
         Examples
         --------
@@ -1680,10 +1737,14 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.check_quota()
+        client.user.check_quota(
+            subject="subject",
+        )
         """
-        response = self._raw_client.check_quota(request_options=request_options)
-        return response.data
+        _response = self._raw_client.check_quota(
+            subject=subject, request_options=request_options
+        )
+        return _response.data
 
     def list_quota_packages(
         self,
@@ -1716,12 +1777,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_quota_packages()
+        client.user.list_quota_packages(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.list_quota_packages(
+        _response = self._raw_client.list_quota_packages(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_list_repos(
         self,
@@ -1758,12 +1822,16 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_repos()
+        client.user.current_list_repos(
+            page=1,
+            limit=1,
+            order_by="name",
+        )
         """
-        response = self._raw_client.current_list_repos(
+        _response = self._raw_client.current_list_repos(
             page=page, limit=limit, order_by=order_by, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_user_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -1788,8 +1856,8 @@ class UserClient:
         )
         client.user.get_user_settings()
         """
-        response = self._raw_client.get_user_settings(request_options=request_options)
-        return response.data
+        _response = self._raw_client.get_user_settings(request_options=request_options)
+        return _response.data
 
     def update_user_settings(
         self,
@@ -1853,7 +1921,7 @@ class UserClient:
         )
         client.user.update_user_settings()
         """
-        response = self._raw_client.update_user_settings(
+        _response = self._raw_client.update_user_settings(
             description=description,
             diff_view_style=diff_view_style,
             enable_repo_unit_hints=enable_repo_unit_hints,
@@ -1868,7 +1936,7 @@ class UserClient:
             website=website,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def current_list_starred(
         self,
@@ -1901,12 +1969,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_starred()
+        client.user.current_list_starred(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.current_list_starred(
+        _response = self._raw_client.current_list_starred(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_check_starring(
         self,
@@ -1943,10 +2014,10 @@ class UserClient:
             repo="repo",
         )
         """
-        response = self._raw_client.current_check_starring(
+        _response = self._raw_client.current_check_starring(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_put_star(
         self,
@@ -1983,10 +2054,10 @@ class UserClient:
             repo="repo",
         )
         """
-        response = self._raw_client.current_put_star(
+        _response = self._raw_client.current_put_star(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_delete_star(
         self,
@@ -2023,10 +2094,10 @@ class UserClient:
             repo="repo",
         )
         """
-        response = self._raw_client.current_delete_star(
+        _response = self._raw_client.current_delete_star(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_stop_watches(
         self,
@@ -2059,12 +2130,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.get_stop_watches()
+        client.user.get_stop_watches(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.get_stop_watches(
+        _response = self._raw_client.get_stop_watches(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_list_subscriptions(
         self,
@@ -2097,12 +2171,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_subscriptions()
+        client.user.current_list_subscriptions(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.current_list_subscriptions(
+        _response = self._raw_client.current_list_subscriptions(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_teams(
         self,
@@ -2135,12 +2212,15 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_teams()
+        client.user.list_teams(
+            page=1,
+            limit=1,
+        )
         """
-        response = self._raw_client.list_teams(
+        _response = self._raw_client.list_teams(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def current_tracked_times(
         self,
@@ -2176,21 +2256,32 @@ class UserClient:
 
         Examples
         --------
+        import datetime
+
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_tracked_times()
+        client.user.current_tracked_times(
+            page=1,
+            limit=1,
+            since=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+            before=datetime.datetime.fromisoformat(
+                "2024-01-15 09:30:00+00:00",
+            ),
+        )
         """
-        response = self._raw_client.current_tracked_times(
+        _response = self._raw_client.current_tracked_times(
             page=page,
             limit=limit,
             since=since,
             before=before,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def unblock_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -2219,20 +2310,21 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.unblock_user(
+        _response = self._raw_client.unblock_user(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def search(
         self,
         *,
         q: typing.Optional[str] = None,
         uid: typing.Optional[int] = None,
+        sort: typing.Optional[UserSearchRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UserSearchResponse:
+    ) -> UserSearchResults:
         """
         Parameters
         ----------
@@ -2241,6 +2333,9 @@ class UserClient:
 
         uid : typing.Optional[int]
             ID of the user to search for
+
+        sort : typing.Optional[UserSearchRequestSort]
+            sort order of results
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -2253,7 +2348,7 @@ class UserClient:
 
         Returns
         -------
-        UserSearchResponse
+        UserSearchResults
             SearchResults of a successful search
 
         Examples
@@ -2263,12 +2358,23 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.search()
-        """
-        response = self._raw_client.search(
-            q=q, uid=uid, page=page, limit=limit, request_options=request_options
+        client.user.search(
+            q="q",
+            uid=1000000,
+            sort="oldest",
+            page=1,
+            limit=1,
         )
-        return response.data
+        """
+        _response = self._raw_client.search(
+            q=q,
+            uid=uid,
+            sort=sort,
+            page=page,
+            limit=limit,
+            request_options=request_options,
+        )
+        return _response.data
 
     def get(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -2298,8 +2404,8 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.get(username, request_options=request_options)
-        return response.data
+        _response = self._raw_client.get(username, request_options=request_options)
+        return _response.data
 
     def list_activity_feeds(
         self,
@@ -2346,9 +2452,13 @@ class UserClient:
         )
         client.user.list_activity_feeds(
             username="username",
+            only_performed_by=True,
+            date="date",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_activity_feeds(
+        _response = self._raw_client.list_activity_feeds(
             username,
             only_performed_by=only_performed_by,
             date=date,
@@ -2356,7 +2466,7 @@ class UserClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def list_followers(
         self,
@@ -2395,12 +2505,14 @@ class UserClient:
         )
         client.user.list_followers(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_followers(
+        _response = self._raw_client.list_followers(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_following(
         self,
@@ -2439,12 +2551,14 @@ class UserClient:
         )
         client.user.list_following(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_following(
+        _response = self._raw_client.list_following(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def check_following(
         self,
@@ -2481,10 +2595,10 @@ class UserClient:
             target="target",
         )
         """
-        response = self._raw_client.check_following(
+        _response = self._raw_client.check_following(
             username, target, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def user_list_gpg_keys(
         self,
@@ -2523,12 +2637,14 @@ class UserClient:
         )
         client.user.user_list_gpg_keys(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.user_list_gpg_keys(
+        _response = self._raw_client.user_list_gpg_keys(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_heatmap_data(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -2558,10 +2674,10 @@ class UserClient:
             username="username",
         )
         """
-        response = self._raw_client.get_heatmap_data(
+        _response = self._raw_client.get_heatmap_data(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_keys(
         self,
@@ -2604,16 +2720,19 @@ class UserClient:
         )
         client.user.list_keys(
             username="username",
+            fingerprint="fingerprint",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_keys(
+        _response = self._raw_client.list_keys(
             username,
             fingerprint=fingerprint,
             page=page,
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     def list_repos(
         self,
@@ -2652,12 +2771,14 @@ class UserClient:
         )
         client.user.list_repos(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_repos(
+        _response = self._raw_client.list_repos(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_starred(
         self,
@@ -2696,12 +2817,14 @@ class UserClient:
         )
         client.user.list_starred(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_starred(
+        _response = self._raw_client.list_starred(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def list_subscriptions(
         self,
@@ -2740,12 +2863,14 @@ class UserClient:
         )
         client.user.list_subscriptions(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.list_subscriptions(
+        _response = self._raw_client.list_subscriptions(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def get_tokens(
         self,
@@ -2784,12 +2909,14 @@ class UserClient:
         )
         client.user.get_tokens(
             username="username",
+            page=1,
+            limit=1,
         )
         """
-        response = self._raw_client.get_tokens(
+        _response = self._raw_client.get_tokens(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def create_token(
         self,
@@ -2829,10 +2956,10 @@ class UserClient:
             name="name",
         )
         """
-        response = self._raw_client.create_token(
+        _response = self._raw_client.create_token(
             username, name=name, scopes=scopes, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     def delete_access_token(
         self,
@@ -2869,10 +2996,10 @@ class UserClient:
             token="token",
         )
         """
-        response = self._raw_client.delete_access_token(
+        _response = self._raw_client.delete_access_token(
             username, token, request_options=request_options
         )
-        return response.data
+        return _response.data
 
 
 class AsyncUserClient:
@@ -2921,8 +3048,8 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_current(request_options=request_options)
-        return response.data
+        _response = await self._raw_client.get_current(request_options=request_options)
+        return _response.data
 
     async def search_run_jobs(
         self,
@@ -2956,19 +3083,21 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.search_run_jobs()
+            await client.user.search_run_jobs(
+                labels="labels",
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.search_run_jobs(
+        _response = await self._raw_client.search_run_jobs(
             labels=labels, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_runner_registration_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    ) -> RegistrationToken:
         """
         Parameters
         ----------
@@ -2977,7 +3106,8 @@ class AsyncUserClient:
 
         Returns
         -------
-        None
+        RegistrationToken
+            RegistrationToken is a string used to register a runner with a server
 
         Examples
         --------
@@ -2996,10 +3126,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_runner_registration_token(
+        _response = await self._raw_client.get_runner_registration_token(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def update_user_secret(
         self,
@@ -3044,10 +3174,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_user_secret(
+        _response = await self._raw_client.update_user_secret(
             secretname, data=data, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_user_secret(
         self,
@@ -3087,10 +3217,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_user_secret(
+        _response = await self._raw_client.delete_user_secret(
             secretname, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_user_variables_list(
         self,
@@ -3128,15 +3258,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.get_user_variables_list()
+            await client.user.get_user_variables_list(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_user_variables_list(
+        _response = await self._raw_client.get_user_variables_list(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_user_variable(
         self,
@@ -3177,10 +3310,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_user_variable(
+        _response = await self._raw_client.get_user_variable(
             variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_user_variable(
         self,
@@ -3225,10 +3358,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_user_variable(
+        _response = await self._raw_client.create_user_variable(
             variablename, value=value, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def update_user_variable(
         self,
@@ -3277,10 +3410,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_user_variable(
+        _response = await self._raw_client.update_user_variable(
             variablename, value=value, name=name, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_user_variable(
         self,
@@ -3320,10 +3453,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_user_variable(
+        _response = await self._raw_client.delete_user_variable(
             variablename, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_get_o_auth_2_applications(
         self,
@@ -3361,15 +3494,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_get_o_auth_2_applications()
+            await client.user.user_get_o_auth_2_applications(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_get_o_auth_2_applications(
+        _response = await self._raw_client.user_get_o_auth_2_applications(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_create_o_auth_2_application(
         self,
@@ -3413,13 +3549,13 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_create_o_auth_2_application(
+        _response = await self._raw_client.user_create_o_auth_2_application(
             confidential_client=confidential_client,
             name=name,
             redirect_uris=redirect_uris,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def user_get_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -3457,10 +3593,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_get_o_auth_2_application(
+        _response = await self._raw_client.user_get_o_auth_2_application(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_delete_o_auth_2_application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -3497,10 +3633,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_delete_o_auth_2_application(
+        _response = await self._raw_client.user_delete_o_auth_2_application(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_update_o_auth_2_application(
         self,
@@ -3550,14 +3686,14 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_update_o_auth_2_application(
+        _response = await self._raw_client.user_update_o_auth_2_application(
             id,
             confidential_client=confidential_client,
             name=name,
             redirect_uris=redirect_uris,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def update_avatar(
         self,
@@ -3595,10 +3731,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_avatar(
+        _response = await self._raw_client.update_avatar(
             image=image, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_avatar(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -3630,8 +3766,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_avatar(request_options=request_options)
-        return response.data
+        _response = await self._raw_client.delete_avatar(
+            request_options=request_options
+        )
+        return _response.data
 
     async def block_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3668,10 +3806,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.block_user(
+        _response = await self._raw_client.block_user(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_emails(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -3704,8 +3842,8 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_emails(request_options=request_options)
-        return response.data
+        _response = await self._raw_client.list_emails(request_options=request_options)
+        return _response.data
 
     async def add_email(
         self,
@@ -3744,10 +3882,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.add_email(
+        _response = await self._raw_client.add_email(
             emails=emails, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_email(
         self,
@@ -3785,10 +3923,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_email(
+        _response = await self._raw_client.delete_email(
             emails=emails, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_list_followers(
         self,
@@ -3826,15 +3964,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_followers()
+            await client.user.current_list_followers(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_list_followers(
+        _response = await self._raw_client.current_list_followers(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_list_following(
         self,
@@ -3872,15 +4013,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_following()
+            await client.user.current_list_following(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_list_following(
+        _response = await self._raw_client.current_list_following(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_check_following(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3917,10 +4061,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_check_following(
+        _response = await self._raw_client.current_check_following(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_put_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3957,10 +4101,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_put_follow(
+        _response = await self._raw_client.current_put_follow(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_delete_follow(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -3997,10 +4141,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_delete_follow(
+        _response = await self._raw_client.current_delete_follow(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_verification_token(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -4033,17 +4177,26 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_verification_token(
+        _response = await self._raw_client.get_verification_token(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_verify_gpg_key(
-        self, *, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        key_id: str,
+        armored_signature: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> GpgKey:
         """
         Parameters
         ----------
+        key_id : str
+            An Signature for a GPG key token
+
+        armored_signature : typing.Optional[str]
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -4064,15 +4217,19 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_verify_gpg_key()
+            await client.user.user_verify_gpg_key(
+                key_id="key_id",
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_verify_gpg_key(
-            request_options=request_options
+        _response = await self._raw_client.user_verify_gpg_key(
+            key_id=key_id,
+            armored_signature=armored_signature,
+            request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def user_current_list_gpg_keys(
         self,
@@ -4110,15 +4267,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_current_list_gpg_keys()
+            await client.user.user_current_list_gpg_keys(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_current_list_gpg_keys(
+        _response = await self._raw_client.user_current_list_gpg_keys(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_current_post_gpg_key(
         self,
@@ -4162,12 +4322,12 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_current_post_gpg_key(
+        _response = await self._raw_client.user_current_post_gpg_key(
             armored_public_key=armored_public_key,
             armored_signature=armored_signature,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def user_current_get_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -4205,10 +4365,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_current_get_gpg_key(
+        _response = await self._raw_client.user_current_get_gpg_key(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_current_delete_gpg_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -4245,10 +4405,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_current_delete_gpg_key(
+        _response = await self._raw_client.user_current_delete_gpg_key(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_hooks(
         self,
@@ -4286,15 +4446,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_hooks()
+            await client.user.list_hooks(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_hooks(
+        _response = await self._raw_client.list_hooks(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_hook(
         self,
@@ -4350,7 +4513,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_hook(
+        _response = await self._raw_client.create_hook(
             config=config,
             type=type,
             active=active,
@@ -4359,7 +4522,7 @@ class AsyncUserClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -4397,8 +4560,8 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_hook(id, request_options=request_options)
-        return response.data
+        _response = await self._raw_client.get_hook(id, request_options=request_options)
+        return _response.data
 
     async def delete_hook(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -4435,10 +4598,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_hook(
+        _response = await self._raw_client.delete_hook(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def edit_hook(
         self,
@@ -4494,7 +4657,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.edit_hook(
+        _response = await self._raw_client.edit_hook(
             id,
             active=active,
             authorization_header=authorization_header,
@@ -4503,7 +4666,7 @@ class AsyncUserClient:
             events=events,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def current_list_keys(
         self,
@@ -4545,18 +4708,22 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_keys()
+            await client.user.current_list_keys(
+                fingerprint="fingerprint",
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_list_keys(
+        _response = await self._raw_client.current_list_keys(
             fingerprint=fingerprint,
             page=page,
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def current_post_key(
         self,
@@ -4606,10 +4773,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_post_key(
+        _response = await self._raw_client.current_post_key(
             key=key, title=title, read_only=read_only, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_get_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -4647,10 +4814,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_get_key(
+        _response = await self._raw_client.current_get_key(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_delete_key(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
@@ -4687,10 +4854,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_delete_key(
+        _response = await self._raw_client.current_delete_key(
             id, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_blocked_users(
         self,
@@ -4728,15 +4895,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_blocked_users()
+            await client.user.list_blocked_users(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_blocked_users(
+        _response = await self._raw_client.list_blocked_users(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_quota(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -4769,8 +4939,8 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_quota(request_options=request_options)
-        return response.data
+        _response = await self._raw_client.get_quota(request_options=request_options)
+        return _response.data
 
     async def list_quota_artifacts(
         self,
@@ -4808,15 +4978,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_quota_artifacts()
+            await client.user.list_quota_artifacts(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_quota_artifacts(
+        _response = await self._raw_client.list_quota_artifacts(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_quota_attachments(
         self,
@@ -4854,28 +5027,35 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_quota_attachments()
+            await client.user.list_quota_attachments(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_quota_attachments(
+        _response = await self._raw_client.list_quota_attachments(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def check_quota(
-        self, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+        self, *, subject: str, request_options: typing.Optional[RequestOptions] = None
+    ) -> bool:
         """
         Parameters
         ----------
+        subject : str
+            subject of the quota
+
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
         Returns
         -------
-        None
+        bool
+            Returns true if the action is accepted.
 
         Examples
         --------
@@ -4889,13 +5069,17 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.check_quota()
+            await client.user.check_quota(
+                subject="subject",
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.check_quota(request_options=request_options)
-        return response.data
+        _response = await self._raw_client.check_quota(
+            subject=subject, request_options=request_options
+        )
+        return _response.data
 
     async def list_quota_packages(
         self,
@@ -4933,15 +5117,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_quota_packages()
+            await client.user.list_quota_packages(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_quota_packages(
+        _response = await self._raw_client.list_quota_packages(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_list_repos(
         self,
@@ -4983,15 +5170,19 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_repos()
+            await client.user.current_list_repos(
+                page=1,
+                limit=1,
+                order_by="name",
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_list_repos(
+        _response = await self._raw_client.current_list_repos(
             page=page, limit=limit, order_by=order_by, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_user_settings(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -5024,10 +5215,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_user_settings(
+        _response = await self._raw_client.get_user_settings(
             request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def update_user_settings(
         self,
@@ -5099,7 +5290,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.update_user_settings(
+        _response = await self._raw_client.update_user_settings(
             description=description,
             diff_view_style=diff_view_style,
             enable_repo_unit_hints=enable_repo_unit_hints,
@@ -5114,7 +5305,7 @@ class AsyncUserClient:
             website=website,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def current_list_starred(
         self,
@@ -5152,15 +5343,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_starred()
+            await client.user.current_list_starred(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_list_starred(
+        _response = await self._raw_client.current_list_starred(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_check_starring(
         self,
@@ -5205,10 +5399,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_check_starring(
+        _response = await self._raw_client.current_check_starring(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_put_star(
         self,
@@ -5253,10 +5447,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_put_star(
+        _response = await self._raw_client.current_put_star(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_delete_star(
         self,
@@ -5301,10 +5495,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_delete_star(
+        _response = await self._raw_client.current_delete_star(
             owner, repo, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_stop_watches(
         self,
@@ -5342,15 +5536,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.get_stop_watches()
+            await client.user.get_stop_watches(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_stop_watches(
+        _response = await self._raw_client.get_stop_watches(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_list_subscriptions(
         self,
@@ -5388,15 +5585,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_subscriptions()
+            await client.user.current_list_subscriptions(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_list_subscriptions(
+        _response = await self._raw_client.current_list_subscriptions(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_teams(
         self,
@@ -5434,15 +5634,18 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_teams()
+            await client.user.list_teams(
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_teams(
+        _response = await self._raw_client.list_teams(
             page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def current_tracked_times(
         self,
@@ -5479,6 +5682,7 @@ class AsyncUserClient:
         Examples
         --------
         import asyncio
+        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -5488,19 +5692,28 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_tracked_times()
+            await client.user.current_tracked_times(
+                page=1,
+                limit=1,
+                since=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+                before=datetime.datetime.fromisoformat(
+                    "2024-01-15 09:30:00+00:00",
+                ),
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.current_tracked_times(
+        _response = await self._raw_client.current_tracked_times(
             page=page,
             limit=limit,
             since=since,
             before=before,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def unblock_user(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5537,20 +5750,21 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.unblock_user(
+        _response = await self._raw_client.unblock_user(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def search(
         self,
         *,
         q: typing.Optional[str] = None,
         uid: typing.Optional[int] = None,
+        sort: typing.Optional[UserSearchRequestSort] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UserSearchResponse:
+    ) -> UserSearchResults:
         """
         Parameters
         ----------
@@ -5559,6 +5773,9 @@ class AsyncUserClient:
 
         uid : typing.Optional[int]
             ID of the user to search for
+
+        sort : typing.Optional[UserSearchRequestSort]
+            sort order of results
 
         page : typing.Optional[int]
             page number of results to return (1-based)
@@ -5571,7 +5788,7 @@ class AsyncUserClient:
 
         Returns
         -------
-        UserSearchResponse
+        UserSearchResults
             SearchResults of a successful search
 
         Examples
@@ -5586,15 +5803,26 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.search()
+            await client.user.search(
+                q="q",
+                uid=1000000,
+                sort="oldest",
+                page=1,
+                limit=1,
+            )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.search(
-            q=q, uid=uid, page=page, limit=limit, request_options=request_options
+        _response = await self._raw_client.search(
+            q=q,
+            uid=uid,
+            sort=sort,
+            page=page,
+            limit=limit,
+            request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def get(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5632,8 +5860,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get(username, request_options=request_options)
-        return response.data
+        _response = await self._raw_client.get(
+            username, request_options=request_options
+        )
+        return _response.data
 
     async def list_activity_feeds(
         self,
@@ -5685,12 +5915,16 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_activity_feeds(
                 username="username",
+                only_performed_by=True,
+                date="date",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_activity_feeds(
+        _response = await self._raw_client.list_activity_feeds(
             username,
             only_performed_by=only_performed_by,
             date=date,
@@ -5698,7 +5932,7 @@ class AsyncUserClient:
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def list_followers(
         self,
@@ -5742,15 +5976,17 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_followers(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_followers(
+        _response = await self._raw_client.list_followers(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_following(
         self,
@@ -5794,15 +6030,17 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_following(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_following(
+        _response = await self._raw_client.list_following(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def check_following(
         self,
@@ -5847,10 +6085,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.check_following(
+        _response = await self._raw_client.check_following(
             username, target, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def user_list_gpg_keys(
         self,
@@ -5894,15 +6132,17 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.user_list_gpg_keys(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.user_list_gpg_keys(
+        _response = await self._raw_client.user_list_gpg_keys(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_heatmap_data(
         self, username: str, *, request_options: typing.Optional[RequestOptions] = None
@@ -5940,10 +6180,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_heatmap_data(
+        _response = await self._raw_client.get_heatmap_data(
             username, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_keys(
         self,
@@ -5991,19 +6231,22 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_keys(
                 username="username",
+                fingerprint="fingerprint",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_keys(
+        _response = await self._raw_client.list_keys(
             username,
             fingerprint=fingerprint,
             page=page,
             limit=limit,
             request_options=request_options,
         )
-        return response.data
+        return _response.data
 
     async def list_repos(
         self,
@@ -6047,15 +6290,17 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_repos(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_repos(
+        _response = await self._raw_client.list_repos(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_starred(
         self,
@@ -6099,15 +6344,17 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_starred(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_starred(
+        _response = await self._raw_client.list_starred(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def list_subscriptions(
         self,
@@ -6151,15 +6398,17 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_subscriptions(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.list_subscriptions(
+        _response = await self._raw_client.list_subscriptions(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def get_tokens(
         self,
@@ -6203,15 +6452,17 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.get_tokens(
                 username="username",
+                page=1,
+                limit=1,
             )
 
 
         asyncio.run(main())
         """
-        response = await self._raw_client.get_tokens(
+        _response = await self._raw_client.get_tokens(
             username, page=page, limit=limit, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def create_token(
         self,
@@ -6259,10 +6510,10 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.create_token(
+        _response = await self._raw_client.create_token(
             username, name=name, scopes=scopes, request_options=request_options
         )
-        return response.data
+        return _response.data
 
     async def delete_access_token(
         self,
@@ -6307,7 +6558,7 @@ class AsyncUserClient:
 
         asyncio.run(main())
         """
-        response = await self._raw_client.delete_access_token(
+        _response = await self._raw_client.delete_access_token(
             username, token, request_options=request_options
         )
-        return response.data
+        return _response.data

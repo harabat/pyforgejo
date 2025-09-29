@@ -100,14 +100,22 @@ class RawNotificationClient:
                 return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     def notify_read_list(
         self,
         *,
         last_read_at: typing.Optional[dt.datetime] = None,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -118,7 +126,7 @@ class RawNotificationClient:
         last_read_at : typing.Optional[dt.datetime]
             Describes the last point that notifications were checked. Anything updated since this time will not be updated.
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -152,8 +160,16 @@ class RawNotificationClient:
                 return HttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     def notify_new_available(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -186,16 +202,24 @@ class RawNotificationClient:
                 return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     def notify_get_thread(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[NotificationThread]:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         request_options : typing.Optional[RequestOptions]
@@ -223,32 +247,42 @@ class RawNotificationClient:
                 return HttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     def notify_read_thread(
         self,
-        id: str,
+        id: int,
         *,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -256,7 +290,7 @@ class RawNotificationClient:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         to_status : typing.Optional[str]
@@ -282,28 +316,38 @@ class RawNotificationClient:
                 return HttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     def notify_get_repo_list(
         self,
@@ -388,15 +432,23 @@ class RawNotificationClient:
                 return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     def notify_read_repo_list(
         self,
         owner: str,
         repo: str,
         *,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         last_read_at: typing.Optional[dt.datetime] = None,
@@ -411,7 +463,7 @@ class RawNotificationClient:
         repo : str
             name of the repo
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -448,8 +500,16 @@ class RawNotificationClient:
                 return HttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
 
 class AsyncRawNotificationClient:
@@ -531,14 +591,22 @@ class AsyncRawNotificationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     async def notify_read_list(
         self,
         *,
         last_read_at: typing.Optional[dt.datetime] = None,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -549,7 +617,7 @@ class AsyncRawNotificationClient:
         last_read_at : typing.Optional[dt.datetime]
             Describes the last point that notifications were checked. Anything updated since this time will not be updated.
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -583,8 +651,16 @@ class AsyncRawNotificationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     async def notify_new_available(
         self, *, request_options: typing.Optional[RequestOptions] = None
@@ -617,16 +693,24 @@ class AsyncRawNotificationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     async def notify_get_thread(
-        self, id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[NotificationThread]:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         request_options : typing.Optional[RequestOptions]
@@ -654,32 +738,42 @@ class AsyncRawNotificationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     async def notify_read_thread(
         self,
-        id: str,
+        id: int,
         *,
         to_status: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -687,7 +781,7 @@ class AsyncRawNotificationClient:
         """
         Parameters
         ----------
-        id : str
+        id : int
             id of notification thread
 
         to_status : typing.Optional[str]
@@ -713,28 +807,38 @@ class AsyncRawNotificationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             if _response.status_code == 403:
                 raise ForbiddenError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             if _response.status_code == 404:
                 raise NotFoundError(
-                    typing.cast(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
                         typing.Optional[typing.Any],
                         parse_obj_as(
                             type_=typing.Optional[typing.Any],  # type: ignore
                             object_=_response.json(),
                         ),
-                    )
+                    ),
                 )
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     async def notify_get_repo_list(
         self,
@@ -819,15 +923,23 @@ class AsyncRawNotificationClient:
                 return AsyncHttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
 
     async def notify_read_repo_list(
         self,
         owner: str,
         repo: str,
         *,
-        all_: typing.Optional[str] = None,
+        all_: typing.Optional[bool] = None,
         status_types: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
         to_status: typing.Optional[str] = None,
         last_read_at: typing.Optional[dt.datetime] = None,
@@ -842,7 +954,7 @@ class AsyncRawNotificationClient:
         repo : str
             name of the repo
 
-        all_ : typing.Optional[str]
+        all_ : typing.Optional[bool]
             If true, mark all notifications on this repo. Default value is false
 
         status_types : typing.Optional[typing.Union[str, typing.Sequence[str]]]
@@ -879,5 +991,13 @@ class AsyncRawNotificationClient:
                 return AsyncHttpResponse(response=_response, data=None)
             _response_json = _response.json()
         except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, body=_response.text)
-        raise ApiError(status_code=_response.status_code, body=_response_json)
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
