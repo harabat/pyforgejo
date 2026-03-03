@@ -7,7 +7,7 @@
       "name": "This file is distributed under the MIT license for the purpose of interoperability",
       "url": "http://opensource.org/licenses/MIT"
     },
-    "version": "13.0.0-dev-525-8e5f0d1e82+gitea-1.22.0"
+    "version": "14.0.2+gitea-1.22.0"
   },
   "servers": [
     {
@@ -44,6 +44,20 @@
         "responses": {
           "204": {
             "$ref": "#/components/responses/empty"
+          }
+        }
+      }
+    },
+    "/activitypub/actor/outbox": {
+      "post": {
+        "tags": [
+          "activitypub"
+        ],
+        "summary": "Display the outbox (always empty)",
+        "operationId": "activitypubInstanceActorOutbox",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Outbox"
           }
         }
       }
@@ -114,6 +128,32 @@
           }
         },
         "x-codegen-request-body-name": "body"
+      }
+    },
+    "/activitypub/repository-id/{repository-id}/outbox": {
+      "post": {
+        "tags": [
+          "activitypub"
+        ],
+        "summary": "Display the outbox",
+        "operationId": "activitypubRepositoryOutbox",
+        "parameters": [
+          {
+            "name": "repository-id",
+            "in": "path",
+            "description": "repository ID of the repo",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Outbox"
+          }
+        }
       }
     },
     "/activitypub/user-id/{user-id}": {
@@ -256,7 +296,7 @@
         ],
         "responses": {
           "200": {
-            "$ref": "#/components/responses/PersonFeed"
+            "$ref": "#/components/responses/Outbox"
           },
           "403": {
             "$ref": "#/components/responses/forbidden"
@@ -1014,7 +1054,7 @@
           "admin"
         ],
         "summary": "Deletes a quota rule",
-        "operationId": "adminDEleteQuotaRule",
+        "operationId": "adminDeleteQuotaRule",
         "parameters": [
           {
             "name": "quotarule",
@@ -1426,6 +1466,82 @@
           },
           "400": {
             "$ref": "#/components/responses/error"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/validationError"
+          }
+        },
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/admin/users/{username}/emails": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List all email addresses for a user",
+        "operationId": "adminListUserEmails",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "username of user to get email addresses of",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/EmailList"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/notFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Delete email addresses from a user's account",
+        "operationId": "adminDeleteUserEmails",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "username of user to delete email addresses from",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteEmailOption"
+              }
+            },
+            "text/plain": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteEmailOption"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/empty"
           },
           "403": {
             "$ref": "#/components/responses/forbidden"
@@ -2018,7 +2134,6 @@
                 "enum": [
                   "issue",
                   "pull",
-                  "commit",
                   "repository"
                 ]
               }
@@ -8339,7 +8454,7 @@
         "tags": [
           "repository"
         ],
-        "summary": "Gets multiplbe blobs of a repository.",
+        "summary": "Gets multiple blobs of a repository.",
         "operationId": "GetBlobs",
         "parameters": [
           {
@@ -14136,7 +14251,6 @@
                 "enum": [
                   "issue",
                   "pull",
-                  "commit",
                   "repository"
                 ]
               }
@@ -22751,7 +22865,7 @@
         "tags": [
           "user"
         ],
-        "summary": "List the authenticated user's access tokens",
+        "summary": "List the specified user's access tokens",
         "operationId": "userGetTokens",
         "parameters": [
           {
@@ -22796,7 +22910,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Generate an access token for the current user",
+        "summary": "Generate an access token for the specified user",
         "operationId": "userCreateToken",
         "parameters": [
           {
@@ -22841,7 +22955,7 @@
         "tags": [
           "user"
         ],
-        "summary": "Delete an access token from current user's account",
+        "summary": "Delete an access token from the specified user's account",
         "operationId": "userDeleteAccessToken",
         "parameters": [
           {
@@ -23018,28 +23132,6 @@
           }
         },
         "x-go-package": "forgejo.org/services/context"
-      },
-      "APPersonFollowItem": {
-        "type": "object",
-        "properties": {
-          "actor_id": {
-            "type": "string",
-            "x-go-name": "ActorID"
-          },
-          "note": {
-            "type": "string",
-            "x-go-name": "Note"
-          },
-          "original_item": {
-            "type": "string",
-            "x-go-name": "OriginalItem"
-          },
-          "original_url": {
-            "type": "string",
-            "x-go-name": "OriginalURL"
-          }
-        },
-        "x-go-package": "forgejo.org/modules/structs"
       },
       "AccessToken": {
         "title": "AccessToken represents an API access token.",
@@ -24210,7 +24302,7 @@
       },
       "CommitStatusState": {
         "type": "string",
-        "description": "CommitStatusState holds the state of a CommitStatus\nIt can be \"pending\", \"success\", \"error\" and \"failure\"",
+        "description": "CommitStatusState holds the state of a CommitStatus\nIt can be \"pending\", \"success\", \"error\", \"failure\" and \"warning\"",
         "x-go-package": "forgejo.org/modules/structs"
       },
       "CommitUser": {
@@ -26476,6 +26568,10 @@
             "type": "string",
             "x-go-name": "FullName"
           },
+          "hide_email": {
+            "type": "boolean",
+            "x-go-name": "HideEmail"
+          },
           "location": {
             "type": "string",
             "x-go-name": "Location"
@@ -26713,6 +26809,11 @@
       "ForgeLike": {
         "type": "object",
         "description": "ForgeLike activity data type",
+        "x-go-package": "forgejo.org/modules/forgefed"
+      },
+      "ForgeOutbox": {
+        "type": "object",
+        "description": "ActivityStream OrderedCollection of activities",
         "x-go-package": "forgejo.org/modules/forgefed"
       },
       "GPGKey": {
@@ -32276,6 +32377,21 @@
           }
         }
       },
+      "Outbox": {
+        "description": "Outbox",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ForgeOutbox"
+            }
+          },
+          "text/html": {
+            "schema": {
+              "$ref": "#/components/schemas/ForgeOutbox"
+            }
+          }
+        }
+      },
       "Package": {
         "description": "Package",
         "content": {
@@ -32328,27 +32444,6 @@
               "type": "array",
               "items": {
                 "$ref": "#/components/schemas/Package"
-              }
-            }
-          }
-        }
-      },
-      "PersonFeed": {
-        "description": "Personfeed",
-        "content": {
-          "application/json": {
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/APPersonFollowItem"
-              }
-            }
-          },
-          "text/html": {
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/APPersonFollowItem"
               }
             }
           }
