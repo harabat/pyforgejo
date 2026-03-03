@@ -5,8 +5,7 @@ import typing
 import pydantic
 
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from .create_repo_option_object_format_name import \
-    CreateRepoOptionObjectFormatName
+from .create_repo_option_object_format_name import CreateRepoOptionObjectFormatName
 from .create_repo_option_trust_model import CreateRepoOptionTrustModel
 
 

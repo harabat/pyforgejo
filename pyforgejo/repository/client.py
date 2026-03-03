@@ -26,8 +26,9 @@ from ..types.contents_response import ContentsResponse
 from ..types.create_hook_option_config import CreateHookOptionConfig
 from ..types.create_hook_option_type import CreateHookOptionType
 from ..types.create_pull_review_comment import CreatePullReviewComment
-from ..types.create_repo_option_object_format_name import \
-    CreateRepoOptionObjectFormatName
+from ..types.create_repo_option_object_format_name import (
+    CreateRepoOptionObjectFormatName,
+)
 from ..types.create_repo_option_trust_model import CreateRepoOptionTrustModel
 from ..types.deploy_key import DeployKey
 from ..types.dispatch_workflow_run import DispatchWorkflowRun
@@ -73,35 +74,38 @@ from ..types.wiki_commit_list import WikiCommitList
 from ..types.wiki_page import WikiPage
 from ..types.wiki_page_meta_data import WikiPageMetaData
 from .raw_client import AsyncRawRepositoryClient, RawRepositoryClient
-from .types.add_collaborator_option_permission import \
-    AddCollaboratorOptionPermission
-from .types.list_action_runs_request_status_item import \
-    ListActionRunsRequestStatusItem
+from .types.add_collaborator_option_permission import AddCollaboratorOptionPermission
+from .types.list_action_runs_request_status_item import ListActionRunsRequestStatusItem
 from .types.merge_pull_request_option_do import MergePullRequestOptionDo
 from .types.migrate_repo_options_service import MigrateRepoOptionsService
-from .types.repo_download_commit_diff_or_patch_request_diff_type import \
-    RepoDownloadCommitDiffOrPatchRequestDiffType
-from .types.repo_download_pull_diff_or_patch_request_diff_type import \
-    RepoDownloadPullDiffOrPatchRequestDiffType
+from .types.repo_download_commit_diff_or_patch_request_diff_type import (
+    RepoDownloadCommitDiffOrPatchRequestDiffType,
+)
+from .types.repo_download_pull_diff_or_patch_request_diff_type import (
+    RepoDownloadPullDiffOrPatchRequestDiffType,
+)
 from .types.repo_get_contents_response import RepoGetContentsResponse
-from .types.repo_get_pull_request_files_request_whitespace import \
-    RepoGetPullRequestFilesRequestWhitespace
-from .types.repo_list_pull_requests_request_sort import \
-    RepoListPullRequestsRequestSort
-from .types.repo_list_pull_requests_request_state import \
-    RepoListPullRequestsRequestState
-from .types.repo_list_statuses_by_ref_request_sort import \
-    RepoListStatusesByRefRequestSort
-from .types.repo_list_statuses_by_ref_request_state import \
-    RepoListStatusesByRefRequestState
+from .types.repo_get_pull_request_files_request_whitespace import (
+    RepoGetPullRequestFilesRequestWhitespace,
+)
+from .types.repo_list_pull_requests_request_sort import RepoListPullRequestsRequestSort
+from .types.repo_list_pull_requests_request_state import (
+    RepoListPullRequestsRequestState,
+)
+from .types.repo_list_statuses_by_ref_request_sort import (
+    RepoListStatusesByRefRequestSort,
+)
+from .types.repo_list_statuses_by_ref_request_state import (
+    RepoListStatusesByRefRequestState,
+)
 from .types.repo_list_statuses_request_sort import RepoListStatusesRequestSort
-from .types.repo_list_statuses_request_state import \
-    RepoListStatusesRequestState
+from .types.repo_list_statuses_request_state import RepoListStatusesRequestState
 from .types.repo_search_request_order import RepoSearchRequestOrder
 from .types.repo_search_request_sort import RepoSearchRequestSort
-from .types.repo_update_pull_request_request_style import \
-    RepoUpdatePullRequestRequestStyle
-from .types.topic_search_results import TopicSearchResults
+from .types.repo_update_pull_request_request_style import (
+    RepoUpdatePullRequestRequestStyle,
+)
+from .types.topic_search_response import TopicSearchResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -328,25 +332,7 @@ class RepositoryClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.repository.repo_search(
-            q="q",
-            topic=True,
-            include_desc=True,
-            uid=1000000,
-            priority_owner_id=1000000,
-            team_id=1000000,
-            starred_by=1000000,
-            private=True,
-            is_private=True,
-            template=True,
-            archived=True,
-            mode="mode",
-            exclusive=True,
-            sort="alpha",
-            order="asc",
-            page=1,
-            limit=1,
-        )
+        client.repository.repo_search()
         """
         _response = self._raw_client.repo_search(
             q=q,
@@ -701,7 +687,6 @@ class RepositoryClient:
         client.repository.repo_search_run_jobs(
             owner="owner",
             repo="repo",
-            labels="labels",
         )
         """
         _response = self._raw_client.repo_search_run_jobs(
@@ -813,10 +798,6 @@ class RepositoryClient:
         client.repository.list_action_runs(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
-            run_number=1000000,
-            head_sha="head_sha",
         )
         """
         _response = self._raw_client.list_action_runs(
@@ -920,8 +901,6 @@ class RepositoryClient:
         client.repository.repo_list_actions_secrets(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_actions_secrets(
@@ -1066,8 +1045,6 @@ class RepositoryClient:
         client.repository.list_action_tasks(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_action_tasks(
@@ -1117,8 +1094,6 @@ class RepositoryClient:
         client.repository.get_repo_variables_list(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.get_repo_variables_list(
@@ -1396,7 +1371,7 @@ class RepositoryClient:
         owner: str,
         repo: str,
         *,
-        date: typing.Optional[str] = None,
+        date: typing.Optional[dt.date] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -1410,7 +1385,7 @@ class RepositoryClient:
         repo : str
             name of the repo
 
-        date : typing.Optional[str]
+        date : typing.Optional[dt.date]
             the date of the activities to be found
 
         page : typing.Optional[int]
@@ -1437,9 +1412,6 @@ class RepositoryClient:
         client.repository.repo_list_activity_feeds(
             owner="owner",
             repo="repo",
-            date="date",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_activity_feeds(
@@ -2081,8 +2053,6 @@ class RepositoryClient:
         client.repository.repo_list_branches(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_branches(
@@ -2333,8 +2303,6 @@ class RepositoryClient:
         client.repository.repo_list_collaborators(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_collaborators(
@@ -2598,14 +2566,6 @@ class RepositoryClient:
         client.repository.repo_get_all_commits(
             owner="owner",
             repo="repo",
-            sha="sha",
-            path="path",
-            stat=True,
-            verification=True,
-            files=True,
-            page=1,
-            limit=1,
-            not_="not",
         )
         """
         _response = self._raw_client.repo_get_all_commits(
@@ -2670,8 +2630,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             ref="ref",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_get_combined_status_by_ref(
@@ -2734,10 +2692,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             ref="ref",
-            sort="oldest",
-            state="pending",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_statuses_by_ref(
@@ -2882,7 +2836,6 @@ class RepositoryClient:
         client.repository.repo_get_contents_list(
             owner="owner",
             repo="repo",
-            ref="ref",
         )
         """
         _response = self._raw_client.repo_get_contents_list(
@@ -3019,7 +2972,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             filepath="filepath",
-            ref="ref",
         )
         """
         _response = self._raw_client.repo_get_contents(
@@ -3475,7 +3427,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             filepath="filepath",
-            ref="ref",
         )
         """
         _response = self._raw_client.repo_get_editor_config(
@@ -3784,8 +3735,6 @@ class RepositoryClient:
         client.repository.list_forks(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_forks(
@@ -3989,9 +3938,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
-            stat=True,
-            verification=True,
-            files=True,
         )
         """
         _response = self._raw_client.repo_get_single_commit(
@@ -4103,8 +4049,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
-            verification=True,
-            files=True,
         )
         """
         _response = self._raw_client.repo_get_note(
@@ -4395,9 +4339,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
-            recursive=True,
-            page=1,
-            per_page=1,
         )
         """
         _response = self._raw_client.get_tree(
@@ -4453,8 +4394,6 @@ class RepositoryClient:
         client.repository.repo_list_hooks(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_hooks(
@@ -4914,7 +4853,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             id=1000000,
-            ref="ref",
         )
         """
         _response = self._raw_client.repo_test_hook(
@@ -5136,10 +5074,6 @@ class RepositoryClient:
         client.repository.repo_list_keys(
             owner="owner",
             repo="repo",
-            key_id=1,
-            fingerprint="fingerprint",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_keys(
@@ -5538,12 +5472,6 @@ class RepositoryClient:
         client.repository.repo_list_pull_requests(
             owner="owner",
             repo="repo",
-            state="open",
-            sort="oldest",
-            milestone=1000000,
-            poster="poster",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_pull_requests(
@@ -5918,7 +5846,6 @@ class RepositoryClient:
             repo="repo",
             index=1000000,
             diff_type="diff",
-            binary=True,
         )
         """
         _response = self._raw_client.repo_download_pull_diff_or_patch(
@@ -5986,10 +5913,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            page=1,
-            limit=1,
-            verification=True,
-            files=True,
         )
         """
         _response = self._raw_client.repo_get_pull_request_commits(
@@ -6059,10 +5982,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            skip_to="skip-to",
-            whitespace="ignore-all",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_get_pull_request_files(
@@ -6408,8 +6327,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_pull_reviews(
@@ -7038,7 +6955,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            style="merge",
         )
         """
         _response = self._raw_client.repo_update_pull_request(
@@ -7088,8 +7004,6 @@ class RepositoryClient:
         client.repository.repo_list_push_mirrors(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_push_mirrors(
@@ -7403,11 +7317,6 @@ class RepositoryClient:
         client.repository.repo_list_releases(
             owner="owner",
             repo="repo",
-            draft=True,
-            pre_release=True,
-            q="q",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_releases(
@@ -8171,8 +8080,6 @@ class RepositoryClient:
         client.repository.repo_list_stargazers(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_stargazers(
@@ -8235,10 +8142,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             sha="sha",
-            sort="oldest",
-            state="pending",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_statuses(
@@ -8360,8 +8263,6 @@ class RepositoryClient:
         client.repository.repo_list_subscribers(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_subscribers(
@@ -8953,8 +8854,6 @@ class RepositoryClient:
         client.repository.repo_list_tags(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_tags(
@@ -9332,8 +9231,6 @@ class RepositoryClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -9342,15 +9239,6 @@ class RepositoryClient:
         client.repository.repo_tracked_times(
             owner="owner",
             repo="repo",
-            user="user",
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_tracked_times(
@@ -9453,8 +9341,6 @@ class RepositoryClient:
         client.repository.repo_list_topics(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_list_topics(
@@ -9736,7 +9622,7 @@ class RepositoryClient:
         owner: str,
         repo: str,
         *,
-        content_base_64: typing.Optional[str] = OMIT,
+        content_base64: typing.Optional[str] = OMIT,
         message: typing.Optional[str] = OMIT,
         title: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -9750,7 +9636,7 @@ class RepositoryClient:
         repo : str
             name of the repo
 
-        content_base_64 : typing.Optional[str]
+        content_base64 : typing.Optional[str]
             content must be base64 encoded
 
         message : typing.Optional[str]
@@ -9782,7 +9668,7 @@ class RepositoryClient:
         _response = self._raw_client.repo_create_wiki_page(
             owner,
             repo,
-            content_base_64=content_base_64,
+            content_base64=content_base64,
             message=message,
             title=title,
             request_options=request_options,
@@ -9886,7 +9772,7 @@ class RepositoryClient:
         repo: str,
         page_name: str,
         *,
-        content_base_64: typing.Optional[str] = OMIT,
+        content_base64: typing.Optional[str] = OMIT,
         message: typing.Optional[str] = OMIT,
         title: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -9903,7 +9789,7 @@ class RepositoryClient:
         page_name : str
             name of the page
 
-        content_base_64 : typing.Optional[str]
+        content_base64 : typing.Optional[str]
             content must be base64 encoded
 
         message : typing.Optional[str]
@@ -9937,7 +9823,7 @@ class RepositoryClient:
             owner,
             repo,
             page_name,
-            content_base_64=content_base_64,
+            content_base64=content_base64,
             message=message,
             title=title,
             request_options=request_options,
@@ -9986,8 +9872,6 @@ class RepositoryClient:
         client.repository.repo_get_wiki_pages(
             owner="owner",
             repo="repo",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.repo_get_wiki_pages(
@@ -10038,7 +9922,6 @@ class RepositoryClient:
             owner="owner",
             repo="repo",
             page_name="pageName",
-            page=1,
         )
         """
         _response = self._raw_client.repo_get_wiki_page_revisions(
@@ -10189,7 +10072,7 @@ class RepositoryClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> TopicSearchResults:
+    ) -> TopicSearchResponse:
         """
         Parameters
         ----------
@@ -10207,7 +10090,7 @@ class RepositoryClient:
 
         Returns
         -------
-        TopicSearchResults
+        TopicSearchResponse
             SearchResults of a successful search
 
         Examples
@@ -10219,8 +10102,6 @@ class RepositoryClient:
         )
         client.repository.topic_search(
             q="q",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.topic_search(
@@ -10555,25 +10436,7 @@ class AsyncRepositoryClient:
 
 
         async def main() -> None:
-            await client.repository.repo_search(
-                q="q",
-                topic=True,
-                include_desc=True,
-                uid=1000000,
-                priority_owner_id=1000000,
-                team_id=1000000,
-                starred_by=1000000,
-                private=True,
-                is_private=True,
-                template=True,
-                archived=True,
-                mode="mode",
-                exclusive=True,
-                sort="alpha",
-                order="asc",
-                page=1,
-                limit=1,
-            )
+            await client.repository.repo_search()
 
 
         asyncio.run(main())
@@ -10960,7 +10823,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_search_run_jobs(
                 owner="owner",
                 repo="repo",
-                labels="labels",
             )
 
 
@@ -11088,10 +10950,6 @@ class AsyncRepositoryClient:
             await client.repository.list_action_runs(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
-                run_number=1000000,
-                head_sha="head_sha",
             )
 
 
@@ -11211,8 +11069,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_actions_secrets(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -11381,8 +11237,6 @@ class AsyncRepositoryClient:
             await client.repository.list_action_tasks(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -11440,8 +11294,6 @@ class AsyncRepositoryClient:
             await client.repository.get_repo_variables_list(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -11762,7 +11614,7 @@ class AsyncRepositoryClient:
         owner: str,
         repo: str,
         *,
-        date: typing.Optional[str] = None,
+        date: typing.Optional[dt.date] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -11776,7 +11628,7 @@ class AsyncRepositoryClient:
         repo : str
             name of the repo
 
-        date : typing.Optional[str]
+        date : typing.Optional[dt.date]
             the date of the activities to be found
 
         page : typing.Optional[int]
@@ -11808,9 +11660,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_activity_feeds(
                 owner="owner",
                 repo="repo",
-                date="date",
-                page=1,
-                limit=1,
             )
 
 
@@ -12532,8 +12381,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_branches(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -12824,8 +12671,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_collaborators(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -13129,14 +12974,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_get_all_commits(
                 owner="owner",
                 repo="repo",
-                sha="sha",
-                path="path",
-                stat=True,
-                verification=True,
-                files=True,
-                page=1,
-                limit=1,
-                not_="not",
             )
 
 
@@ -13209,8 +13046,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 ref="ref",
-                page=1,
-                limit=1,
             )
 
 
@@ -13281,10 +13116,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 ref="ref",
-                sort="oldest",
-                state="pending",
-                page=1,
-                limit=1,
             )
 
 
@@ -13453,7 +13284,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_get_contents_list(
                 owner="owner",
                 repo="repo",
-                ref="ref",
             )
 
 
@@ -13606,7 +13436,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 filepath="filepath",
-                ref="ref",
             )
 
 
@@ -14110,7 +13939,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 filepath="filepath",
-                ref="ref",
             )
 
 
@@ -14475,8 +14303,6 @@ class AsyncRepositoryClient:
             await client.repository.list_forks(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -14712,9 +14538,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
-                stat=True,
-                verification=True,
-                files=True,
             )
 
 
@@ -14842,8 +14665,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
-                verification=True,
-                files=True,
             )
 
 
@@ -15182,9 +15003,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
-                recursive=True,
-                page=1,
-                per_page=1,
             )
 
 
@@ -15248,8 +15066,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_hooks(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -15781,7 +15597,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 id=1000000,
-                ref="ref",
             )
 
 
@@ -16043,10 +15858,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_keys(
                 owner="owner",
                 repo="repo",
-                key_id=1,
-                fingerprint="fingerprint",
-                page=1,
-                limit=1,
             )
 
 
@@ -16510,12 +16321,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_pull_requests(
                 owner="owner",
                 repo="repo",
-                state="open",
-                sort="oldest",
-                milestone=1000000,
-                poster="poster",
-                page=1,
-                limit=1,
             )
 
 
@@ -16938,7 +16743,6 @@ class AsyncRepositoryClient:
                 repo="repo",
                 index=1000000,
                 diff_type="diff",
-                binary=True,
             )
 
 
@@ -17014,10 +16818,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                page=1,
-                limit=1,
-                verification=True,
-                files=True,
             )
 
 
@@ -17095,10 +16895,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                skip_to="skip-to",
-                whitespace="ignore-all",
-                page=1,
-                limit=1,
             )
 
 
@@ -17492,8 +17288,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                page=1,
-                limit=1,
             )
 
 
@@ -18210,7 +18004,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                style="merge",
             )
 
 
@@ -18268,8 +18061,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_push_mirrors(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -18632,11 +18423,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_releases(
                 owner="owner",
                 repo="repo",
-                draft=True,
-                pre_release=True,
-                q="q",
-                page=1,
-                limit=1,
             )
 
 
@@ -19512,8 +19298,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_stargazers(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -19584,10 +19368,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 sha="sha",
-                sort="oldest",
-                state="pending",
-                page=1,
-                limit=1,
             )
 
 
@@ -19725,8 +19505,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_subscribers(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -20422,8 +20200,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_tags(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -20861,7 +20637,6 @@ class AsyncRepositoryClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -20874,15 +20649,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_tracked_times(
                 owner="owner",
                 repo="repo",
-                user="user",
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                page=1,
-                limit=1,
             )
 
 
@@ -21001,8 +20767,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_list_topics(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -21335,7 +21099,7 @@ class AsyncRepositoryClient:
         owner: str,
         repo: str,
         *,
-        content_base_64: typing.Optional[str] = OMIT,
+        content_base64: typing.Optional[str] = OMIT,
         message: typing.Optional[str] = OMIT,
         title: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -21349,7 +21113,7 @@ class AsyncRepositoryClient:
         repo : str
             name of the repo
 
-        content_base_64 : typing.Optional[str]
+        content_base64 : typing.Optional[str]
             content must be base64 encoded
 
         message : typing.Optional[str]
@@ -21389,7 +21153,7 @@ class AsyncRepositoryClient:
         _response = await self._raw_client.repo_create_wiki_page(
             owner,
             repo,
-            content_base_64=content_base_64,
+            content_base64=content_base64,
             message=message,
             title=title,
             request_options=request_options,
@@ -21509,7 +21273,7 @@ class AsyncRepositoryClient:
         repo: str,
         page_name: str,
         *,
-        content_base_64: typing.Optional[str] = OMIT,
+        content_base64: typing.Optional[str] = OMIT,
         message: typing.Optional[str] = OMIT,
         title: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
@@ -21526,7 +21290,7 @@ class AsyncRepositoryClient:
         page_name : str
             name of the page
 
-        content_base_64 : typing.Optional[str]
+        content_base64 : typing.Optional[str]
             content must be base64 encoded
 
         message : typing.Optional[str]
@@ -21568,7 +21332,7 @@ class AsyncRepositoryClient:
             owner,
             repo,
             page_name,
-            content_base_64=content_base_64,
+            content_base64=content_base64,
             message=message,
             title=title,
             request_options=request_options,
@@ -21622,8 +21386,6 @@ class AsyncRepositoryClient:
             await client.repository.repo_get_wiki_pages(
                 owner="owner",
                 repo="repo",
-                page=1,
-                limit=1,
             )
 
 
@@ -21682,7 +21444,6 @@ class AsyncRepositoryClient:
                 owner="owner",
                 repo="repo",
                 page_name="pageName",
-                page=1,
             )
 
 
@@ -21854,7 +21615,7 @@ class AsyncRepositoryClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> TopicSearchResults:
+    ) -> TopicSearchResponse:
         """
         Parameters
         ----------
@@ -21872,7 +21633,7 @@ class AsyncRepositoryClient:
 
         Returns
         -------
-        TopicSearchResults
+        TopicSearchResponse
             SearchResults of a successful search
 
         Examples
@@ -21889,8 +21650,6 @@ class AsyncRepositoryClient:
         async def main() -> None:
             await client.repository.topic_search(
                 q="q",
-                page=1,
-                limit=1,
             )
 
 

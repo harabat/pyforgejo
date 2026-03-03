@@ -25,7 +25,7 @@ class Hook(UniversalBaseModel):
     created_at: typing.Optional[dt.datetime] = None
     events: typing.Optional[typing.List[str]] = None
     id: typing.Optional[int] = None
-    metadata: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    metadata: typing.Optional[typing.Dict[str, typing.Any]] = None
     type: typing.Optional[str] = None
     updated_at: typing.Optional[dt.datetime] = None
     url: typing.Optional[str] = None

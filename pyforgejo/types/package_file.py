@@ -15,22 +15,14 @@ class PackageFile(UniversalBaseModel):
     """
 
     size: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="Size")
+        typing.Optional[int], FieldMetadata(alias="Size"), pydantic.Field(alias="Size")
     ] = None
     id: typing.Optional[int] = None
-    md_5: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="md5")
-    ] = None
+    md5: typing.Optional[str] = None
     name: typing.Optional[str] = None
-    sha_1: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="sha1")
-    ] = None
-    sha_256: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="sha256")
-    ] = None
-    sha_512: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="sha512")
-    ] = None
+    sha1: typing.Optional[str] = None
+    sha256: typing.Optional[str] = None
+    sha512: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(

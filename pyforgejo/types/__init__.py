@@ -17,7 +17,6 @@ if typing.TYPE_CHECKING:
     from .activity_pub import ActivityPub
     from .annotated_tag import AnnotatedTag
     from .annotated_tag_object import AnnotatedTagObject
-    from .ap_person_follow_item import ApPersonFollowItem
     from .api_error import ApiError
     from .api_forbidden_error import ApiForbiddenError
     from .api_internal_server_error import ApiInternalServerError
@@ -51,7 +50,7 @@ if typing.TYPE_CHECKING:
     from .create_hook_option_type import CreateHookOptionType
     from .create_key_option import CreateKeyOption
     from .create_label_option import CreateLabelOption
-    from .create_o_auth_2_application_options import CreateOAuth2ApplicationOptions
+    from .create_o_auth2application_options import CreateOAuth2ApplicationOptions
     from .create_or_update_secret_option import CreateOrUpdateSecretOption
     from .create_org_option import CreateOrgOption
     from .create_org_option_visibility import CreateOrgOptionVisibility
@@ -64,6 +63,7 @@ if typing.TYPE_CHECKING:
     from .create_variable_option import CreateVariableOption
     from .create_wiki_page_options import CreateWikiPageOptions
     from .cron import Cron
+    from .delete_email_option import DeleteEmailOption
     from .delete_labels_option import DeleteLabelsOption
     from .deploy_key import DeployKey
     from .dispatch_workflow_run import DispatchWorkflowRun
@@ -82,6 +82,7 @@ if typing.TYPE_CHECKING:
     from .file_response import FileResponse
     from .files_response import FilesResponse
     from .forge_like import ForgeLike
+    from .forge_outbox import ForgeOutbox
     from .general_api_settings import GeneralApiSettings
     from .general_attachment_settings import GeneralAttachmentSettings
     from .general_repo_settings import GeneralRepoSettings
@@ -127,7 +128,7 @@ if typing.TYPE_CHECKING:
     from .notification_subject import NotificationSubject
     from .notification_thread import NotificationThread
     from .notify_subject_type import NotifySubjectType
-    from .o_auth_2_application import OAuth2Application
+    from .o_auth2application import OAuth2Application
     from .organization import Organization
     from .organization_permissions import OrganizationPermissions
     from .package import Package
@@ -212,7 +213,6 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ActivityPub": ".activity_pub",
     "AnnotatedTag": ".annotated_tag",
     "AnnotatedTagObject": ".annotated_tag_object",
-    "ApPersonFollowItem": ".ap_person_follow_item",
     "ApiError": ".api_error",
     "ApiForbiddenError": ".api_forbidden_error",
     "ApiInternalServerError": ".api_internal_server_error",
@@ -246,7 +246,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateHookOptionType": ".create_hook_option_type",
     "CreateKeyOption": ".create_key_option",
     "CreateLabelOption": ".create_label_option",
-    "CreateOAuth2ApplicationOptions": ".create_o_auth_2_application_options",
+    "CreateOAuth2ApplicationOptions": ".create_o_auth2application_options",
     "CreateOrUpdateSecretOption": ".create_or_update_secret_option",
     "CreateOrgOption": ".create_org_option",
     "CreateOrgOptionVisibility": ".create_org_option_visibility",
@@ -259,6 +259,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CreateVariableOption": ".create_variable_option",
     "CreateWikiPageOptions": ".create_wiki_page_options",
     "Cron": ".cron",
+    "DeleteEmailOption": ".delete_email_option",
     "DeleteLabelsOption": ".delete_labels_option",
     "DeployKey": ".deploy_key",
     "DispatchWorkflowRun": ".dispatch_workflow_run",
@@ -277,6 +278,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FileResponse": ".file_response",
     "FilesResponse": ".files_response",
     "ForgeLike": ".forge_like",
+    "ForgeOutbox": ".forge_outbox",
     "GeneralApiSettings": ".general_api_settings",
     "GeneralAttachmentSettings": ".general_attachment_settings",
     "GeneralRepoSettings": ".general_repo_settings",
@@ -322,7 +324,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NotificationSubject": ".notification_subject",
     "NotificationThread": ".notification_thread",
     "NotifySubjectType": ".notify_subject_type",
-    "OAuth2Application": ".o_auth_2_application",
+    "OAuth2Application": ".o_auth2application",
     "Organization": ".organization",
     "OrganizationPermissions": ".organization_permissions",
     "Package": ".package",
@@ -437,7 +439,6 @@ __all__ = [
     "ActivityPub",
     "AnnotatedTag",
     "AnnotatedTagObject",
-    "ApPersonFollowItem",
     "ApiError",
     "ApiForbiddenError",
     "ApiInternalServerError",
@@ -484,6 +485,7 @@ __all__ = [
     "CreateVariableOption",
     "CreateWikiPageOptions",
     "Cron",
+    "DeleteEmailOption",
     "DeleteLabelsOption",
     "DeployKey",
     "DispatchWorkflowRun",
@@ -502,6 +504,7 @@ __all__ = [
     "FileResponse",
     "FilesResponse",
     "ForgeLike",
+    "ForgeOutbox",
     "GeneralApiSettings",
     "GeneralAttachmentSettings",
     "GeneralRepoSettings",

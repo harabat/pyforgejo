@@ -15,7 +15,7 @@ class FileDeleteResponse(UniversalBaseModel):
     """
 
     commit: typing.Optional[FileCommitResponse] = None
-    content: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    content: typing.Optional[typing.Dict[str, typing.Any]] = None
     verification: typing.Optional[PayloadCommitVerification] = None
 
     if IS_PYDANTIC_V2:

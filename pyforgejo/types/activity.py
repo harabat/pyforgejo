@@ -7,8 +7,11 @@ import typing
 
 import pydantic
 
-from ..core.pydantic_utilities import (IS_PYDANTIC_V2, UniversalBaseModel,
-                                       update_forward_refs)
+from ..core.pydantic_utilities import (
+    IS_PYDANTIC_V2,
+    UniversalBaseModel,
+    update_forward_refs,
+)
 from .activity_op_type import ActivityOpType
 from .comment import Comment
 from .user import User
@@ -45,6 +48,6 @@ class Activity(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-from .repository import Repository  # noqa: E402, F401, I001
+from .repository import Repository  # noqa: E402, I001
 
-update_forward_refs(Activity)
+update_forward_refs(Activity, Repository=Repository)

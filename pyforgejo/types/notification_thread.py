@@ -7,8 +7,11 @@ import typing
 
 import pydantic
 
-from ..core.pydantic_utilities import (IS_PYDANTIC_V2, UniversalBaseModel,
-                                       update_forward_refs)
+from ..core.pydantic_utilities import (
+    IS_PYDANTIC_V2,
+    UniversalBaseModel,
+    update_forward_refs,
+)
 from .notification_subject import NotificationSubject
 
 
@@ -37,6 +40,6 @@ class NotificationThread(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-from .repository import Repository  # noqa: E402, F401, I001
+from .repository import Repository  # noqa: E402, I001
 
-update_forward_refs(NotificationThread)
+update_forward_refs(NotificationThread, Repository=Repository)

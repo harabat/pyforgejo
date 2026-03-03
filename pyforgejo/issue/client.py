@@ -23,12 +23,9 @@ from .types.issue_list_issues_request_sort import IssueListIssuesRequestSort
 from .types.issue_list_issues_request_state import IssueListIssuesRequestState
 from .types.issue_list_issues_request_type import IssueListIssuesRequestType
 from .types.issue_list_labels_request_sort import IssueListLabelsRequestSort
-from .types.issue_search_issues_request_sort import \
-    IssueSearchIssuesRequestSort
-from .types.issue_search_issues_request_state import \
-    IssueSearchIssuesRequestState
-from .types.issue_search_issues_request_type import \
-    IssueSearchIssuesRequestType
+from .types.issue_search_issues_request_sort import IssueSearchIssuesRequestSort
+from .types.issue_search_issues_request_state import IssueSearchIssuesRequestState
+from .types.issue_search_issues_request_type import IssueSearchIssuesRequestType
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -139,37 +136,12 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.issue.search_issues(
-            state="open",
-            labels="labels",
-            milestones="milestones",
-            q="q",
-            priority_repo_id=1000000,
-            type="issues",
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            assigned=True,
-            created=True,
-            mentioned=True,
-            review_requested=True,
-            reviewed=True,
-            owner="owner",
-            team="team",
-            page=1,
-            limit=1,
-            sort="relevance",
-        )
+        client.issue.search_issues()
         """
         _response = self._raw_client.search_issues(
             state=state,
@@ -272,8 +244,6 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -282,23 +252,6 @@ class IssueClient:
         client.issue.list_issues(
             owner="owner",
             repo="repo",
-            state="closed",
-            labels="labels",
-            q="q",
-            type="issues",
-            milestones="milestones",
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            created_by="created_by",
-            assigned_by="assigned_by",
-            mentioned_by="mentioned_by",
-            page=1,
-            limit=1,
-            sort="relevance",
         )
         """
         _response = self._raw_client.list_issues(
@@ -446,8 +399,6 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -456,14 +407,6 @@ class IssueClient:
         client.issue.get_repo_comments(
             owner="owner",
             repo="repo",
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.get_repo_comments(
@@ -714,8 +657,6 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -725,10 +666,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             id=1000000,
-            name="name",
-            updated_at=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
         )
         """
         _response = self._raw_client.create_issue_comment_attachment(
@@ -1319,8 +1256,6 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -1330,10 +1265,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            name="name",
-            updated_at=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
         )
         """
         _response = self._raw_client.create_issue_attachment(
@@ -1559,8 +1490,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_blocks(
@@ -1728,8 +1657,6 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -1739,12 +1666,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
         )
         """
         _response = self._raw_client.get_comments(
@@ -2030,8 +1951,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_issue_dependencies(
@@ -2213,9 +2132,7 @@ class IssueClient:
         repo: str,
         index: int,
         *,
-        labels: typing.Optional[
-            typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]
-        ] = OMIT,
+        labels: typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]] = OMIT,
         updated_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[Label]:
@@ -2231,7 +2148,7 @@ class IssueClient:
         index : int
             index of the issue
 
-        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]]
+        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]]
             Labels can be a list of integers representing label IDs
             or a list of strings representing label names
 
@@ -2274,9 +2191,7 @@ class IssueClient:
         repo: str,
         index: int,
         *,
-        labels: typing.Optional[
-            typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]
-        ] = OMIT,
+        labels: typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]] = OMIT,
         updated_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[Label]:
@@ -2292,7 +2207,7 @@ class IssueClient:
         index : int
             index of the issue
 
-        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]]
+        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]]
             Labels can be a list of integers representing label IDs
             or a list of strings representing label names
 
@@ -2622,8 +2537,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.get_issue_reactions(
@@ -2910,8 +2823,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.subscriptions(
@@ -3111,8 +3022,6 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -3122,14 +3031,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            page=1,
-            limit=1,
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
         )
         """
         _response = self._raw_client.get_comments_and_timeline(
@@ -3194,8 +3095,6 @@ class IssueClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -3205,15 +3104,6 @@ class IssueClient:
             owner="owner",
             repo="repo",
             index=1000000,
-            user="user",
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.tracked_times(
@@ -3434,9 +3324,6 @@ class IssueClient:
         client.issue.list_labels(
             owner="owner",
             repo="repo",
-            sort="mostissues",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_labels(
@@ -3724,10 +3611,6 @@ class IssueClient:
         client.issue.get_milestones_list(
             owner="owner",
             repo="repo",
-            state="state",
-            name="name",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.get_milestones_list(
@@ -4063,7 +3946,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -4073,30 +3955,7 @@ class AsyncIssueClient:
 
 
         async def main() -> None:
-            await client.issue.search_issues(
-                state="open",
-                labels="labels",
-                milestones="milestones",
-                q="q",
-                priority_repo_id=1000000,
-                type="issues",
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                assigned=True,
-                created=True,
-                mentioned=True,
-                review_requested=True,
-                reviewed=True,
-                owner="owner",
-                team="team",
-                page=1,
-                limit=1,
-                sort="relevance",
-            )
+            await client.issue.search_issues()
 
 
         asyncio.run(main())
@@ -4203,7 +4062,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -4216,23 +4074,6 @@ class AsyncIssueClient:
             await client.issue.list_issues(
                 owner="owner",
                 repo="repo",
-                state="closed",
-                labels="labels",
-                q="q",
-                type="issues",
-                milestones="milestones",
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                created_by="created_by",
-                assigned_by="assigned_by",
-                mentioned_by="mentioned_by",
-                page=1,
-                limit=1,
-                sort="relevance",
             )
 
 
@@ -4392,7 +4233,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -4405,14 +4245,6 @@ class AsyncIssueClient:
             await client.issue.get_repo_comments(
                 owner="owner",
                 repo="repo",
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                page=1,
-                limit=1,
             )
 
 
@@ -4699,7 +4531,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -4713,10 +4544,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 id=1000000,
-                name="name",
-                updated_at=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
             )
 
 
@@ -5391,7 +5218,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -5405,10 +5231,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                name="name",
-                updated_at=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
             )
 
 
@@ -5666,8 +5488,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                page=1,
-                limit=1,
             )
 
 
@@ -5855,7 +5675,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -5869,12 +5688,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
             )
 
 
@@ -6199,8 +6012,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                page=1,
-                limit=1,
             )
 
 
@@ -6409,9 +6220,7 @@ class AsyncIssueClient:
         repo: str,
         index: int,
         *,
-        labels: typing.Optional[
-            typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]
-        ] = OMIT,
+        labels: typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]] = OMIT,
         updated_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[Label]:
@@ -6427,7 +6236,7 @@ class AsyncIssueClient:
         index : int
             index of the issue
 
-        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]]
+        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]]
             Labels can be a list of integers representing label IDs
             or a list of strings representing label names
 
@@ -6478,9 +6287,7 @@ class AsyncIssueClient:
         repo: str,
         index: int,
         *,
-        labels: typing.Optional[
-            typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]
-        ] = OMIT,
+        labels: typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]] = OMIT,
         updated_at: typing.Optional[dt.datetime] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[Label]:
@@ -6496,7 +6303,7 @@ class AsyncIssueClient:
         index : int
             index of the issue
 
-        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Optional[typing.Any]]]]
+        labels : typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]]
             Labels can be a list of integers representing label IDs
             or a list of strings representing label names
 
@@ -6879,8 +6686,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                page=1,
-                limit=1,
             )
 
 
@@ -7215,8 +7020,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                page=1,
-                limit=1,
             )
 
 
@@ -7444,7 +7247,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -7458,14 +7260,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                page=1,
-                limit=1,
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
             )
 
 
@@ -7534,7 +7328,6 @@ class AsyncIssueClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -7548,15 +7341,6 @@ class AsyncIssueClient:
                 owner="owner",
                 repo="repo",
                 index=1000000,
-                user="user",
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                page=1,
-                limit=1,
             )
 
 
@@ -7809,9 +7593,6 @@ class AsyncIssueClient:
             await client.issue.list_labels(
                 owner="owner",
                 repo="repo",
-                sort="mostissues",
-                page=1,
-                limit=1,
             )
 
 
@@ -8139,10 +7920,6 @@ class AsyncIssueClient:
             await client.issue.get_milestones_list(
                 owner="owner",
                 repo="repo",
-                state="state",
-                name="name",
-                page=1,
-                limit=1,
             )
 
 

@@ -10,13 +10,13 @@ if typing.TYPE_CHECKING:
     from .edit_org_option_visibility import EditOrgOptionVisibility
     from .edit_team_option_permission import EditTeamOptionPermission
     from .org_list_labels_request_sort import OrgListLabelsRequestSort
-    from .team_search_results import TeamSearchResults
+    from .team_search_response import TeamSearchResponse
 _dynamic_imports: typing.Dict[str, str] = {
     "CreateTeamOptionPermission": ".create_team_option_permission",
     "EditOrgOptionVisibility": ".edit_org_option_visibility",
     "EditTeamOptionPermission": ".edit_team_option_permission",
     "OrgListLabelsRequestSort": ".org_list_labels_request_sort",
-    "TeamSearchResults": ".team_search_results",
+    "TeamSearchResponse": ".team_search_response",
 }
 
 
@@ -52,5 +52,5 @@ __all__ = [
     "EditOrgOptionVisibility",
     "EditTeamOptionPermission",
     "OrgListLabelsRequestSort",
-    "TeamSearchResults",
+    "TeamSearchResponse",
 ]

@@ -3,19 +3,15 @@
 import typing
 
 import pydantic
-import typing_extensions
 
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class AccessToken(UniversalBaseModel):
     id: typing.Optional[int] = None
     name: typing.Optional[str] = None
     scopes: typing.Optional[typing.List[str]] = None
-    sha_1: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="sha1")
-    ] = None
+    sha1: typing.Optional[str] = None
     token_last_eight: typing.Optional[str] = None
 
     if IS_PYDANTIC_V2:

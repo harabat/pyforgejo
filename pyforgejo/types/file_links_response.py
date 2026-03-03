@@ -17,7 +17,7 @@ class FileLinksResponse(UniversalBaseModel):
     git: typing.Optional[str] = None
     html: typing.Optional[str] = None
     self_: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="self")
+        typing.Optional[str], FieldMetadata(alias="self"), pydantic.Field(alias="self")
     ] = None
 
     if IS_PYDANTIC_V2:

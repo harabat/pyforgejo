@@ -5,8 +5,8 @@ import typing
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from ..types.activity_pub import ActivityPub
-from ..types.ap_person_follow_item import ApPersonFollowItem
 from ..types.forge_like import ForgeLike
+from ..types.forge_outbox import ForgeOutbox
 from .raw_client import AsyncRawActivitypubClient, RawActivitypubClient
 
 # this is used as the default value for optional parameters
@@ -77,6 +77,34 @@ class ActivitypubClient:
         client.activitypub.instance_actor_inbox()
         """
         _response = self._raw_client.instance_actor_inbox(
+            request_options=request_options
+        )
+        return _response.data
+
+    def instance_actor_outbox(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> ForgeOutbox:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ForgeOutbox
+            Outbox
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.activitypub.instance_actor_outbox()
+        """
+        _response = self._raw_client.instance_actor_outbox(
             request_options=request_options
         )
         return _response.data
@@ -153,6 +181,42 @@ class ActivitypubClient:
         """
         _response = self._raw_client.repository_inbox(
             repository_id, request=request, request_options=request_options
+        )
+        return _response.data
+
+    def repository_outbox(
+        self,
+        repository_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ForgeOutbox:
+        """
+        Parameters
+        ----------
+        repository_id : int
+            repository ID of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ForgeOutbox
+            Outbox
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.activitypub.repository_outbox(
+            repository_id=1000000,
+        )
+        """
+        _response = self._raw_client.repository_outbox(
+            repository_id, request_options=request_options
         )
         return _response.data
 
@@ -303,7 +367,7 @@ class ActivitypubClient:
 
     def person_feed(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ApPersonFollowItem]:
+    ) -> ForgeOutbox:
         """
         Parameters
         ----------
@@ -315,8 +379,8 @@ class ActivitypubClient:
 
         Returns
         -------
-        typing.List[ApPersonFollowItem]
-            Personfeed
+        ForgeOutbox
+            Outbox
 
         Examples
         --------
@@ -421,6 +485,42 @@ class AsyncActivitypubClient:
         )
         return _response.data
 
+    async def instance_actor_outbox(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> ForgeOutbox:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ForgeOutbox
+            Outbox
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.activitypub.instance_actor_outbox()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.instance_actor_outbox(
+            request_options=request_options
+        )
+        return _response.data
+
     async def repository(
         self,
         repository_id: int,
@@ -509,6 +609,50 @@ class AsyncActivitypubClient:
         """
         _response = await self._raw_client.repository_inbox(
             repository_id, request=request, request_options=request_options
+        )
+        return _response.data
+
+    async def repository_outbox(
+        self,
+        repository_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ForgeOutbox:
+        """
+        Parameters
+        ----------
+        repository_id : int
+            repository ID of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ForgeOutbox
+            Outbox
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.activitypub.repository_outbox(
+                repository_id=1000000,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.repository_outbox(
+            repository_id, request_options=request_options
         )
         return _response.data
 
@@ -693,7 +837,7 @@ class AsyncActivitypubClient:
 
     async def person_feed(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ApPersonFollowItem]:
+    ) -> ForgeOutbox:
         """
         Parameters
         ----------
@@ -705,8 +849,8 @@ class AsyncActivitypubClient:
 
         Returns
         -------
-        typing.List[ApPersonFollowItem]
-            Personfeed
+        ForgeOutbox
+            Outbox
 
         Examples
         --------

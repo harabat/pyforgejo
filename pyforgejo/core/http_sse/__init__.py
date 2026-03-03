@@ -6,15 +6,15 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .user_current_list_repos_request_order_by import (
-        UserCurrentListReposRequestOrderBy,
-    )
-    from .user_search_request_sort import UserSearchRequestSort
-    from .user_search_response import UserSearchResponse
+    from ._api import EventSource, aconnect_sse, connect_sse
+    from ._exceptions import SSEError
+    from ._models import ServerSentEvent
 _dynamic_imports: typing.Dict[str, str] = {
-    "UserCurrentListReposRequestOrderBy": ".user_current_list_repos_request_order_by",
-    "UserSearchRequestSort": ".user_search_request_sort",
-    "UserSearchResponse": ".user_search_response",
+    "EventSource": "._api",
+    "SSEError": "._exceptions",
+    "ServerSentEvent": "._models",
+    "aconnect_sse": "._api",
+    "connect_sse": "._api",
 }
 
 
@@ -45,8 +45,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = [
-    "UserCurrentListReposRequestOrderBy",
-    "UserSearchRequestSort",
-    "UserSearchResponse",
-]
+__all__ = ["EventSource", "SSEError", "ServerSentEvent", "aconnect_sse", "connect_sse"]

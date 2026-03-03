@@ -3,5 +3,5 @@
 import typing
 
 NotifyGetListRequestSubjectTypeItem = typing.Union[
-    typing.Literal["issue", "pull", "commit", "repository"], typing.Any
+    typing.Literal["issue", "pull", "repository"], typing.Any
 ]

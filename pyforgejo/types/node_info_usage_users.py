@@ -15,10 +15,14 @@ class NodeInfoUsageUsers(UniversalBaseModel):
     """
 
     active_halfyear: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="activeHalfyear")
+        typing.Optional[int],
+        FieldMetadata(alias="activeHalfyear"),
+        pydantic.Field(alias="activeHalfyear"),
     ] = None
     active_month: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="activeMonth")
+        typing.Optional[int],
+        FieldMetadata(alias="activeMonth"),
+        pydantic.Field(alias="activeMonth"),
     ] = None
     total: typing.Optional[int] = None
 

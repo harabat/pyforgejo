@@ -15,7 +15,9 @@ class ActivityPub(UniversalBaseModel):
     """
 
     context: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="@context")
+        typing.Optional[str],
+        FieldMetadata(alias="@context"),
+        pydantic.Field(alias="@context"),
     ] = None
 
     if IS_PYDANTIC_V2:

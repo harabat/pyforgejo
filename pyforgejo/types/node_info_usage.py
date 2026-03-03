@@ -16,10 +16,14 @@ class NodeInfoUsage(UniversalBaseModel):
     """
 
     local_comments: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="localComments")
+        typing.Optional[int],
+        FieldMetadata(alias="localComments"),
+        pydantic.Field(alias="localComments"),
     ] = None
     local_posts: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="localPosts")
+        typing.Optional[int],
+        FieldMetadata(alias="localPosts"),
+        pydantic.Field(alias="localPosts"),
     ] = None
     users: typing.Optional[NodeInfoUsageUsers] = None
 

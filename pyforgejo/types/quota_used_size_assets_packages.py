@@ -15,11 +15,12 @@ class QuotaUsedSizeAssetsPackages(UniversalBaseModel):
     """
 
     all_: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="all")
-    ] = pydantic.Field(default=None)
-    """
-    Storage suze used for the user's packages
-    """
+        typing.Optional[int],
+        FieldMetadata(alias="all"),
+        pydantic.Field(
+            alias="all", description="Storage suze used for the user's packages"
+        ),
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(

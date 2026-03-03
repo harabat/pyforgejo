@@ -24,7 +24,7 @@ if typing.TYPE_CHECKING:
         RepoSearchRequestOrder,
         RepoSearchRequestSort,
         RepoUpdatePullRequestRequestStyle,
-        TopicSearchResults,
+        TopicSearchResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
     "AddCollaboratorOptionPermission": ".types",
@@ -44,7 +44,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "RepoSearchRequestOrder": ".types",
     "RepoSearchRequestSort": ".types",
     "RepoUpdatePullRequestRequestStyle": ".types",
-    "TopicSearchResults": ".types",
+    "TopicSearchResponse": ".types",
 }
 
 
@@ -93,5 +93,5 @@ __all__ = [
     "RepoSearchRequestOrder",
     "RepoSearchRequestSort",
     "RepoUpdatePullRequestRequestStyle",
-    "TopicSearchResults",
+    "TopicSearchResponse",
 ]

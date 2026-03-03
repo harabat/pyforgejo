@@ -2,4 +2,4 @@
 
 import typing
 
-ForgeLike = typing.Dict[str, typing.Any]
+ForgeOutbox = typing.Dict[str, typing.Any]

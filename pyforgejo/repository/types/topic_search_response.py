@@ -5,12 +5,11 @@ import typing
 import pydantic
 
 from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ...types.user import User
+from ...types.topic_response import TopicResponse
 
 
-class UserSearchResults(UniversalBaseModel):
-    data: typing.Optional[typing.List[User]] = None
-    ok: typing.Optional[bool] = None
+class TopicSearchResponse(UniversalBaseModel):
+    topics: typing.Optional[typing.List[TopicResponse]] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(

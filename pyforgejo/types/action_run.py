@@ -8,8 +8,11 @@ import typing
 import pydantic
 import typing_extensions
 
-from ..core.pydantic_utilities import (IS_PYDANTIC_V2, UniversalBaseModel,
-                                       update_forward_refs)
+from ..core.pydantic_utilities import (
+    IS_PYDANTIC_V2,
+    UniversalBaseModel,
+    update_forward_refs,
+)
 from ..core.serialization import FieldMetadata
 from .duration import Duration
 from .user import User
@@ -21,12 +24,12 @@ class ActionRun(UniversalBaseModel):
     """
 
     schedule_id: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="ScheduleID")
-    ] = pydantic.Field(default=None)
-    """
-    the cron id for the schedule trigger
-    """
-
+        typing.Optional[int],
+        FieldMetadata(alias="ScheduleID"),
+        pydantic.Field(
+            alias="ScheduleID", description="the cron id for the schedule trigger"
+        ),
+    ] = None
     approved_by: typing.Optional[int] = pydantic.Field(default=None)
     """
     who approved this action run
@@ -137,6 +140,6 @@ class ActionRun(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-from .repository import Repository  # noqa: E402, F401, I001
+from .repository import Repository  # noqa: E402, I001
 
-update_forward_refs(ActionRun)
+update_forward_refs(ActionRun, Repository=Repository)

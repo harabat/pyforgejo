@@ -4,13 +4,18 @@ import typing
 
 import pydantic
 
-from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ...types.team import Team
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
-class TeamSearchResults(UniversalBaseModel):
-    data: typing.Optional[typing.List[Team]] = None
-    ok: typing.Optional[bool] = None
+class DeleteEmailOption(UniversalBaseModel):
+    """
+    DeleteEmailOption options when deleting email addresses
+    """
+
+    emails: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
+    """
+    email addresses to delete
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(

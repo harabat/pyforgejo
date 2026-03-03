@@ -4,14 +4,13 @@ import typing
 
 import pydantic
 
-from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...types.team import Team
 
 
-class ApPersonFollowItem(UniversalBaseModel):
-    actor_id: typing.Optional[str] = None
-    note: typing.Optional[str] = None
-    original_item: typing.Optional[str] = None
-    original_url: typing.Optional[str] = None
+class TeamSearchResponse(UniversalBaseModel):
+    data: typing.Optional[typing.List[Team]] = None
+    ok: typing.Optional[bool] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(

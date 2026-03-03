@@ -11,7 +11,9 @@ from ..core.serialization import FieldMetadata
 
 class ApiInvalidTopicsError(UniversalBaseModel):
     invalid_topics: typing_extensions.Annotated[
-        typing.Optional[typing.List[str]], FieldMetadata(alias="invalidTopics")
+        typing.Optional[typing.List[str]],
+        FieldMetadata(alias="invalidTopics"),
+        pydantic.Field(alias="invalidTopics"),
     ] = None
     message: typing.Optional[str] = None
 

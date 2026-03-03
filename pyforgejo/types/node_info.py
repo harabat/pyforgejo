@@ -20,7 +20,9 @@ class NodeInfo(UniversalBaseModel):
 
     metadata: typing.Optional[NodeInfoMetadata] = None
     open_registrations: typing_extensions.Annotated[
-        typing.Optional[bool], FieldMetadata(alias="openRegistrations")
+        typing.Optional[bool],
+        FieldMetadata(alias="openRegistrations"),
+        pydantic.Field(alias="openRegistrations"),
     ] = None
     protocols: typing.Optional[typing.List[str]] = None
     services: typing.Optional[NodeInfoServices] = None

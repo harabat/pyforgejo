@@ -15,7 +15,7 @@ class WatchInfo(UniversalBaseModel):
 
     created_at: typing.Optional[dt.datetime] = None
     ignored: typing.Optional[bool] = None
-    reason: typing.Optional[typing.Dict[str, typing.Optional[typing.Any]]] = None
+    reason: typing.Optional[typing.Dict[str, typing.Any]] = None
     repository_url: typing.Optional[str] = None
     subscribed: typing.Optional[bool] = None
     url: typing.Optional[str] = None

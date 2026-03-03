@@ -7,8 +7,11 @@ import typing
 
 import pydantic
 
-from ..core.pydantic_utilities import (IS_PYDANTIC_V2, UniversalBaseModel,
-                                       update_forward_refs)
+from ..core.pydantic_utilities import (
+    IS_PYDANTIC_V2,
+    UniversalBaseModel,
+    update_forward_refs,
+)
 from .gpg_key_email import GpgKeyEmail
 
 

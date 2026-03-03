@@ -3,10 +3,8 @@
 import typing
 
 import pydantic
-import typing_extensions
 
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 from .wiki_commit import WikiCommit
 
 
@@ -16,9 +14,7 @@ class WikiPage(UniversalBaseModel):
     """
 
     commit_count: typing.Optional[int] = None
-    content_base_64: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="content_base64")
-    ] = pydantic.Field(default=None)
+    content_base64: typing.Optional[str] = pydantic.Field(default=None)
     """
     Page content, base64 encoded
     """

@@ -14,14 +14,10 @@ class IssueFormField(UniversalBaseModel):
     IssueFormField represents a form field
     """
 
-    attributes: typing.Optional[
-        typing.Dict[str, typing.Dict[str, typing.Optional[typing.Any]]]
-    ] = None
+    attributes: typing.Optional[typing.Dict[str, typing.Dict[str, typing.Any]]] = None
     id: typing.Optional[str] = None
     type: typing.Optional[IssueFormFieldType] = None
-    validations: typing.Optional[
-        typing.Dict[str, typing.Dict[str, typing.Optional[typing.Any]]]
-    ] = None
+    validations: typing.Optional[typing.Dict[str, typing.Dict[str, typing.Any]]] = None
     visible: typing.Optional[typing.List[IssueFormFieldVisible]] = None
 
     if IS_PYDANTIC_V2:

@@ -24,7 +24,7 @@ class Attachment(UniversalBaseModel):
     size: typing.Optional[int] = None
     type: typing.Optional[AttachmentType] = None
     uuid_: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="uuid")
+        typing.Optional[str], FieldMetadata(alias="uuid"), pydantic.Field(alias="uuid")
     ] = None
 
     if IS_PYDANTIC_V2:

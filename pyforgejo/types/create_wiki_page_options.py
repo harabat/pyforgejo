@@ -3,10 +3,8 @@
 import typing
 
 import pydantic
-import typing_extensions
 
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from ..core.serialization import FieldMetadata
 
 
 class CreateWikiPageOptions(UniversalBaseModel):
@@ -14,9 +12,7 @@ class CreateWikiPageOptions(UniversalBaseModel):
     CreateWikiPageOptions form for creating wiki
     """
 
-    content_base_64: typing_extensions.Annotated[
-        typing.Optional[str], FieldMetadata(alias="content_base64")
-    ] = pydantic.Field(default=None)
+    content_base64: typing.Optional[str] = pydantic.Field(default=None)
     """
     content must be base64 encoded
     """

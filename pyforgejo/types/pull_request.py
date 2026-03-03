@@ -7,8 +7,11 @@ import typing
 
 import pydantic
 
-from ..core.pydantic_utilities import (IS_PYDANTIC_V2, UniversalBaseModel,
-                                       update_forward_refs)
+from ..core.pydantic_utilities import (
+    IS_PYDANTIC_V2,
+    UniversalBaseModel,
+    update_forward_refs,
+)
 from .label import Label
 from .milestone import Milestone
 from .pr_branch_info import PrBranchInfo
@@ -76,7 +79,5 @@ class PullRequest(UniversalBaseModel):
             smart_union = True
             extra = pydantic.Extra.allow
 
-
-from .repository import Repository  # noqa: E402, F401, I001
 
 update_forward_refs(PullRequest)

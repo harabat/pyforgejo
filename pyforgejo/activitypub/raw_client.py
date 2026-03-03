@@ -11,8 +11,8 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.forbidden_error import ForbiddenError
 from ..types.activity_pub import ActivityPub
-from ..types.ap_person_follow_item import ApPersonFollowItem
 from ..types.forge_like import ForgeLike
+from ..types.forge_outbox import ForgeOutbox
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -85,6 +85,48 @@ class RawActivitypubClient:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def instance_actor_outbox(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[ForgeOutbox]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ForgeOutbox]
+            Outbox
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "activitypub/actor/outbox",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ForgeOutbox,
+                    parse_obj_as(
+                        type_=ForgeOutbox,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(
@@ -181,6 +223,54 @@ class RawActivitypubClient:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    def repository_outbox(
+        self,
+        repository_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[ForgeOutbox]:
+        """
+        Parameters
+        ----------
+        repository_id : int
+            repository ID of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[ForgeOutbox]
+            Outbox
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            f"activitypub/repository-id/{jsonable_encoder(repository_id)}/outbox",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ForgeOutbox,
+                    parse_obj_as(
+                        type_=ForgeOutbox,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(
@@ -382,7 +472,7 @@ class RawActivitypubClient:
 
     def person_feed(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[ApPersonFollowItem]]:
+    ) -> HttpResponse[ForgeOutbox]:
         """
         Parameters
         ----------
@@ -394,8 +484,8 @@ class RawActivitypubClient:
 
         Returns
         -------
-        HttpResponse[typing.List[ApPersonFollowItem]]
-            Personfeed
+        HttpResponse[ForgeOutbox]
+            Outbox
         """
         _response = self._client_wrapper.httpx_client.request(
             f"activitypub/user-id/{jsonable_encoder(user_id)}/outbox",
@@ -405,9 +495,9 @@ class RawActivitypubClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.List[ApPersonFollowItem],
+                    ForgeOutbox,
                     parse_obj_as(
-                        type_=typing.List[ApPersonFollowItem],  # type: ignore
+                        type_=ForgeOutbox,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -416,9 +506,9 @@ class RawActivitypubClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=typing.Any,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),
@@ -517,6 +607,48 @@ class AsyncRawActivitypubClient:
             body=_response_json,
         )
 
+    async def instance_actor_outbox(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[ForgeOutbox]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ForgeOutbox]
+            Outbox
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "activitypub/actor/outbox",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ForgeOutbox,
+                    parse_obj_as(
+                        type_=ForgeOutbox,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
     async def repository(
         self,
         repository_id: int,
@@ -600,6 +732,54 @@ class AsyncRawActivitypubClient:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(
+                status_code=_response.status_code,
+                headers=dict(_response.headers),
+                body=_response.text,
+            )
+        raise ApiError(
+            status_code=_response.status_code,
+            headers=dict(_response.headers),
+            body=_response_json,
+        )
+
+    async def repository_outbox(
+        self,
+        repository_id: int,
+        *,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[ForgeOutbox]:
+        """
+        Parameters
+        ----------
+        repository_id : int
+            repository ID of the repo
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[ForgeOutbox]
+            Outbox
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            f"activitypub/repository-id/{jsonable_encoder(repository_id)}/outbox",
+            method="POST",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    ForgeOutbox,
+                    parse_obj_as(
+                        type_=ForgeOutbox,  # type: ignore
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(
@@ -801,7 +981,7 @@ class AsyncRawActivitypubClient:
 
     async def person_feed(
         self, user_id: int, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[typing.List[ApPersonFollowItem]]:
+    ) -> AsyncHttpResponse[ForgeOutbox]:
         """
         Parameters
         ----------
@@ -813,8 +993,8 @@ class AsyncRawActivitypubClient:
 
         Returns
         -------
-        AsyncHttpResponse[typing.List[ApPersonFollowItem]]
-            Personfeed
+        AsyncHttpResponse[ForgeOutbox]
+            Outbox
         """
         _response = await self._client_wrapper.httpx_client.request(
             f"activitypub/user-id/{jsonable_encoder(user_id)}/outbox",
@@ -824,9 +1004,9 @@ class AsyncRawActivitypubClient:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    typing.List[ApPersonFollowItem],
+                    ForgeOutbox,
                     parse_obj_as(
-                        type_=typing.List[ApPersonFollowItem],  # type: ignore
+                        type_=ForgeOutbox,  # type: ignore
                         object_=_response.json(),
                     ),
                 )
@@ -835,9 +1015,9 @@ class AsyncRawActivitypubClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Optional[typing.Any],
+                        typing.Any,
                         parse_obj_as(
-                            type_=typing.Optional[typing.Any],  # type: ignore
+                            type_=typing.Any,  # type: ignore
                             object_=_response.json(),
                         ),
                     ),

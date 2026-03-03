@@ -13,9 +13,9 @@ class IssueLabelsOption(UniversalBaseModel):
     IssueLabelsOption a collection of labels
     """
 
-    labels: typing.Optional[
-        typing.List[typing.Dict[str, typing.Optional[typing.Any]]]
-    ] = pydantic.Field(default=None)
+    labels: typing.Optional[typing.List[typing.Dict[str, typing.Any]]] = pydantic.Field(
+        default=None
+    )
     """
     Labels can be a list of integers representing label IDs
     or a list of strings representing label names

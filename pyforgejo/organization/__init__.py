@@ -11,14 +11,14 @@ if typing.TYPE_CHECKING:
         EditOrgOptionVisibility,
         EditTeamOptionPermission,
         OrgListLabelsRequestSort,
-        TeamSearchResults,
+        TeamSearchResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
     "CreateTeamOptionPermission": ".types",
     "EditOrgOptionVisibility": ".types",
     "EditTeamOptionPermission": ".types",
     "OrgListLabelsRequestSort": ".types",
-    "TeamSearchResults": ".types",
+    "TeamSearchResponse": ".types",
 }
 
 
@@ -54,5 +54,5 @@ __all__ = [
     "EditOrgOptionVisibility",
     "EditTeamOptionPermission",
     "OrgListLabelsRequestSort",
-    "TeamSearchResults",
+    "TeamSearchResponse",
 ]

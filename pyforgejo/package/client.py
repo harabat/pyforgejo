@@ -70,10 +70,6 @@ class PackageClient:
         )
         client.package.list_packages(
             owner="owner",
-            page=1,
-            limit=1,
-            type="alpine",
-            q="q",
         )
         """
         _response = self._raw_client.list_packages(
@@ -399,10 +395,6 @@ class AsyncPackageClient:
         async def main() -> None:
             await client.package.list_packages(
                 owner="owner",
-                page=1,
-                limit=1,
-                type="alpine",
-                q="q",
             )
 
 

@@ -9,12 +9,12 @@ if typing.TYPE_CHECKING:
     from .types import (
         UserCurrentListReposRequestOrderBy,
         UserSearchRequestSort,
-        UserSearchResults,
+        UserSearchResponse,
     )
 _dynamic_imports: typing.Dict[str, str] = {
     "UserCurrentListReposRequestOrderBy": ".types",
     "UserSearchRequestSort": ".types",
-    "UserSearchResults": ".types",
+    "UserSearchResponse": ".types",
 }
 
 
@@ -48,5 +48,5 @@ def __dir__():
 __all__ = [
     "UserCurrentListReposRequestOrderBy",
     "UserSearchRequestSort",
-    "UserSearchResults",
+    "UserSearchResponse",
 ]

@@ -15,7 +15,7 @@ from ..types.create_hook_option_type import CreateHookOptionType
 from ..types.email import Email
 from ..types.gpg_key import GpgKey
 from ..types.hook import Hook
-from ..types.o_auth_2_application import OAuth2Application
+from ..types.o_auth2application import OAuth2Application
 from ..types.public_key import PublicKey
 from ..types.quota_info import QuotaInfo
 from ..types.quota_used_artifact_list import QuotaUsedArtifactList
@@ -30,10 +30,11 @@ from ..types.user import User
 from ..types.user_heatmap_data import UserHeatmapData
 from ..types.user_settings import UserSettings
 from .raw_client import AsyncRawUserClient, RawUserClient
-from .types.user_current_list_repos_request_order_by import \
-    UserCurrentListReposRequestOrderBy
+from .types.user_current_list_repos_request_order_by import (
+    UserCurrentListReposRequestOrderBy,
+)
 from .types.user_search_request_sort import UserSearchRequestSort
-from .types.user_search_results import UserSearchResults
+from .types.user_search_response import UserSearchResponse
 
 # this is used as the default value for optional parameters
 OMIT = typing.cast(typing.Any, ...)
@@ -107,9 +108,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.search_run_jobs(
-            labels="labels",
-        )
+        client.user.search_run_jobs()
         """
         _response = self._raw_client.search_run_jobs(
             labels=labels, request_options=request_options
@@ -250,10 +249,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.get_user_variables_list(
-            page=1,
-            limit=1,
-        )
+        client.user.get_user_variables_list()
         """
         _response = self._raw_client.get_user_variables_list(
             page=page, limit=limit, request_options=request_options
@@ -415,7 +411,7 @@ class UserClient:
         )
         return _response.data
 
-    def user_get_o_auth_2_applications(
+    def user_get_o_auth2applications(
         self,
         *,
         page: typing.Optional[int] = None,
@@ -446,17 +442,14 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_get_o_auth_2_applications(
-            page=1,
-            limit=1,
-        )
+        client.user.user_get_o_auth2applications()
         """
-        _response = self._raw_client.user_get_o_auth_2_applications(
+        _response = self._raw_client.user_get_o_auth2applications(
             page=page, limit=limit, request_options=request_options
         )
         return _response.data
 
-    def user_create_o_auth_2_application(
+    def user_create_o_auth2application(
         self,
         *,
         confidential_client: typing.Optional[bool] = OMIT,
@@ -488,9 +481,9 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_create_o_auth_2_application()
+        client.user.user_create_o_auth2application()
         """
-        _response = self._raw_client.user_create_o_auth_2_application(
+        _response = self._raw_client.user_create_o_auth2application(
             confidential_client=confidential_client,
             name=name,
             redirect_uris=redirect_uris,
@@ -498,7 +491,7 @@ class UserClient:
         )
         return _response.data
 
-    def user_get_o_auth_2_application(
+    def user_get_o_auth2application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> OAuth2Application:
         """
@@ -522,16 +515,16 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_get_o_auth_2_application(
+        client.user.user_get_o_auth2application(
             id=1000000,
         )
         """
-        _response = self._raw_client.user_get_o_auth_2_application(
+        _response = self._raw_client.user_get_o_auth2application(
             id, request_options=request_options
         )
         return _response.data
 
-    def user_delete_o_auth_2_application(
+    def user_delete_o_auth2application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> None:
         """
@@ -554,16 +547,16 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_delete_o_auth_2_application(
+        client.user.user_delete_o_auth2application(
             id=1000000,
         )
         """
-        _response = self._raw_client.user_delete_o_auth_2_application(
+        _response = self._raw_client.user_delete_o_auth2application(
             id, request_options=request_options
         )
         return _response.data
 
-    def user_update_o_auth_2_application(
+    def user_update_o_auth2application(
         self,
         id: int,
         *,
@@ -599,11 +592,11 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_update_o_auth_2_application(
+        client.user.user_update_o_auth2application(
             id=1000000,
         )
         """
-        _response = self._raw_client.user_update_o_auth_2_application(
+        _response = self._raw_client.user_update_o_auth2application(
             id,
             confidential_client=confidential_client,
             name=name,
@@ -826,10 +819,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_followers(
-            page=1,
-            limit=1,
-        )
+        client.user.current_list_followers()
         """
         _response = self._raw_client.current_list_followers(
             page=page, limit=limit, request_options=request_options
@@ -867,10 +857,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_following(
-            page=1,
-            limit=1,
-        )
+        client.user.current_list_following()
         """
         _response = self._raw_client.current_list_following(
             page=page, limit=limit, request_options=request_options
@@ -1073,10 +1060,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.user_current_list_gpg_keys(
-            page=1,
-            limit=1,
-        )
+        client.user.user_current_list_gpg_keys()
         """
         _response = self._raw_client.user_current_list_gpg_keys(
             page=page, limit=limit, request_options=request_options
@@ -1220,10 +1204,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_hooks(
-            page=1,
-            limit=1,
-        )
+        client.user.list_hooks()
         """
         _response = self._raw_client.list_hooks(
             page=page, limit=limit, request_options=request_options
@@ -1440,11 +1421,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_keys(
-            fingerprint="fingerprint",
-            page=1,
-            limit=1,
-        )
+        client.user.current_list_keys()
         """
         _response = self._raw_client.current_list_keys(
             fingerprint=fingerprint,
@@ -1595,10 +1572,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_blocked_users(
-            page=1,
-            limit=1,
-        )
+        client.user.list_blocked_users()
         """
         _response = self._raw_client.list_blocked_users(
             page=page, limit=limit, request_options=request_options
@@ -1662,10 +1636,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_quota_artifacts(
-            page=1,
-            limit=1,
-        )
+        client.user.list_quota_artifacts()
         """
         _response = self._raw_client.list_quota_artifacts(
             page=page, limit=limit, request_options=request_options
@@ -1703,10 +1674,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_quota_attachments(
-            page=1,
-            limit=1,
-        )
+        client.user.list_quota_attachments()
         """
         _response = self._raw_client.list_quota_attachments(
             page=page, limit=limit, request_options=request_options
@@ -1777,10 +1745,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_quota_packages(
-            page=1,
-            limit=1,
-        )
+        client.user.list_quota_packages()
         """
         _response = self._raw_client.list_quota_packages(
             page=page, limit=limit, request_options=request_options
@@ -1822,11 +1787,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_repos(
-            page=1,
-            limit=1,
-            order_by="name",
-        )
+        client.user.current_list_repos()
         """
         _response = self._raw_client.current_list_repos(
             page=page, limit=limit, order_by=order_by, request_options=request_options
@@ -1969,10 +1930,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_starred(
-            page=1,
-            limit=1,
-        )
+        client.user.current_list_starred()
         """
         _response = self._raw_client.current_list_starred(
             page=page, limit=limit, request_options=request_options
@@ -2130,10 +2088,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.get_stop_watches(
-            page=1,
-            limit=1,
-        )
+        client.user.get_stop_watches()
         """
         _response = self._raw_client.get_stop_watches(
             page=page, limit=limit, request_options=request_options
@@ -2171,10 +2126,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_list_subscriptions(
-            page=1,
-            limit=1,
-        )
+        client.user.current_list_subscriptions()
         """
         _response = self._raw_client.current_list_subscriptions(
             page=page, limit=limit, request_options=request_options
@@ -2212,10 +2164,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.list_teams(
-            page=1,
-            limit=1,
-        )
+        client.user.list_teams()
         """
         _response = self._raw_client.list_teams(
             page=page, limit=limit, request_options=request_options
@@ -2256,23 +2205,12 @@ class UserClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.current_tracked_times(
-            page=1,
-            limit=1,
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-        )
+        client.user.current_tracked_times()
         """
         _response = self._raw_client.current_tracked_times(
             page=page,
@@ -2324,7 +2262,7 @@ class UserClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UserSearchResults:
+    ) -> UserSearchResponse:
         """
         Parameters
         ----------
@@ -2348,7 +2286,7 @@ class UserClient:
 
         Returns
         -------
-        UserSearchResults
+        UserSearchResponse
             SearchResults of a successful search
 
         Examples
@@ -2358,13 +2296,7 @@ class UserClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.user.search(
-            q="q",
-            uid=1000000,
-            sort="oldest",
-            page=1,
-            limit=1,
-        )
+        client.user.search()
         """
         _response = self._raw_client.search(
             q=q,
@@ -2412,7 +2344,7 @@ class UserClient:
         username: str,
         *,
         only_performed_by: typing.Optional[bool] = None,
-        date: typing.Optional[str] = None,
+        date: typing.Optional[dt.date] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -2426,7 +2358,7 @@ class UserClient:
         only_performed_by : typing.Optional[bool]
             if true, only show actions performed by the requested user
 
-        date : typing.Optional[str]
+        date : typing.Optional[dt.date]
             the date of the activities to be found
 
         page : typing.Optional[int]
@@ -2452,10 +2384,6 @@ class UserClient:
         )
         client.user.list_activity_feeds(
             username="username",
-            only_performed_by=True,
-            date="date",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_activity_feeds(
@@ -2505,8 +2433,6 @@ class UserClient:
         )
         client.user.list_followers(
             username="username",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_followers(
@@ -2551,8 +2477,6 @@ class UserClient:
         )
         client.user.list_following(
             username="username",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_following(
@@ -2637,8 +2561,6 @@ class UserClient:
         )
         client.user.user_list_gpg_keys(
             username="username",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.user_list_gpg_keys(
@@ -2720,9 +2642,6 @@ class UserClient:
         )
         client.user.list_keys(
             username="username",
-            fingerprint="fingerprint",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_keys(
@@ -2771,8 +2690,6 @@ class UserClient:
         )
         client.user.list_repos(
             username="username",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_repos(
@@ -2817,8 +2734,6 @@ class UserClient:
         )
         client.user.list_starred(
             username="username",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_starred(
@@ -2863,8 +2778,6 @@ class UserClient:
         )
         client.user.list_subscriptions(
             username="username",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.list_subscriptions(
@@ -2909,8 +2822,6 @@ class UserClient:
         )
         client.user.get_tokens(
             username="username",
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.get_tokens(
@@ -3083,9 +2994,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.search_run_jobs(
-                labels="labels",
-            )
+            await client.user.search_run_jobs()
 
 
         asyncio.run(main())
@@ -3258,10 +3167,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.get_user_variables_list(
-                page=1,
-                limit=1,
-            )
+            await client.user.get_user_variables_list()
 
 
         asyncio.run(main())
@@ -3458,7 +3364,7 @@ class AsyncUserClient:
         )
         return _response.data
 
-    async def user_get_o_auth_2_applications(
+    async def user_get_o_auth2applications(
         self,
         *,
         page: typing.Optional[int] = None,
@@ -3494,20 +3400,17 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_get_o_auth_2_applications(
-                page=1,
-                limit=1,
-            )
+            await client.user.user_get_o_auth2applications()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.user_get_o_auth_2_applications(
+        _response = await self._raw_client.user_get_o_auth2applications(
             page=page, limit=limit, request_options=request_options
         )
         return _response.data
 
-    async def user_create_o_auth_2_application(
+    async def user_create_o_auth2application(
         self,
         *,
         confidential_client: typing.Optional[bool] = OMIT,
@@ -3544,12 +3447,12 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_create_o_auth_2_application()
+            await client.user.user_create_o_auth2application()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.user_create_o_auth_2_application(
+        _response = await self._raw_client.user_create_o_auth2application(
             confidential_client=confidential_client,
             name=name,
             redirect_uris=redirect_uris,
@@ -3557,7 +3460,7 @@ class AsyncUserClient:
         )
         return _response.data
 
-    async def user_get_o_auth_2_application(
+    async def user_get_o_auth2application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> OAuth2Application:
         """
@@ -3586,19 +3489,19 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_get_o_auth_2_application(
+            await client.user.user_get_o_auth2application(
                 id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.user_get_o_auth_2_application(
+        _response = await self._raw_client.user_get_o_auth2application(
             id, request_options=request_options
         )
         return _response.data
 
-    async def user_delete_o_auth_2_application(
+    async def user_delete_o_auth2application(
         self, id: int, *, request_options: typing.Optional[RequestOptions] = None
     ) -> None:
         """
@@ -3626,19 +3529,19 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_delete_o_auth_2_application(
+            await client.user.user_delete_o_auth2application(
                 id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.user_delete_o_auth_2_application(
+        _response = await self._raw_client.user_delete_o_auth2application(
             id, request_options=request_options
         )
         return _response.data
 
-    async def user_update_o_auth_2_application(
+    async def user_update_o_auth2application(
         self,
         id: int,
         *,
@@ -3679,14 +3582,14 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_update_o_auth_2_application(
+            await client.user.user_update_o_auth2application(
                 id=1000000,
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.user_update_o_auth_2_application(
+        _response = await self._raw_client.user_update_o_auth2application(
             id,
             confidential_client=confidential_client,
             name=name,
@@ -3964,10 +3867,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_followers(
-                page=1,
-                limit=1,
-            )
+            await client.user.current_list_followers()
 
 
         asyncio.run(main())
@@ -4013,10 +3913,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_following(
-                page=1,
-                limit=1,
-            )
+            await client.user.current_list_following()
 
 
         asyncio.run(main())
@@ -4267,10 +4164,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.user_current_list_gpg_keys(
-                page=1,
-                limit=1,
-            )
+            await client.user.user_current_list_gpg_keys()
 
 
         asyncio.run(main())
@@ -4446,10 +4340,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_hooks(
-                page=1,
-                limit=1,
-            )
+            await client.user.list_hooks()
 
 
         asyncio.run(main())
@@ -4708,11 +4599,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_keys(
-                fingerprint="fingerprint",
-                page=1,
-                limit=1,
-            )
+            await client.user.current_list_keys()
 
 
         asyncio.run(main())
@@ -4895,10 +4782,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_blocked_users(
-                page=1,
-                limit=1,
-            )
+            await client.user.list_blocked_users()
 
 
         asyncio.run(main())
@@ -4978,10 +4862,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_quota_artifacts(
-                page=1,
-                limit=1,
-            )
+            await client.user.list_quota_artifacts()
 
 
         asyncio.run(main())
@@ -5027,10 +4908,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_quota_attachments(
-                page=1,
-                limit=1,
-            )
+            await client.user.list_quota_attachments()
 
 
         asyncio.run(main())
@@ -5117,10 +4995,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_quota_packages(
-                page=1,
-                limit=1,
-            )
+            await client.user.list_quota_packages()
 
 
         asyncio.run(main())
@@ -5170,11 +5045,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_repos(
-                page=1,
-                limit=1,
-                order_by="name",
-            )
+            await client.user.current_list_repos()
 
 
         asyncio.run(main())
@@ -5343,10 +5214,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_starred(
-                page=1,
-                limit=1,
-            )
+            await client.user.current_list_starred()
 
 
         asyncio.run(main())
@@ -5536,10 +5404,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.get_stop_watches(
-                page=1,
-                limit=1,
-            )
+            await client.user.get_stop_watches()
 
 
         asyncio.run(main())
@@ -5585,10 +5450,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_list_subscriptions(
-                page=1,
-                limit=1,
-            )
+            await client.user.current_list_subscriptions()
 
 
         asyncio.run(main())
@@ -5634,10 +5496,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.list_teams(
-                page=1,
-                limit=1,
-            )
+            await client.user.list_teams()
 
 
         asyncio.run(main())
@@ -5682,7 +5541,6 @@ class AsyncUserClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -5692,16 +5550,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.current_tracked_times(
-                page=1,
-                limit=1,
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-            )
+            await client.user.current_tracked_times()
 
 
         asyncio.run(main())
@@ -5764,7 +5613,7 @@ class AsyncUserClient:
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> UserSearchResults:
+    ) -> UserSearchResponse:
         """
         Parameters
         ----------
@@ -5788,7 +5637,7 @@ class AsyncUserClient:
 
         Returns
         -------
-        UserSearchResults
+        UserSearchResponse
             SearchResults of a successful search
 
         Examples
@@ -5803,13 +5652,7 @@ class AsyncUserClient:
 
 
         async def main() -> None:
-            await client.user.search(
-                q="q",
-                uid=1000000,
-                sort="oldest",
-                page=1,
-                limit=1,
-            )
+            await client.user.search()
 
 
         asyncio.run(main())
@@ -5870,7 +5713,7 @@ class AsyncUserClient:
         username: str,
         *,
         only_performed_by: typing.Optional[bool] = None,
-        date: typing.Optional[str] = None,
+        date: typing.Optional[dt.date] = None,
         page: typing.Optional[int] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -5884,7 +5727,7 @@ class AsyncUserClient:
         only_performed_by : typing.Optional[bool]
             if true, only show actions performed by the requested user
 
-        date : typing.Optional[str]
+        date : typing.Optional[dt.date]
             the date of the activities to be found
 
         page : typing.Optional[int]
@@ -5915,10 +5758,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_activity_feeds(
                 username="username",
-                only_performed_by=True,
-                date="date",
-                page=1,
-                limit=1,
             )
 
 
@@ -5976,8 +5815,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_followers(
                 username="username",
-                page=1,
-                limit=1,
             )
 
 
@@ -6030,8 +5867,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_following(
                 username="username",
-                page=1,
-                limit=1,
             )
 
 
@@ -6132,8 +5967,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.user_list_gpg_keys(
                 username="username",
-                page=1,
-                limit=1,
             )
 
 
@@ -6231,9 +6064,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_keys(
                 username="username",
-                fingerprint="fingerprint",
-                page=1,
-                limit=1,
             )
 
 
@@ -6290,8 +6120,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_repos(
                 username="username",
-                page=1,
-                limit=1,
             )
 
 
@@ -6344,8 +6172,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_starred(
                 username="username",
-                page=1,
-                limit=1,
             )
 
 
@@ -6398,8 +6224,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.list_subscriptions(
                 username="username",
-                page=1,
-                limit=1,
             )
 
 
@@ -6452,8 +6276,6 @@ class AsyncUserClient:
         async def main() -> None:
             await client.user.get_tokens(
                 username="username",
-                page=1,
-                limit=1,
             )
 
 

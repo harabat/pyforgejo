@@ -8,10 +8,12 @@ from ..core.request_options import RequestOptions
 from ..types.notification_count import NotificationCount
 from ..types.notification_thread import NotificationThread
 from .raw_client import AsyncRawNotificationClient, RawNotificationClient
-from .types.notify_get_list_request_subject_type_item import \
-    NotifyGetListRequestSubjectTypeItem
-from .types.notify_get_repo_list_request_subject_type_item import \
-    NotifyGetRepoListRequestSubjectTypeItem
+from .types.notify_get_list_request_subject_type_item import (
+    NotifyGetListRequestSubjectTypeItem,
+)
+from .types.notify_get_repo_list_request_subject_type_item import (
+    NotifyGetRepoListRequestSubjectTypeItem,
+)
 
 
 class NotificationClient:
@@ -80,24 +82,12 @@ class NotificationClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.notification.notify_get_list(
-            all_=True,
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            page=1,
-            limit=1,
-        )
+        client.notification.notify_get_list()
         """
         _response = self._raw_client.notify_get_list(
             all_=all_,
@@ -144,20 +134,12 @@ class NotificationClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.notification.notify_read_list(
-            last_read_at=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            all_=True,
-            to_status="to-status",
-        )
+        client.notification.notify_read_list()
         """
         _response = self._raw_client.notify_read_list(
             last_read_at=last_read_at,
@@ -261,7 +243,6 @@ class NotificationClient:
         )
         client.notification.notify_read_thread(
             id=1000000,
-            to_status="to-status",
         )
         """
         _response = self._raw_client.notify_read_thread(
@@ -328,8 +309,6 @@ class NotificationClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -338,15 +317,6 @@ class NotificationClient:
         client.notification.notify_get_repo_list(
             owner="owner",
             repo="repo",
-            all_=True,
-            since=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            before=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
-            page=1,
-            limit=1,
         )
         """
         _response = self._raw_client.notify_get_repo_list(
@@ -404,8 +374,6 @@ class NotificationClient:
 
         Examples
         --------
-        import datetime
-
         from pyforgejo import PyforgejoApi
 
         client = PyforgejoApi(
@@ -414,11 +382,6 @@ class NotificationClient:
         client.notification.notify_read_repo_list(
             owner="owner",
             repo="repo",
-            all_=True,
-            to_status="to-status",
-            last_read_at=datetime.datetime.fromisoformat(
-                "2024-01-15 09:30:00+00:00",
-            ),
         )
         """
         _response = self._raw_client.notify_read_repo_list(
@@ -500,7 +463,6 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -510,17 +472,7 @@ class AsyncNotificationClient:
 
 
         async def main() -> None:
-            await client.notification.notify_get_list(
-                all_=True,
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                page=1,
-                limit=1,
-            )
+            await client.notification.notify_get_list()
 
 
         asyncio.run(main())
@@ -571,7 +523,6 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -581,13 +532,7 @@ class AsyncNotificationClient:
 
 
         async def main() -> None:
-            await client.notification.notify_read_list(
-                last_read_at=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                all_=True,
-                to_status="to-status",
-            )
+            await client.notification.notify_read_list()
 
 
         asyncio.run(main())
@@ -715,7 +660,6 @@ class AsyncNotificationClient:
         async def main() -> None:
             await client.notification.notify_read_thread(
                 id=1000000,
-                to_status="to-status",
             )
 
 
@@ -786,7 +730,6 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -799,15 +742,6 @@ class AsyncNotificationClient:
             await client.notification.notify_get_repo_list(
                 owner="owner",
                 repo="repo",
-                all_=True,
-                since=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                before=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
-                page=1,
-                limit=1,
             )
 
 
@@ -869,7 +803,6 @@ class AsyncNotificationClient:
         Examples
         --------
         import asyncio
-        import datetime
 
         from pyforgejo import AsyncPyforgejoApi
 
@@ -882,11 +815,6 @@ class AsyncNotificationClient:
             await client.notification.notify_read_repo_list(
                 owner="owner",
                 repo="repo",
-                all_=True,
-                to_status="to-status",
-                last_read_at=datetime.datetime.fromisoformat(
-                    "2024-01-15 09:30:00+00:00",
-                ),
             )
 
 

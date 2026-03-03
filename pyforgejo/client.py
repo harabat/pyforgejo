@@ -8,18 +8,16 @@ import httpx
 from dotenv import load_dotenv
 
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from .core.logging import LogConfig, Logger
 from .environment import PyforgejoApiEnvironment
 
 if typing.TYPE_CHECKING:
     from .activitypub.client import ActivitypubClient, AsyncActivitypubClient
     from .admin.client import AdminClient, AsyncAdminClient
     from .issue.client import AsyncIssueClient, IssueClient
-    from .miscellaneous.client import (AsyncMiscellaneousClient,
-                                       MiscellaneousClient)
-    from .notification.client import (AsyncNotificationClient,
-                                      NotificationClient)
-    from .organization.client import (AsyncOrganizationClient,
-                                      OrganizationClient)
+    from .miscellaneous.client import AsyncMiscellaneousClient, MiscellaneousClient
+    from .notification.client import AsyncNotificationClient, NotificationClient
+    from .organization.client import AsyncOrganizationClient, OrganizationClient
     from .package.client import AsyncPackageClient, PackageClient
     from .repository.client import AsyncRepositoryClient, RepositoryClient
     from .settings.client import AsyncSettingsClient, SettingsClient
@@ -62,6 +60,9 @@ class PyforgejoApi:
     httpx_client : typing.Optional[httpx.Client]
         The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
 
+    logging : typing.Optional[typing.Union[LogConfig, Logger]]
+        Configure logging for the SDK. Accepts a LogConfig dict with 'level' (debug/info/warn/error), 'logger' (custom logger implementation), and 'silent' (boolean, defaults to True) fields. You can also pass a pre-configured Logger instance.
+
     Examples
     --------
     from pyforgejo import PyforgejoApi
@@ -81,6 +82,7 @@ class PyforgejoApi:
         timeout: typing.Optional[float] = None,
         follow_redirects: typing.Optional[bool] = True,
         httpx_client: typing.Optional[httpx.Client] = None,
+        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
     ):
         base_url = base_url or BASE_URL
         api_key = api_key or API_KEY
@@ -113,6 +115,7 @@ class PyforgejoApi:
             if follow_redirects is not None
             else httpx.Client(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
+            logging=logging,
         )
         self._activitypub: typing.Optional[ActivitypubClient] = None
         self._admin: typing.Optional[AdminClient] = None
@@ -237,6 +240,9 @@ class AsyncPyforgejoApi:
     httpx_client : typing.Optional[httpx.AsyncClient]
         The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
 
+    logging : typing.Optional[typing.Union[LogConfig, Logger]]
+        Configure logging for the SDK. Accepts a LogConfig dict with 'level' (debug/info/warn/error), 'logger' (custom logger implementation), and 'silent' (boolean, defaults to True) fields. You can also pass a pre-configured Logger instance.
+
     Examples
     --------
     from pyforgejo import AsyncPyforgejoApi
@@ -256,6 +262,7 @@ class AsyncPyforgejoApi:
         timeout: typing.Optional[float] = None,
         follow_redirects: typing.Optional[bool] = True,
         httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
     ):
         base_url = base_url or BASE_URL
         api_key = api_key or API_KEY
@@ -291,6 +298,7 @@ class AsyncPyforgejoApi:
             if follow_redirects is not None
             else httpx.AsyncClient(timeout=_defaulted_timeout),
             timeout=_defaulted_timeout,
+            logging=logging,
         )
         self._activitypub: typing.Optional[AsyncActivitypubClient] = None
         self._admin: typing.Optional[AsyncAdminClient] = None
@@ -306,8 +314,7 @@ class AsyncPyforgejoApi:
     @property
     def activitypub(self):
         if self._activitypub is None:
-            from .activitypub.client import \
-                AsyncActivitypubClient  # noqa: E402
+            from .activitypub.client import AsyncActivitypubClient  # noqa: E402
 
             self._activitypub = AsyncActivitypubClient(
                 client_wrapper=self._client_wrapper
@@ -325,8 +332,7 @@ class AsyncPyforgejoApi:
     @property
     def miscellaneous(self):
         if self._miscellaneous is None:
-            from .miscellaneous.client import \
-                AsyncMiscellaneousClient  # noqa: E402
+            from .miscellaneous.client import AsyncMiscellaneousClient  # noqa: E402
 
             self._miscellaneous = AsyncMiscellaneousClient(
                 client_wrapper=self._client_wrapper
@@ -336,8 +342,7 @@ class AsyncPyforgejoApi:
     @property
     def notification(self):
         if self._notification is None:
-            from .notification.client import \
-                AsyncNotificationClient  # noqa: E402
+            from .notification.client import AsyncNotificationClient  # noqa: E402
 
             self._notification = AsyncNotificationClient(
                 client_wrapper=self._client_wrapper
@@ -347,8 +352,7 @@ class AsyncPyforgejoApi:
     @property
     def organization(self):
         if self._organization is None:
-            from .organization.client import \
-                AsyncOrganizationClient  # noqa: E402
+            from .organization.client import AsyncOrganizationClient  # noqa: E402
 
             self._organization = AsyncOrganizationClient(
                 client_wrapper=self._client_wrapper

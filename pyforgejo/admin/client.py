@@ -10,8 +10,9 @@ from ..types.create_hook_option_config import CreateHookOptionConfig
 from ..types.create_hook_option_type import CreateHookOptionType
 from ..types.create_org_option_visibility import CreateOrgOptionVisibility
 from ..types.create_quota_rule_options import CreateQuotaRuleOptions
-from ..types.create_repo_option_object_format_name import \
-    CreateRepoOptionObjectFormatName
+from ..types.create_repo_option_object_format_name import (
+    CreateRepoOptionObjectFormatName,
+)
 from ..types.create_repo_option_trust_model import CreateRepoOptionTrustModel
 from ..types.cron import Cron
 from ..types.email import Email
@@ -78,10 +79,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.cron_list(
-            page=1,
-            limit=1,
-        )
+        client.admin.cron_list()
         """
         _response = self._raw_client.cron_list(
             page=page, limit=limit, request_options=request_options
@@ -149,10 +147,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.get_all_emails(
-            page=1,
-            limit=1,
-        )
+        client.admin.get_all_emails()
         """
         _response = self._raw_client.get_all_emails(
             page=page, limit=limit, request_options=request_options
@@ -194,11 +189,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.search_emails(
-            q="q",
-            page=1,
-            limit=1,
-        )
+        client.admin.search_emails()
         """
         _response = self._raw_client.search_emails(
             q=q, page=page, limit=limit, request_options=request_options
@@ -236,10 +227,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.list_hooks(
-            page=1,
-            limit=1,
-        )
+        client.admin.list_hooks()
         """
         _response = self._raw_client.list_hooks(
             page=page, limit=limit, request_options=request_options
@@ -452,10 +440,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.get_all_orgs(
-            page=1,
-            limit=1,
-        )
+        client.admin.get_all_orgs()
         """
         _response = self._raw_client.get_all_orgs(
             page=page, limit=limit, request_options=request_options
@@ -895,7 +880,7 @@ class AdminClient:
         )
         return _response.data
 
-    def admin_d_elete_quota_rule(
+    def delete_quota_rule(
         self, quotarule: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> None:
         """
@@ -918,11 +903,11 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.admin_d_elete_quota_rule(
+        client.admin.delete_quota_rule(
             quotarule="quotarule",
         )
         """
-        _response = self._raw_client.admin_d_elete_quota_rule(
+        _response = self._raw_client.delete_quota_rule(
             quotarule, request_options=request_options
         )
         return _response.data
@@ -998,9 +983,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.search_run_jobs(
-            labels="labels",
-        )
+        client.admin.search_run_jobs()
         """
         _response = self._raw_client.search_run_jobs(
             labels=labels, request_options=request_options
@@ -1070,11 +1053,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.unadopted_list(
-            page=1,
-            limit=1,
-            pattern="pattern",
-        )
+        client.admin.unadopted_list()
         """
         _response = self._raw_client.unadopted_list(
             page=page, limit=limit, pattern=pattern, request_options=request_options
@@ -1204,13 +1183,7 @@ class AdminClient:
         client = PyforgejoApi(
             api_key="YOUR_API_KEY",
         )
-        client.admin.search_users(
-            source_id=1000000,
-            login_name="login_name",
-            sort="oldest",
-            page=1,
-            limit=1,
-        )
+        client.admin.search_users()
         """
         _response = self._raw_client.search_users(
             source_id=source_id,
@@ -1334,7 +1307,6 @@ class AdminClient:
         )
         client.admin.delete_user(
             username="username",
-            purge=True,
         )
         """
         _response = self._raw_client.delete_user(
@@ -1354,6 +1326,7 @@ class AdminClient:
         description: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
         full_name: typing.Optional[str] = OMIT,
+        hide_email: typing.Optional[bool] = OMIT,
         location: typing.Optional[str] = OMIT,
         login_name: typing.Optional[str] = OMIT,
         max_repo_creation: typing.Optional[int] = OMIT,
@@ -1388,6 +1361,8 @@ class AdminClient:
         email : typing.Optional[str]
 
         full_name : typing.Optional[str]
+
+        hide_email : typing.Optional[bool]
 
         location : typing.Optional[str]
 
@@ -1440,6 +1415,7 @@ class AdminClient:
             description=description,
             email=email,
             full_name=full_name,
+            hide_email=hide_email,
             location=location,
             login_name=login_name,
             max_repo_creation=max_repo_creation,
@@ -1452,6 +1428,78 @@ class AdminClient:
             visibility=visibility,
             website=website,
             request_options=request_options,
+        )
+        return _response.data
+
+    def list_user_emails(
+        self, username: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.List[Email]:
+        """
+        Parameters
+        ----------
+        username : str
+            username of user to get email addresses of
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[Email]
+            EmailList
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.admin.list_user_emails(
+            username="username",
+        )
+        """
+        _response = self._raw_client.list_user_emails(
+            username, request_options=request_options
+        )
+        return _response.data
+
+    def delete_user_emails(
+        self,
+        username: str,
+        *,
+        emails: typing.Optional[typing.Sequence[str]] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        username : str
+            username of user to delete email addresses from
+
+        emails : typing.Optional[typing.Sequence[str]]
+            email addresses to delete
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from pyforgejo import PyforgejoApi
+
+        client = PyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.admin.delete_user_emails(
+            username="username",
+        )
+        """
+        _response = self._raw_client.delete_user_emails(
+            username, emails=emails, request_options=request_options
         )
         return _response.data
 
@@ -1883,10 +1931,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.cron_list(
-                page=1,
-                limit=1,
-            )
+            await client.admin.cron_list()
 
 
         asyncio.run(main())
@@ -1972,10 +2017,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.get_all_emails(
-                page=1,
-                limit=1,
-            )
+            await client.admin.get_all_emails()
 
 
         asyncio.run(main())
@@ -2025,11 +2067,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.search_emails(
-                q="q",
-                page=1,
-                limit=1,
-            )
+            await client.admin.search_emails()
 
 
         asyncio.run(main())
@@ -2075,10 +2113,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.list_hooks(
-                page=1,
-                limit=1,
-            )
+            await client.admin.list_hooks()
 
 
         asyncio.run(main())
@@ -2333,10 +2368,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.get_all_orgs(
-                page=1,
-                limit=1,
-            )
+            await client.admin.get_all_orgs()
 
 
         asyncio.run(main())
@@ -2879,7 +2911,7 @@ class AsyncAdminClient:
         )
         return _response.data
 
-    async def admin_d_elete_quota_rule(
+    async def delete_quota_rule(
         self, quotarule: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> None:
         """
@@ -2907,14 +2939,14 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.admin_d_elete_quota_rule(
+            await client.admin.delete_quota_rule(
                 quotarule="quotarule",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.admin_d_elete_quota_rule(
+        _response = await self._raw_client.delete_quota_rule(
             quotarule, request_options=request_options
         )
         return _response.data
@@ -3003,9 +3035,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.search_run_jobs(
-                labels="labels",
-            )
+            await client.admin.search_run_jobs()
 
 
         asyncio.run(main())
@@ -3091,11 +3121,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.unadopted_list(
-                page=1,
-                limit=1,
-                pattern="pattern",
-            )
+            await client.admin.unadopted_list()
 
 
         asyncio.run(main())
@@ -3249,13 +3275,7 @@ class AsyncAdminClient:
 
 
         async def main() -> None:
-            await client.admin.search_users(
-                source_id=1000000,
-                login_name="login_name",
-                sort="oldest",
-                page=1,
-                limit=1,
-            )
+            await client.admin.search_users()
 
 
         asyncio.run(main())
@@ -3395,7 +3415,6 @@ class AsyncAdminClient:
         async def main() -> None:
             await client.admin.delete_user(
                 username="username",
-                purge=True,
             )
 
 
@@ -3418,6 +3437,7 @@ class AsyncAdminClient:
         description: typing.Optional[str] = OMIT,
         email: typing.Optional[str] = OMIT,
         full_name: typing.Optional[str] = OMIT,
+        hide_email: typing.Optional[bool] = OMIT,
         location: typing.Optional[str] = OMIT,
         login_name: typing.Optional[str] = OMIT,
         max_repo_creation: typing.Optional[int] = OMIT,
@@ -3452,6 +3472,8 @@ class AsyncAdminClient:
         email : typing.Optional[str]
 
         full_name : typing.Optional[str]
+
+        hide_email : typing.Optional[bool]
 
         location : typing.Optional[str]
 
@@ -3512,6 +3534,7 @@ class AsyncAdminClient:
             description=description,
             email=email,
             full_name=full_name,
+            hide_email=hide_email,
             location=location,
             login_name=login_name,
             max_repo_creation=max_repo_creation,
@@ -3524,6 +3547,94 @@ class AsyncAdminClient:
             visibility=visibility,
             website=website,
             request_options=request_options,
+        )
+        return _response.data
+
+    async def list_user_emails(
+        self, username: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> typing.List[Email]:
+        """
+        Parameters
+        ----------
+        username : str
+            username of user to get email addresses of
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        typing.List[Email]
+            EmailList
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.admin.list_user_emails(
+                username="username",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list_user_emails(
+            username, request_options=request_options
+        )
+        return _response.data
+
+    async def delete_user_emails(
+        self,
+        username: str,
+        *,
+        emails: typing.Optional[typing.Sequence[str]] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        username : str
+            username of user to delete email addresses from
+
+        emails : typing.Optional[typing.Sequence[str]]
+            email addresses to delete
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from pyforgejo import AsyncPyforgejoApi
+
+        client = AsyncPyforgejoApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.admin.delete_user_emails(
+                username="username",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.delete_user_emails(
+            username, emails=emails, request_options=request_options
         )
         return _response.data
 

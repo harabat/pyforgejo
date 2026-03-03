@@ -33,7 +33,7 @@ if typing.TYPE_CHECKING:
     from .repo_update_pull_request_request_style import (
         RepoUpdatePullRequestRequestStyle,
     )
-    from .topic_search_results import TopicSearchResults
+    from .topic_search_response import TopicSearchResponse
 _dynamic_imports: typing.Dict[str, str] = {
     "AddCollaboratorOptionPermission": ".add_collaborator_option_permission",
     "ListActionRunsRequestStatusItem": ".list_action_runs_request_status_item",
@@ -52,7 +52,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "RepoSearchRequestOrder": ".repo_search_request_order",
     "RepoSearchRequestSort": ".repo_search_request_sort",
     "RepoUpdatePullRequestRequestStyle": ".repo_update_pull_request_request_style",
-    "TopicSearchResults": ".topic_search_results",
+    "TopicSearchResponse": ".topic_search_response",
 }
 
 
@@ -101,5 +101,5 @@ __all__ = [
     "RepoSearchRequestOrder",
     "RepoSearchRequestSort",
     "RepoUpdatePullRequestRequestStyle",
-    "TopicSearchResults",
+    "TopicSearchResponse",
 ]

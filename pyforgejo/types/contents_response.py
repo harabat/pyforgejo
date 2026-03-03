@@ -17,7 +17,9 @@ class ContentsResponse(UniversalBaseModel):
     """
 
     links: typing_extensions.Annotated[
-        typing.Optional[FileLinksResponse], FieldMetadata(alias="_links")
+        typing.Optional[FileLinksResponse],
+        FieldMetadata(alias="_links"),
+        pydantic.Field(alias="_links"),
     ] = None
     content: typing.Optional[str] = pydantic.Field(default=None)
     """

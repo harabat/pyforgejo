@@ -15,11 +15,12 @@ class QuotaUsedSizeGit(UniversalBaseModel):
     """
 
     lfs: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="LFS")
-    ] = pydantic.Field(default=None)
-    """
-    Storage size of the user's Git LFS objects
-    """
+        typing.Optional[int],
+        FieldMetadata(alias="LFS"),
+        pydantic.Field(
+            alias="LFS", description="Storage size of the user's Git LFS objects"
+        ),
+    ] = None
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(
