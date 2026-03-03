@@ -21,10 +21,9 @@ requires-python = ">=3.10"
 [project.urls]
 repository = "https://codeberg.org/harabat/pyforgejo"
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-    "ipython>=8.35.0",
-    "isort>=6.0.1",
+    "ipython>=9.1.0",
     "pytest>=8.3.5",
     "ruff>=0.11.4",
 ]
