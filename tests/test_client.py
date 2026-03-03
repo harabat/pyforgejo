@@ -3,17 +3,36 @@ import os
 import pytest
 from dotenv import load_dotenv
 
-from pyforgejo.client import \
-    PyforgejoApi  # Replace with your actual client import
-from pyforgejo.types import (Activity, Attachment, Branch, ChangedFile,
-                             CombinedStatus, Comment, Commit, CommitStatus,
-                             ContentsResponse, GeneralApiSettings,
-                             GeneralAttachmentSettings, GeneralRepoSettings,
-                             GeneralUiSettings, GitignoreTemplateInfo, Issue,
-                             Label, LabelTemplate, LicensesTemplateListEntry,
-                             LicenseTemplateInfo, Organization, PullRequest,
-                             Release, Repository, ServerVersion, User,
-                             WikiPage, WikiPageMetaData)
+from pyforgejo.client import PyforgejoApi  # Replace with your actual client import
+from pyforgejo.types import (
+    Activity,
+    Attachment,
+    Branch,
+    ChangedFile,
+    CombinedStatus,
+    Comment,
+    Commit,
+    CommitStatus,
+    ContentsResponse,
+    GeneralApiSettings,
+    GeneralAttachmentSettings,
+    GeneralRepoSettings,
+    GeneralUiSettings,
+    GitignoreTemplateInfo,
+    Issue,
+    Label,
+    LabelTemplate,
+    LicensesTemplateListEntry,
+    LicenseTemplateInfo,
+    Organization,
+    PullRequest,
+    Release,
+    Repository,
+    ServerVersion,
+    User,
+    WikiPage,
+    WikiPageMetaData,
+)
 
 # load environment variables at the beginning
 load_dotenv()
