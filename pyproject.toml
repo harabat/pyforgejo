@@ -16,7 +16,7 @@ dependencies = [
     "pydantic>=2.11.2",
     "python-dotenv>=1.1.0",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.urls]
 repository = "https://codeberg.org/harabat/pyforgejo"
