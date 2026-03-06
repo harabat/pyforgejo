@@ -75,7 +75,7 @@ pip install pyforgejo
 
 ### Using `fern`
 
-`pyforgejo` is generated with [fern](https://github.com/fern-api/fern), based on a slightly edited Forgejo OpenAPI spec.
+`pyforgejo` is generated with [fern](https://github.com/fern-api/fern), based on a patched Forgejo OpenAPI spec.
 
 The user experience and code architecture of the `fern`-generated client follow best practice. As the library is tested by users, we will identify any issues inherent to `fern` that prove limiting to `pyforgejo`: if we find such issues and cannot patch them upstream, the current codebase provides a good foundation for further development and any divergence from `fern` would not affect the vast majority of usecases.
 
@@ -83,16 +83,14 @@ Because the client has to apply to a specific Forgejo release, `pyforgejo` track
 
 ### Generating the client with `fern`
 
-1. Install fern, initialise a new workspace, and specify `pyforgejo` as the name of your organisation (= client).
+1. Download [Forgejo's Swagger API spec](https://code.forgejo.org/swagger.v1.json) and convert it to OpenAPI v3 via <https://converter.swagger.io/>.
 
 ``` shell
-npm install -g fern-api
-
-fern init --openapi https://code.forgejo.org/swagger.v1.json
-# Please enter your organization: pyforgejo
+mkdir api_spec
+wget https://converter.swagger.io/api/convert\?url\=https%3A%2F%2Fcode.forgejo.org%2Fswagger.v1.json --output-document=api_spec/openapi.json
 ```
 
-2. Edit the `fern/openapi/openapi.json` file to keep only `AuthorizationHeaderToken` in `securityDefinitions` and `security`.
+2. Edit both `swagger.v1.json` and `openapi.json` to keep only `AuthorizationHeaderToken` in security definitions.
 
 ``` json
 "securityDefinitions": {
@@ -110,9 +108,7 @@ fern init --openapi https://code.forgejo.org/swagger.v1.json
 ]
 ```
 
-3. Convert [Forgejo's Swagger (v2) API spec](https://code.forgejo.org/swagger.v1.json) to [OpenAPI v3](https://spec.openapis.org/oas/v3.0.1.html) via <https://converter.swagger.io/>.
-
-4. Modify endpoints with multiple return types in `fern/openapi/openapi.json`.
+3. Modify endpoints with multiple return types in `openapi.json`.
 
 ``` diff
     "/repos/{owner}/{repo}/contents/{filepath}": {
@@ -155,22 +151,28 @@ fern init --openapi https://code.forgejo.org/swagger.v1.json
 +              }
 +            }
           },
-          "404": {
-            "$ref": "#/components/responses/notFound"
-          }
+          // ...
         }
       },
-// ...
     },
 ```
 
-5. Add the Python SDK generator to `fern`.
+4. Install fern, initialise a new workspace, and specify `pyforgejo` as the name of your organisation (= client).
+
+``` shell
+npm install -g fern-api
+
+fern init --openapi api_spec/openapi.json
+# Please enter your organization: pyforgejo
+```
+
+5. Add the Python SDK generator.
 
 ``` shell
 fern add fernapi/fern-python-sdk
 ```
 
-6. Remove the other generators and modify the name of the output dir to `pyforgejo`.
+6. Remove other generators and set the output directory to `pyforgejo`.
 
 ``` diff
 # yaml-language-server: $schema=https://schema.buildwithfern.dev/generators-yml.json
@@ -205,18 +207,18 @@ BASE_URL=https://codeberg.org/api/v1
 API_KEY="token your_api_key"
 ```
 
-9. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/pyforgejo/client.py` to use environment variables.
+9. Modify the `PyforgejoApi` and `AsyncPyforgejoApi` classes in `sdks/pyforgejo/client.py` to use environment variables.
 
 ``` diff
 # ...
-from .user.client import AsyncUserClient
+from .user.client import AsyncUserClient, UserClient
 +import os
 +from dotenv import load_dotenv
 +
 +load_dotenv()
 +
-+BASE_URL = os.getenv('BASE_URL')
-+API_KEY = os.getenv('API_KEY')
++BASE_URL = os.getenv("BASE_URL", "")
++API_KEY = os.getenv("API_KEY", "")
 
 class PyforgejoApi:
 # ...
@@ -256,17 +258,16 @@ class PyforgejoApi:
         return headers
 ```
 
-11. Create a virtual environment and install the lib.
+11. Create a virtual environment and install dependencies.
 
 ``` shell
-cd /path/to/sdks
-uv init
+wget https://codeberg.org/harabat/pyforgejo/raw/branch/main/pyproject.toml
+
 uv venv
-uv pip install -e .
-uv pip install pipreqs
-uv run pipreqs ./pyforgejo --savepath requirements.txt
-uv add -r requirements.txt
-uv sync
+uv pip install -e '.[dev]'
+uv sync --dev
+uv run ruff format .
+
 ```
 
 12. Use the client as shown in the [Usage](#usage) section.
@@ -282,9 +283,13 @@ client = PyforgejoApi()
 user = client.user.get_current()
 ```
 
-13. Run tests (tests need to be cloned from <https://codeberg.org/harabat/pyforgejo/src/branch/main/tests)>.
+13. Run tests.
 
-``` python
-uv pip install pytest
+``` shell
+wget https://codeberg.org/harabat/pyforgejo/archive/main:tests.zip
+unzip tests.zip
+rm tests.zip
+
 uv run pytest -v tests/test_client.py
 ```
+
