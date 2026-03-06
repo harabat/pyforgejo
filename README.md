@@ -75,9 +75,11 @@ pip install pyforgejo
 
 ### Using `fern`
 
-`pyforgejo` 2.0 is generated with [fern](https://github.com/fern-api/fern), based on a slightly edited Forgejo OpenAPI spec.
+`pyforgejo` is generated with [fern](https://github.com/fern-api/fern), based on a slightly edited Forgejo OpenAPI spec.
 
 The user experience and code architecture of the `fern`-generated client follow best practice. As the library is tested by users, we will identify any issues inherent to `fern` that prove limiting to `pyforgejo`: if we find such issues and cannot patch them upstream, the current codebase provides a good foundation for further development and any divergence from `fern` would not affect the vast majority of usecases.
+
+Because the client has to apply to a specific Forgejo release, `pyforgejo` tracks Codeberg. If you need a client for a different Forgejo release, you can generate your own by following the steps below.
 
 ### Generating the client with `fern`
 
